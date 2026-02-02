@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ProtheticFlow</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <!-- Header/Navegação -->
+    <header class="main-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-small">PF</div>
+                <h1 class="header-title">ProtheticFlow</h1>
+            </div>
+            
+            <nav class="main-nav">
+                <a href="dashboard.html" class="nav-link active">Casos</a>
+                <a href="metrics.html" class="nav-link" id="metricsLink">Métricas</a>
+            </nav>
+            
+            <div class="header-right">
+                <span class="user-name" id="userName"></span>
+                <button class="btn btn-secondary btn-sm" id="logoutBtn">Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Cabeçalho da Página -->
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">Casos</h2>
+                    <p class="page-subtitle">Gerencie todos os casos de próteses</p>
+                </div>
+                <a href="new-case.html" class="btn btn-primary">
+                    + Novo Caso
+                </a>
+            </div>
+
+            <!-- Filtros e Busca -->
+            <div class="filters-section">
+                <div class="search-box">
+                    <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="Buscar por paciente..."
+                        class="search-input"
+                    >
+                </div>
+                
+                <div class="filter-group">
+                    <select id="statusFilter" class="filter-select">
+                        <option value="">Todos os status</option>
+                        <option value="escaneamento">Escaneamento</option>
+                        <option value="planejamento">Planejamento</option>
+                        <option value="impressao">Impressão</option>
+                        <option value="teste">Teste</option>
+                        <option value="concluido">Concluído</option>
+                    </select>
+                    
+                    <select id="typeFilter" class="filter-select">
+                        <option value="">Todos os tipos</option>
+                        <option value="coroa">Coroa</option>
+                        <option value="ponte">Ponte</option>
+                        <option value="protese-total">Prótese Total</option>
+                        <option value="protese-parcial">Prótese Parcial</option>
+                        <option value="implante">Implante</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Estatísticas Rápidas -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">📋</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total de Casos</div>
+                        <div class="stat-value" id="totalCases">0</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon yellow">⏳</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Em Andamento</div>
+                        <div class="stat-value" id="activeCases">0</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon green">✓</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Concluídos</div>
+                        <div class="stat-value" id="completedCases">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Casos -->
+            <div class="cases-grid" id="casesGrid">
+                <!-- Cases will be loaded here dynamically -->
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state hidden" id="emptyState">
+                <div class="empty-icon">📋</div>
+                <h3>Nenhum caso encontrado</h3>
+                <p>Comece criando seu primeiro caso de prótese</p>
+                <a href="new-case.html" class="btn btn-primary">
+                    + Criar Primeiro Caso
+                </a>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading-state hidden" id="loadingState">
+                <div class="spinner"></div>
+                <p>Carregando casos...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mensagens de feedback -->
+    <div id="notification" class="notification"></div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
