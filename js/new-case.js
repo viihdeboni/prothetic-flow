@@ -2,7 +2,7 @@
 // CRIAR NOVO CASO - ProtheticFlow
 // ========================================
 
-console.log('new-case.js iniciado'); // Debug
+console.log('new-case.js iniciado');
 
 // Verificar autenticação
 const currentUser = window.ProtheticAuth?.getCurrentUser();
@@ -11,7 +11,7 @@ if (!currentUser) {
     window.location.href = 'index.html';
 }
 
-console.log('Usuário atual:', currentUser); // Debug
+console.log('Usuário atual:', currentUser);
 
 // Elementos do DOM
 const userName = document.getElementById('userName');
@@ -24,11 +24,6 @@ const patientPhoto = document.getElementById('patientPhoto');
 const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
 const removePhotoBtn = document.getElementById('removePhotoBtn');
 const valueRow = document.getElementById('valueRow');
-
-// Verificar se elementos existem
-if (!userName || !logoutBtn || !newCaseForm) {
-    console.error('Elementos essenciais não encontrados!');
-}
 
 // Definir nome do usuário
 if (userName) {
@@ -72,13 +67,11 @@ if (patientPhoto && photoPreviewImg && removePhotoBtn) {
     patientPhoto.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Validar tipo de arquivo
             if (!file.type.startsWith('image/')) {
                 window.ProtheticAuth.showNotification('Por favor, selecione uma imagem válida', 'error');
                 return;
             }
 
-            // Validar tamanho (máximo 5MB)
             if (file.size > 5 * 1024 * 1024) {
                 window.ProtheticAuth.showNotification('A imagem deve ter no máximo 5MB', 'error');
                 return;
@@ -109,7 +102,6 @@ if (patientPhoto && photoPreviewImg && removePhotoBtn) {
 // MÁSCARAS DE INPUT
 // ========================================
 
-// Máscara de telefone
 const phoneMask = (value) => {
     value = value.replace(/\D/g, '');
     value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
@@ -124,7 +116,6 @@ if (phoneInput) {
     });
 }
 
-// Máscara de CPF
 const cpfMask = (value) => {
     value = value.replace(/\D/g, '');
     value = value.replace(/(\d{3})(\d)/, '$1.$2');
@@ -140,7 +131,6 @@ if (cpfInput) {
     });
 }
 
-// Máscara de valor monetário
 const moneyMask = (value) => {
     value = value.replace(/\D/g, '');
     value = (Number(value) / 100).toFixed(2);
@@ -163,7 +153,6 @@ if (caseValueInput) {
 const getCases = () => {
     try {
         const cases = JSON.parse(localStorage.getItem('protheticflow_cases') || '[]');
-        console.log('Casos no localStorage:', cases);
         return cases;
     } catch (error) {
         console.error('Erro ao obter casos:', error);
@@ -174,7 +163,6 @@ const getCases = () => {
 const saveCases = (cases) => {
     try {
         localStorage.setItem('protheticflow_cases', JSON.stringify(cases));
-        console.log('Casos salvos:', cases);
         return true;
     } catch (error) {
         console.error('Erro ao salvar casos:', error);
@@ -196,31 +184,21 @@ if (newCaseForm) {
     newCaseForm.addEventListener('submit', (e) => {
         e.preventDefault();
 
-        console.log('Formulário submetido!');
+        console.log('📋 Formulário submetido!');
 
-        // Coletar dados do formulário
+        // Coletar dados
         const patientName = document.getElementById('patientName').value.trim();
         const patientPhone = document.getElementById('patientPhone').value.trim();
         const patientEmail = document.getElementById('patientEmail').value.trim();
         const patientCPF = document.getElementById('patientCPF').value.trim();
-        
         const caseType = document.getElementById('caseType').value;
         const caseStatus = document.getElementById('caseStatus').value;
         const caseValueRaw = caseValueInput ? caseValueInput.value : '';
-        
         const firstConsultation = document.getElementById('firstConsultation').value;
         const scanDate = document.getElementById('scanDate').value;
         const testDate = document.getElementById('testDate').value;
         const deliveryDate = document.getElementById('deliveryDate').value;
-        
         const caseNotes = document.getElementById('caseNotes').value.trim();
-
-        console.log('Dados coletados:', { 
-            patientName, 
-            patientPhone, 
-            caseType,
-            caseStatus 
-        });
 
         // Validações
         if (!patientName || patientName.length < 3) {
@@ -238,22 +216,15 @@ if (newCaseForm) {
             return;
         }
 
-        // Converter valor monetário para número
+        // Converter valor
         let caseValue = null;
         if (caseValueRaw && currentUser.role === 'management') {
-            const cleanValue = caseValueRaw
-                .replace('R$', '')
-                .replace(/\./g, '')
-                .replace(',', '.')
-                .trim();
+            const cleanValue = caseValueRaw.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
             caseValue = parseFloat(cleanValue);
-            
-            if (isNaN(caseValue)) {
-                caseValue = null;
-            }
+            if (isNaN(caseValue)) caseValue = null;
         }
 
-        // Criar objeto do caso
+        // Criar caso
         const newCase = {
             id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
             patientName: patientName,
@@ -269,59 +240,50 @@ if (newCaseForm) {
             testDate: testDate || null,
             deliveryDate: deliveryDate || null,
             notes: caseNotes || null,
-            timeline: [
-                {
-                    action: 'created',
-                    description: 'Caso criado',
-                    date: new Date().toISOString(),
-                    user: currentUser.name
-                }
-            ],
+            timeline: [{
+                action: 'created',
+                description: 'Caso criado',
+                date: new Date().toISOString(),
+                user: currentUser.name
+            }],
             files: [],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             createdBy: currentUser.id
         };
 
-        console.log('Novo caso criado:', newCase);
+        console.log('✅ Caso criado:', newCase);
 
         try {
             const success = addCase(newCase);
             
             if (success) {
-                console.log('Caso salvo com sucesso no localStorage!');
+                console.log('💾 Caso salvo no localStorage!');
                 window.ProtheticAuth.showNotification('Caso criado com sucesso!', 'success');
                 
-                // Redirecionar após 800ms
+                // Redirecionar imediatamente
                 setTimeout(() => {
-                    console.log('Redirecionando para dashboard...');
+                    console.log('🔄 Redirecionando para dashboard...');
                     window.location.href = 'dashboard.html';
-                }, 800);
+                }, 500);
             } else {
                 throw new Error('Falha ao salvar caso');
             }
         } catch (error) {
-            console.error('Erro ao criar caso:', error);
+            console.error('❌ Erro ao criar caso:', error);
             window.ProtheticAuth.showNotification('Erro ao criar caso. Tente novamente.', 'error');
         }
     });
-} else {
-    console.error('Formulário não encontrado!');
 }
 
 // ========================================
-// DEFINIR DATA MÍNIMA (hoje)
+// DEFINIR DATA MÍNIMA
 // ========================================
 
 const today = new Date().toISOString().split('T')[0];
-const firstConsultationInput = document.getElementById('firstConsultation');
-const scanDateInput = document.getElementById('scanDate');
-const testDateInput = document.getElementById('testDate');
-const deliveryDateInput = document.getElementById('deliveryDate');
+['firstConsultation', 'scanDate', 'testDate', 'deliveryDate'].forEach(id => {
+    const input = document.getElementById(id);
+    if (input) input.setAttribute('min', today);
+});
 
-if (firstConsultationInput) firstConsultationInput.setAttribute('min', today);
-if (scanDateInput) scanDateInput.setAttribute('min', today);
-if (testDateInput) testDateInput.setAttribute('min', today);
-if (deliveryDateInput) deliveryDateInput.setAttribute('min', today);
-
-console.log('new-case.js carregado completamente!');
+console.log('✅ new-case.js carregado!');
