@@ -4,11 +4,6 @@
 
 // Elementos do DOM
 const loginForm = document.getElementById('loginForm');
-const registerForm = document.getElementById('registerForm');
-const registerModal = document.getElementById('registerModal');
-const showRegisterBtn = document.getElementById('showRegister');
-const closeRegisterBtn = document.getElementById('closeRegister');
-const cancelRegisterBtn = document.getElementById('cancelRegister');
 const notification = document.getElementById('notification');
 const logo = document.getElementById('logo');
 
@@ -23,12 +18,6 @@ if (!localStorage.getItem('protheticflow_users')) {
 
 // Funções de gerenciamento de usuários
 const getUsers = () => JSON.parse(localStorage.getItem('protheticflow_users') || '[]');
-
-const saveUser = (user) => {
-    const users = getUsers();
-    users.push(user);
-    localStorage.setItem('protheticflow_users', JSON.stringify(users));
-};
 
 const findUserByEmail = (email) => {
     const users = getUsers();
@@ -60,33 +49,6 @@ const showNotification = (message, type = 'info') => {
         notification.classList.remove('active');
     }, 3000);
 };
-
-// ========================================
-// MODAL DE CADASTRO
-// ========================================
-
-showRegisterBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    registerModal.classList.add('active');
-});
-
-closeRegisterBtn.addEventListener('click', () => {
-    registerModal.classList.remove('active');
-    registerForm.reset();
-});
-
-cancelRegisterBtn.addEventListener('click', () => {
-    registerModal.classList.remove('active');
-    registerForm.reset();
-});
-
-// Fechar modal ao clicar fora
-registerModal.addEventListener('click', (e) => {
-    if (e.target === registerModal) {
-        registerModal.classList.remove('active');
-        registerForm.reset();
-    }
-});
 
 // ========================================
 // LOGIN
@@ -126,60 +88,9 @@ loginForm.addEventListener('submit', (e) => {
 });
 
 // ========================================
-// CADASTRO
-// ========================================
-
-registerForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    const name = document.getElementById('registerName').value;
-    const email = document.getElementById('registerEmail').value;
-    const password = document.getElementById('registerPassword').value;
-    const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
-    const role = document.getElementById('registerRole').value;
-    
-    // Validações
-    if (password !== passwordConfirm) {
-        showNotification('As senhas não coincidem', 'error');
-        return;
-    }
-    
-    if (findUserByEmail(email)) {
-        showNotification('Este e-mail já está cadastrado', 'error');
-        return;
-    }
-    
-    if (!role) {
-        showNotification('Selecione o tipo de acesso', 'error');
-        return;
-    }
-    
-    // Criar novo usuário
-    const newUser = {
-        id: Date.now().toString(),
-        name: name,
-        email: email,
-        password: password,
-        role: role,
-        createdAt: new Date().toISOString()
-    };
-    
-    saveUser(newUser);
-    
-    showNotification('Cadastro realizado com sucesso!', 'success');
-    
-    // Fechar modal e limpar formulário
-    setTimeout(() => {
-        registerModal.classList.remove('active');
-        registerForm.reset();
-    }, 1000);
-});
-
-// ========================================
 // PLACEHOLDER DA LOGO
 // ========================================
 
-// Se a imagem da logo não carregar, mostra ícone
 logo.addEventListener('error', function() {
     this.style.display = 'none';
     const placeholder = document.createElement('div');
