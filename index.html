@@ -45,80 +45,8 @@
 
                 <p class="form-footer">
                     Não tem uma conta? 
-                    <a href="#" id="showRegister">Cadastre-se</a>
+                    <a href="register.html">Cadastre-se</a>
                 </p>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal de Cadastro -->
-    <div id="registerModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Criar Nova Conta</h2>
-                <span class="close-modal" id="closeRegister">&times;</span>
-            </div>
-
-            <form id="registerForm" class="auth-form">
-                <div class="form-group">
-                    <label for="registerName">Nome Completo</label>
-                    <input 
-                        type="text" 
-                        id="registerName" 
-                        name="name" 
-                        placeholder="Seu nome completo"
-                        required
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="registerEmail">E-mail</label>
-                    <input 
-                        type="email" 
-                        id="registerEmail" 
-                        name="email" 
-                        placeholder="seu@email.com"
-                        required
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="registerPassword">Senha</label>
-                    <input 
-                        type="password" 
-                        id="registerPassword" 
-                        name="password" 
-                        placeholder="Mínimo 6 caracteres"
-                        minlength="6"
-                        required
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="registerPasswordConfirm">Confirmar Senha</label>
-                    <input 
-                        type="password" 
-                        id="registerPasswordConfirm" 
-                        name="passwordConfirm" 
-                        placeholder="Digite a senha novamente"
-                        minlength="6"
-                        required
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="registerRole">Tipo de Acesso</label>
-                    <select id="registerRole" name="role" required>
-                        <option value="">Selecione...</option>
-                        <option value="operational">Operacional (Scanner/Protético/Impressão)</option>
-                        <option value="management">Gerência (Acesso completo)</option>
-                    </select>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" id="cancelRegister">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Cadastrar</button>
-                </div>
             </form>
         </div>
     </div>
