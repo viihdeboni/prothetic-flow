@@ -44,7 +44,16 @@ if (!localStorage.getItem('protheticflow_cases')) {
     localStorage.setItem('protheticflow_cases', JSON.stringify([]));
 }
 
-const getCases = () => JSON.parse(localStorage.getItem('protheticflow_cases') || '[]');
+const getCases = () => {
+    try {
+        const cases = JSON.parse(localStorage.getItem('protheticflow_cases') || '[]');
+        console.log('Casos carregados:', cases); // Debug
+        return cases;
+    } catch (error) {
+        console.error('Erro ao carregar casos:', error);
+        return [];
+    }
+};
 
 const saveCases = (cases) => {
     localStorage.setItem('protheticflow_cases', JSON.stringify(cases));
@@ -116,6 +125,8 @@ const renderCase = (caseData) => {
 };
 
 const renderCases = (cases) => {
+    console.log('Renderizando casos:', cases.length); // Debug
+    
     if (cases.length === 0) {
         casesGrid.innerHTML = '';
         emptyState.classList.remove('hidden');
@@ -138,6 +149,8 @@ const updateStats = (cases) => {
     totalCasesEl.textContent = total;
     activeCasesEl.textContent = active;
     completedCasesEl.textContent = completed;
+    
+    console.log('Stats:', { total, active, completed }); // Debug
 };
 
 // ========================================
@@ -171,6 +184,7 @@ const applyFilters = () => {
         filtered = filtered.filter(c => c.type === typeValue);
     }
     
+    console.log('Casos filtrados:', filtered.length); // Debug
     renderCases(filtered);
 };
 
@@ -183,11 +197,16 @@ typeFilter.addEventListener('change', applyFilters);
 // ========================================
 
 const loadCases = () => {
+    console.log('Carregando casos...'); // Debug
     loadingState.classList.remove('hidden');
+    casesGrid.innerHTML = '';
+    emptyState.classList.add('hidden');
     
     // Simular delay de carregamento
     setTimeout(() => {
         allCases = getCases();
+        
+        console.log('Total de casos:', allCases.length); // Debug
         
         // Ordenar por data de criação (mais recentes primeiro)
         allCases.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -195,11 +214,18 @@ const loadCases = () => {
         updateStats(allCases);
         renderCases(allCases);
         loadingState.classList.add('hidden');
-    }, 500);
+    }, 300);
 };
 
 // Carregar casos ao iniciar
+console.log('Dashboard iniciado'); // Debug
 loadCases();
+
+// Recarregar casos quando a página ganhar foco (usuário voltar de outra aba)
+window.addEventListener('focus', () => {
+    console.log('Página ganhou foco, recarregando casos...'); // Debug
+    loadCases();
+});
 
 // ========================================
 // CASOS DE EXEMPLO (apenas para desenvolvimento)
@@ -214,10 +240,27 @@ const addSampleCases = () => {
             patientName: 'Maria Silva',
             patientPhone: '(47) 99999-1111',
             patientEmail: 'maria@email.com',
+            patientCPF: null,
+            patientPhoto: null,
             type: 'coroa',
             status: 'planejamento',
+            value: 1500,
             firstConsultation: '2026-02-01',
+            scanDate: null,
+            testDate: null,
+            deliveryDate: null,
+            notes: 'Paciente com sensibilidade',
+            timeline: [
+                {
+                    action: 'created',
+                    description: 'Caso criado',
+                    date: new Date('2026-02-01').toISOString(),
+                    user: currentUser.name
+                }
+            ],
+            files: [],
             createdAt: new Date('2026-02-01').toISOString(),
+            updatedAt: new Date('2026-02-01').toISOString(),
             createdBy: currentUser.id
         },
         {
@@ -225,21 +268,61 @@ const addSampleCases = () => {
             patientName: 'João Santos',
             patientPhone: '(47) 99999-2222',
             patientEmail: 'joao@email.com',
+            patientCPF: null,
+            patientPhoto: null,
             type: 'ponte',
             status: 'escaneamento',
+            value: 2500,
             firstConsultation: '2026-02-02',
+            scanDate: '2026-02-05',
+            testDate: null,
+            deliveryDate: null,
+            notes: null,
+            timeline: [
+                {
+                    action: 'created',
+                    description: 'Caso criado',
+                    date: new Date('2026-02-02').toISOString(),
+                    user: currentUser.name
+                }
+            ],
+            files: [],
             createdAt: new Date('2026-02-02').toISOString(),
+            updatedAt: new Date('2026-02-02').toISOString(),
             createdBy: currentUser.id
         },
         {
             id: Date.now().toString() + '3',
-            patientName: 'Ana Paula',
+            patientName: 'Ana Paula Oliveira',
             patientPhone: '(47) 99999-3333',
             patientEmail: 'ana@email.com',
+            patientCPF: '123.456.789-00',
+            patientPhoto: null,
             type: 'protese-total',
             status: 'concluido',
+            value: 5000,
             firstConsultation: '2026-01-25',
+            scanDate: '2026-01-26',
+            testDate: '2026-01-30',
+            deliveryDate: '2026-02-01',
+            notes: 'Caso concluído com sucesso',
+            timeline: [
+                {
+                    action: 'created',
+                    description: 'Caso criado',
+                    date: new Date('2026-01-25').toISOString(),
+                    user: currentUser.name
+                },
+                {
+                    action: 'update',
+                    description: 'Status alterado para: Concluído',
+                    date: new Date('2026-02-01').toISOString(),
+                    user: currentUser.name
+                }
+            ],
+            files: [],
             createdAt: new Date('2026-01-25').toISOString(),
+            updatedAt: new Date('2026-02-01').toISOString(),
             createdBy: currentUser.id
         }
     ];
@@ -248,5 +331,6 @@ const addSampleCases = () => {
     loadCases();
 };
 
-// addSampleCases(); // Descomentar para adicionar
+// Descomente a linha abaixo para adicionar casos de exemplo:
+// addSampleCases();
 */
