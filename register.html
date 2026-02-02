@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - ProtheticFlow</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-card">
+            <!-- Logo -->
+            <div class="logo-container">
+                <img src="assets/logo.png" alt="ProtheticFlow Logo" class="logo" id="logo">
+                <h1 class="brand-name">ProtheticFlow</h1>
+                <p class="brand-tagline">Gestão de Próteses Digitais</p>
+            </div>
+
+            <!-- Título da Página -->
+            <div class="page-intro">
+                <h2 class="form-title">Criar Nova Conta</h2>
+                <p class="form-description">Preencha os dados abaixo para começar</p>
+            </div>
+
+            <!-- Formulário de Cadastro -->
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label for="registerName">Nome Completo *</label>
+                    <input 
+                        type="text" 
+                        id="registerName" 
+                        name="name" 
+                        placeholder="Digite seu nome completo"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="registerEmail">E-mail *</label>
+                    <input 
+                        type="email" 
+                        id="registerEmail" 
+                        name="email" 
+                        placeholder="seu@email.com"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="registerPassword">Senha *</label>
+                    <input 
+                        type="password" 
+                        id="registerPassword" 
+                        name="password" 
+                        placeholder="Mínimo 6 caracteres"
+                        minlength="6"
+                        required
+                    >
+                    <small class="input-hint">Use no mínimo 6 caracteres</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="registerPasswordConfirm">Confirmar Senha *</label>
+                    <input 
+                        type="password" 
+                        id="registerPasswordConfirm" 
+                        name="passwordConfirm" 
+                        placeholder="Digite a senha novamente"
+                        minlength="6"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="registerRole">Tipo de Acesso *</label>
+                    <select id="registerRole" name="role" required>
+                        <option value="">Selecione o tipo de acesso...</option>
+                        <option value="operational">🔧 Operacional (Scanner / Protético / Impressão)</option>
+                        <option value="management">📊 Gerência (Acesso completo + Relatórios)</option>
+                    </select>
+                    <small class="input-hint">
+                        <strong>Operacional:</strong> Acesso aos casos<br>
+                        <strong>Gerência:</strong> Acesso aos casos + métricas e valores
+                    </small>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Criar Conta
+                </button>
+
+                <p class="form-footer">
+                    Já tem uma conta? 
+                    <a href="index.html">Fazer login</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mensagens de feedback -->
+    <div id="notification" class="notification"></div>
+
+    <script src="js/register.js"></script>
+</body>
+</html>
