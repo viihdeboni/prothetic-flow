@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novo Caso - ProtheticFlow</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/case-form.css">
+</head>
+<body>
+    <!-- Header/Navegação -->
+    <header class="main-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-small">PF</div>
+                <h1 class="header-title">ProtheticFlow</h1>
+            </div>
+            
+            <nav class="main-nav">
+                <a href="dashboard.html" class="nav-link">Casos</a>
+                <a href="metrics.html" class="nav-link" id="metricsLink">Métricas</a>
+            </nav>
+            
+            <div class="header-right">
+                <span class="user-name" id="userName"></span>
+                <button class="btn btn-secondary btn-sm" id="logoutBtn">Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+        <div class="container-form">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="dashboard.html">Casos</a>
+                <span class="breadcrumb-separator">/</span>
+                <span>Novo Caso</span>
+            </div>
+
+            <!-- Formulário de Novo Caso -->
+            <div class="case-form-container">
+                <div class="form-header">
+                    <h2>Criar Novo Caso</h2>
+                    <p>Preencha as informações do paciente e do caso de prótese</p>
+                </div>
+
+                <form id="newCaseForm" class="case-form">
+                    <!-- Seção: Dados do Paciente -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <span class="section-icon">👤</span>
+                            Dados do Paciente
+                        </h3>
+                        
+                        <div class="form-row">
+                            <!-- Upload de Foto -->
+                            <div class="form-group full-width">
+                                <label>Foto do Paciente (opcional)</label>
+                                <div class="photo-upload-container">
+                                    <div class="photo-preview" id="photoPreview">
+                                        <div class="photo-placeholder">
+                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/>
+                                            </svg>
+                                            <span>Clique para adicionar foto</span>
+                                        </div>
+                                        <img id="photoPreviewImg" class="hidden" alt="Preview">
+                                    </div>
+                                    <input 
+                                        type="file" 
+                                        id="patientPhoto" 
+                                        accept="image/*"
+                                        class="hidden"
+                                    >
+                                    <button type="button" class="btn btn-secondary btn-sm" id="uploadPhotoBtn">
+                                        📷 Selecionar Foto
+                                    </button>
+                                    <button type="button" class="btn btn-secondary btn-sm hidden" id="removePhotoBtn">
+                                        🗑️ Remover
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="patientName">Nome Completo *</label>
+                                <input 
+                                    type="text" 
+                                    id="patientName" 
+                                    placeholder="Digite o nome do paciente"
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="patientPhone">Telefone *</label>
+                                <input 
+                                    type="tel" 
+                                    id="patientPhone" 
+                                    placeholder="(00) 00000-0000"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="patientEmail">E-mail</label>
+                                <input 
+                                    type="email" 
+                                    id="patientEmail" 
+                                    placeholder="email@exemplo.com"
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="patientCPF">CPF</label>
+                                <input 
+                                    type="text" 
+                                    id="patientCPF" 
+                                    placeholder="000.000.000-00"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção: Informações do Caso -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <span class="section-icon">🦷</span>
+                            Informações do Caso
+                        </h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="caseType">Tipo de Prótese *</label>
+                                <select id="caseType" required>
+                                    <option value="">Selecione o tipo...</option>
+                                    <option value="coroa">Coroa</option>
+                                    <option value="ponte">Ponte</option>
+                                    <option value="protese-total">Prótese Total</option>
+                                    <option value="protese-parcial">Prótese Parcial</option>
+                                    <option value="implante">Implante</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="caseStatus">Status Inicial *</label>
+                                <select id="caseStatus" required>
+                                    <option value="escaneamento">Escaneamento</option>
+                                    <option value="planejamento">Planejamento</option>
+                                    <option value="impressao">Impressão</option>
+                                    <option value="teste">Teste</option>
+                                    <option value="concluido">Concluído</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row" id="valueRow">
+                            <div class="form-group">
+                                <label for="caseValue">Valor da Prótese (R$)</label>
+                                <input 
+                                    type="text" 
+                                    id="caseValue" 
+                                    placeholder="R$ 0,00"
+                                >
+                                <small class="input-hint">Apenas usuários Gerência têm acesso a valores</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção: Datas e Agendamentos -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <span class="section-icon">📅</span>
+                            Datas e Agendamentos
+                        </h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstConsultation">Data da Primeira Consulta</label>
+                                <input 
+                                    type="date" 
+                                    id="firstConsultation"
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="scanDate">Data do Escaneamento</label>
+                                <input 
+                                    type="date" 
+                                    id="scanDate"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="testDate">Data do Teste</label>
+                                <input 
+                                    type="date" 
+                                    id="testDate"
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="deliveryDate">Data de Entrega Prevista</label>
+                                <input 
+                                    type="date" 
+                                    id="deliveryDate"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção: Observações -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <span class="section-icon">📝</span>
+                            Observações
+                        </h3>
+
+                        <div class="form-row">
+                            <div class="form-group full-width">
+                                <label for="caseNotes">Notas e Observações</label>
+                                <textarea 
+                                    id="caseNotes" 
+                                    rows="4"
+                                    placeholder="Adicione observações importantes sobre o caso..."
+                                ></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ações do Formulário -->
+                    <div class="form-actions">
+                        <a href="dashboard.html" class="btn btn-secondary">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            ✓ Criar Caso
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mensagens de feedback -->
+    <div id="notification" class="notification"></div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/new-case.js"></script>
+</body>
+</html>
