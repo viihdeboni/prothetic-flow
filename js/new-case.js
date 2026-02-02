@@ -26,7 +26,9 @@ userName.textContent = currentUser.name;
 // Ocultar link de Métricas e campo de Valor se for usuário Operacional
 if (currentUser.role === 'operational') {
     metricsLink.style.display = 'none';
-    valueRow.style.display = 'none';
+    if (valueRow) {
+        valueRow.style.display = 'none';
+    }
 }
 
 // Logout
@@ -97,9 +99,12 @@ const phoneMask = (value) => {
     return value;
 };
 
-document.getElementById('patientPhone').addEventListener('input', (e) => {
-    e.target.value = phoneMask(e.target.value);
-});
+const phoneInput = document.getElementById('patientPhone');
+if (phoneInput) {
+    phoneInput.addEventListener('input', (e) => {
+        e.target.value = phoneMask(e.target.value);
+    });
+}
 
 // Máscara de CPF
 const cpfMask = (value) => {
@@ -110,9 +115,12 @@ const cpfMask = (value) => {
     return value;
 };
 
-document.getElementById('patientCPF').addEventListener('input', (e) => {
-    e.target.value = cpfMask(e.target.value);
-});
+const cpfInput = document.getElementById('patientCPF');
+if (cpfInput) {
+    cpfInput.addEventListener('input', (e) => {
+        e.target.value = cpfMask(e.target.value);
+    });
+}
 
 // Máscara de valor monetário
 const moneyMask = (value) => {
@@ -134,16 +142,29 @@ if (caseValueInput) {
 // GERENCIAMENTO DE CASOS
 // ========================================
 
-const getCases = () => JSON.parse(localStorage.getItem('protheticflow_cases') || '[]');
+const getCases = () => {
+    try {
+        return JSON.parse(localStorage.getItem('protheticflow_cases') || '[]');
+    } catch (error) {
+        console.error('Erro ao obter casos:', error);
+        return [];
+    }
+};
 
 const saveCases = (cases) => {
-    localStorage.setItem('protheticflow_cases', JSON.stringify(cases));
+    try {
+        localStorage.setItem('protheticflow_cases', JSON.stringify(cases));
+        return true;
+    } catch (error) {
+        console.error('Erro ao salvar casos:', error);
+        return false;
+    }
 };
 
 const addCase = (caseData) => {
     const cases = getCases();
     cases.push(caseData);
-    saveCases(cases);
+    return saveCases(cases);
 };
 
 // ========================================
@@ -153,6 +174,8 @@ const addCase = (caseData) => {
 newCaseForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
+    console.log('Formulário submetido!'); // Debug
+
     // Coletar dados do formulário
     const patientName = document.getElementById('patientName').value.trim();
     const patientPhone = document.getElementById('patientPhone').value.trim();
@@ -161,7 +184,7 @@ newCaseForm.addEventListener('submit', (e) => {
     
     const caseType = document.getElementById('caseType').value;
     const caseStatus = document.getElementById('caseStatus').value;
-    const caseValueRaw = document.getElementById('caseValue')?.value || '';
+    const caseValueRaw = caseValueInput ? caseValueInput.value : '';
     
     const firstConsultation = document.getElementById('firstConsultation').value;
     const scanDate = document.getElementById('scanDate').value;
@@ -169,6 +192,8 @@ newCaseForm.addEventListener('submit', (e) => {
     const deliveryDate = document.getElementById('deliveryDate').value;
     
     const caseNotes = document.getElementById('caseNotes').value.trim();
+
+    console.log('Dados coletados:', { patientName, patientPhone, caseType }); // Debug
 
     // Validações
     if (!patientName || patientName.length < 3) {
@@ -189,23 +214,26 @@ newCaseForm.addEventListener('submit', (e) => {
     // Converter valor monetário para número
     let caseValue = null;
     if (caseValueRaw && currentUser.role === 'management') {
-        caseValue = parseFloat(
-            caseValueRaw
-                .replace('R$', '')
-                .replace(/\./g, '')
-                .replace(',', '.')
-                .trim()
-        );
+        const cleanValue = caseValueRaw
+            .replace('R$', '')
+            .replace(/\./g, '')
+            .replace(',', '.')
+            .trim();
+        caseValue = parseFloat(cleanValue);
+        
+        if (isNaN(caseValue)) {
+            caseValue = null;
+        }
     }
 
     // Criar objeto do caso
     const newCase = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        patientName,
-        patientPhone,
+        patientName: patientName,
+        patientPhone: patientPhone,
         patientEmail: patientEmail || null,
         patientCPF: patientCPF || null,
-        patientPhoto: photoBase64,
+        patientPhoto: photoBase64 || null,
         type: caseType,
         status: caseStatus,
         value: caseValue,
@@ -228,13 +256,23 @@ newCaseForm.addEventListener('submit', (e) => {
         createdBy: currentUser.id
     };
 
+    console.log('Caso criado:', newCase); // Debug
+
     try {
-        addCase(newCase);
-        window.ProtheticAuth.showNotification('Caso criado com sucesso!', 'success');
+        const success = addCase(newCase);
         
-        setTimeout(() => {
-            window.location.href = 'dashboard.html';
-        }, 1000);
+        if (success) {
+            console.log('Caso salvo com sucesso!'); // Debug
+            window.ProtheticAuth.showNotification('Caso criado com sucesso!', 'success');
+            
+            // Redirecionar após 1 segundo
+            setTimeout(() => {
+                console.log('Redirecionando para dashboard...'); // Debug
+                window.location.href = 'dashboard.html';
+            }, 1000);
+        } else {
+            throw new Error('Falha ao salvar caso');
+        }
     } catch (error) {
         console.error('Erro ao criar caso:', error);
         window.ProtheticAuth.showNotification('Erro ao criar caso. Tente novamente.', 'error');
@@ -246,7 +284,14 @@ newCaseForm.addEventListener('submit', (e) => {
 // ========================================
 
 const today = new Date().toISOString().split('T')[0];
-document.getElementById('firstConsultation').setAttribute('min', today);
-document.getElementById('scanDate').setAttribute('min', today);
-document.getElementById('testDate').setAttribute('min', today);
-document.getElementById('deliveryDate').setAttribute('min', today);
+const firstConsultationInput = document.getElementById('firstConsultation');
+const scanDateInput = document.getElementById('scanDate');
+const testDateInput = document.getElementById('testDate');
+const deliveryDateInput = document.getElementById('deliveryDate');
+
+if (firstConsultationInput) firstConsultationInput.setAttribute('min', today);
+if (scanDateInput) scanDateInput.setAttribute('min', today);
+if (testDateInput) testDateInput.setAttribute('min', today);
+if (deliveryDateInput) deliveryDateInput.setAttribute('min', today);
+
+console.log('new-case.js carregado!'); // Debug
