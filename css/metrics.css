@@ -1,0 +1,466 @@
+/* ========================================
+   MÉTRICAS FINANCEIRAS
+   ======================================== */
+
+.metrics-financial {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.metric-card-large {
+    background-color: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-fast);
+}
+
+.metric-card-large:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.metric-card-large.revenue {
+    border-left: 4px solid var(--success);
+}
+
+.metric-card-large.average {
+    border-left: 4px solid var(--primary-blue);
+}
+
+.metric-card-large.pending {
+    border-left: 4px solid var(--warning);
+}
+
+.metric-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.metric-header .metric-icon {
+    font-size: 2rem;
+}
+
+.metric-header h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+}
+
+.metric-value-large {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 0.5rem;
+}
+
+.metric-detail {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+}
+
+.metric-detail span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* ========================================
+   GRID DE MÉTRICAS
+   ======================================== */
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 2rem;
+}
+
+.metrics-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.metrics-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.metric-card {
+    background-color: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+/* ========================================
+   GRÁFICOS E CHARTS
+   ======================================== */
+
+.chart-container {
+    margin-top: 1rem;
+}
+
+.chart-bar {
+    margin-bottom: 1.25rem;
+}
+
+.chart-bar:last-child {
+    margin-bottom: 0;
+}
+
+.chart-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.chart-bar-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--gray-700);
+}
+
+.chart-bar-value {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--gray-900);
+}
+
+.chart-bar-track {
+    height: 32px;
+    background-color: var(--gray-100);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    position: relative;
+}
+
+.chart-bar-fill {
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-light) 100%);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 0.75rem;
+    color: var(--white);
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: width 0.6s ease-out;
+}
+
+.chart-bar-fill.success {
+    background: linear-gradient(135deg, var(--success) 0%, #34d399 100%);
+}
+
+.chart-bar-fill.warning {
+    background: linear-gradient(135deg, var(--warning) 0%, #fbbf24 100%);
+}
+
+.chart-bar-fill.info {
+    background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+}
+
+.chart-bar-fill.error {
+    background: linear-gradient(135deg, var(--error) 0%, #f87171 100%);
+}
+
+/* ========================================
+   TEMPO MÉDIO
+   ======================================== */
+
+.time-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.time-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--gray-50);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--gray-200);
+}
+
+.time-item.total {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%);
+    border-color: var(--primary-blue);
+    font-weight: 600;
+}
+
+.time-label {
+    font-size: 0.875rem;
+    color: var(--gray-700);
+}
+
+.time-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+}
+
+/* ========================================
+   TOP CASOS
+   ======================================== */
+
+.top-cases-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.top-case-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--gray-50);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--gray-200);
+    transition: all var(--transition-fast);
+    text-decoration: none;
+    color: inherit;
+}
+
+.top-case-item:hover {
+    background-color: var(--gray-100);
+    border-color: var(--primary-blue);
+    transform: translateX(4px);
+}
+
+.top-case-info {
+    flex: 1;
+}
+
+.top-case-rank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-light) 100%);
+    color: var(--white);
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-right: 0.75rem;
+}
+
+.top-case-rank.gold {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.top-case-rank.silver {
+    background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+}
+
+.top-case-rank.bronze {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+}
+
+.top-case-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 0.125rem;
+}
+
+.top-case-type {
+    font-size: 0.75rem;
+    color: var(--gray-600);
+}
+
+.top-case-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--success);
+}
+
+/* ========================================
+   RESUMO
+   ======================================== */
+
+.summary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.875rem;
+    background-color: var(--gray-50);
+    border-radius: var(--radius-md);
+}
+
+.summary-label {
+    font-size: 0.875rem;
+    color: var(--gray-700);
+}
+
+.summary-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--gray-900);
+}
+
+/* ========================================
+   CASOS RECENTES
+   ======================================== */
+
+.recent-cases-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.recent-case-item {
+    padding: 0.875rem;
+    background-color: var(--gray-50);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--gray-200);
+    transition: all var(--transition-fast);
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.recent-case-item:hover {
+    background-color: var(--gray-100);
+    border-color: var(--primary-blue);
+}
+
+.recent-case-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 0.25rem;
+}
+
+.recent-case-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--gray-600);
+}
+
+.recent-case-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.65rem;
+    font-weight: 600;
+}
+
+.recent-case-badge.escaneamento {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #1e40af;
+}
+
+.recent-case-badge.planejamento {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #b45309;
+}
+
+.recent-case-badge.impressao {
+    background-color: rgba(139, 92, 246, 0.1);
+    color: #6d28d9;
+}
+
+.recent-case-badge.teste {
+    background-color: rgba(236, 72, 153, 0.1);
+    color: #be185d;
+}
+
+.recent-case-badge.concluido {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #047857;
+}
+
+/* ========================================
+   PERÍODO SELECTOR
+   ======================================== */
+
+.period-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ========================================
+   EMPTY STATE
+   ======================================== */
+
+.metrics-empty {
+    text-align: center;
+    padding: 3rem;
+    color: var(--gray-500);
+}
+
+.metrics-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* ========================================
+   RESPONSIVIDADE
+   ======================================== */
+
+@media (max-width: 1024px) {
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .metrics-financial {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .metric-value-large {
+        font-size: 2rem;
+    }
+
+    .metric-card-large {
+        padding: 1.5rem;
+    }
+
+    .time-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .period-selector {
+        width: 100%;
+    }
+
+    .period-selector .filter-select {
+        width: 100%;
+    }
+}
