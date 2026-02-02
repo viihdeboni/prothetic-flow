@@ -42,6 +42,8 @@ const logout = () => {
 // ========================================
 
 const showNotification = (message, type = 'info') => {
+    if (!notification) return;
+    
     notification.textContent = message;
     notification.className = `notification ${type} active`;
     
@@ -54,69 +56,74 @@ const showNotification = (message, type = 'info') => {
 // LOGIN
 // ========================================
 
-loginForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    
-    const user = findUserByEmail(email);
-    
-    if (!user) {
-        showNotification('E-mail não encontrado', 'error');
-        return;
-    }
-    
-    if (user.password !== password) {
-        showNotification('Senha incorreta', 'error');
-        return;
-    }
-    
-    // Login bem-sucedido
-    setCurrentUser({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role
+if (loginForm) {
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        const user = findUserByEmail(email);
+        
+        if (!user) {
+            showNotification('E-mail não encontrado', 'error');
+            return;
+        }
+        
+        if (user.password !== password) {
+            showNotification('Senha incorreta', 'error');
+            return;
+        }
+        
+        // Login bem-sucedido
+        setCurrentUser({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+        });
+        
+        showNotification('Login realizado com sucesso!', 'success');
+        
+        setTimeout(() => {
+            window.location.href = 'dashboard.html';
+        }, 500);
     });
-    
-    showNotification('Login realizado com sucesso!', 'success');
-    
-    setTimeout(() => {
-        window.location.href = 'dashboard.html';
-    }, 500);
-});
+}
 
 // ========================================
 // PLACEHOLDER DA LOGO
 // ========================================
 
-logo.addEventListener('error', function() {
-    this.style.display = 'none';
-    const placeholder = document.createElement('div');
-    placeholder.style.cssText = `
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-light) 100%);
-        border-radius: var(--radius-lg);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        color: white;
-        font-weight: 700;
-        margin: 0 auto 1rem;
-    `;
-    placeholder.textContent = 'PF';
-    this.parentNode.insertBefore(placeholder, this);
-});
+if (logo) {
+    logo.addEventListener('error', function() {
+        this.style.display = 'none';
+        const placeholder = document.createElement('div');
+        placeholder.style.cssText = `
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-light) 100%);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            font-weight: 700;
+            margin: 0 auto 1rem;
+        `;
+        placeholder.textContent = 'PF';
+        this.parentNode.insertBefore(placeholder, this);
+    });
+}
 
 // ========================================
 // VERIFICAR SE JÁ ESTÁ LOGADO
 // ========================================
 
-const currentUser = getCurrentUser();
-if (currentUser && window.location.pathname.includes('index.html')) {
+// APENAS verificar, NÃO declarar novamente
+const checkCurrentUser = getCurrentUser();
+if (checkCurrentUser && window.location.pathname.includes('index.html')) {
     window.location.href = 'dashboard.html';
 }
 
