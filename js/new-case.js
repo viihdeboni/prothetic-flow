@@ -2,288 +2,277 @@
 // CRIAR NOVO CASO - ProtheticFlow
 // ========================================
 
-console.log('new-case.js iniciado');
+console.log('📝 new-case.js carregado');
 
-// Verificar autenticação
-const currentUser = window.ProtheticAuth?.getCurrentUser();
-if (!currentUser) {
-    console.log('Usuário não autenticado, redirecionando...');
-    window.location.href = 'index.html';
-}
+// Proteger rota e obter usuário
+let currentUser = null;
 
-console.log('Usuário atual:', currentUser);
+const initNewCase = async () => {
+  currentUser = await window.ProtheticAuth?.protectRoute();
+  
+  if (!currentUser) {
+    console.log('❌ Usuário não autenticado');
+    return;
+  }
 
-// Elementos do DOM
-const userName = document.getElementById('userName');
-const logoutBtn = document.getElementById('logoutBtn');
-const metricsLink = document.getElementById('metricsLink');
-const newCaseForm = document.getElementById('newCaseForm');
-const photoPreview = document.getElementById('photoPreview');
-const photoPreviewImg = document.getElementById('photoPreviewImg');
-const patientPhoto = document.getElementById('patientPhoto');
-const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
-const removePhotoBtn = document.getElementById('removePhotoBtn');
-const valueRow = document.getElementById('valueRow');
+  console.log('✅ New Case iniciado para:', currentUser.name);
 
-// Definir nome do usuário
-if (userName) {
+  // Elementos do DOM
+  const userName = document.getElementById('userName');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const metricsLink = document.getElementById('metricsLink');
+  const newCaseForm = document.getElementById('newCaseForm');
+  const photoPreview = document.getElementById('photoPreview');
+  const photoPreviewImg = document.getElementById('photoPreviewImg');
+  const patientPhoto = document.getElementById('patientPhoto');
+  const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
+  const removePhotoBtn = document.getElementById('removePhotoBtn');
+  const valueRow = document.getElementById('valueRow');
+
+  // Definir nome do usuário
+  if (userName) {
     userName.textContent = currentUser.name;
-}
+  }
 
-// Ocultar link de Métricas e campo de Valor se for usuário Operacional
-if (currentUser.role === 'operational') {
+  // Ocultar link de Métricas e campo de Valor se for usuário Operacional
+  if (currentUser.role === 'operational') {
     if (metricsLink) metricsLink.style.display = 'none';
     if (valueRow) valueRow.style.display = 'none';
-}
+  }
 
-// Logout
-if (logoutBtn) {
+  // Logout
+  if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
-        window.ProtheticAuth.logout();
+      window.ProtheticAuth.logout();
     });
-}
+  }
 
-// ========================================
-// UPLOAD DE FOTO
-// ========================================
+  // ========================================
+  // FIREBASE
+  // ========================================
 
-let photoBase64 = null;
+  const db = window.FirebaseApp.db;
 
-if (uploadPhotoBtn && patientPhoto) {
+  // ========================================
+  // UPLOAD DE FOTO
+  // ========================================
+
+  let photoBase64 = null;
+
+  if (uploadPhotoBtn && patientPhoto) {
     uploadPhotoBtn.addEventListener('click', () => {
-        patientPhoto.click();
+      patientPhoto.click();
     });
-}
+  }
 
-if (photoPreview && patientPhoto) {
+  if (photoPreview && patientPhoto) {
     photoPreview.addEventListener('click', () => {
-        if (!photoBase64) {
-            patientPhoto.click();
-        }
+      if (!photoBase64) {
+        patientPhoto.click();
+      }
     });
-}
+  }
 
-if (patientPhoto && photoPreviewImg && removePhotoBtn) {
-    patientPhoto.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            if (!file.type.startsWith('image/')) {
-                window.ProtheticAuth.showNotification('Por favor, selecione uma imagem válida', 'error');
-                return;
-            }
-
-            if (file.size > 5 * 1024 * 1024) {
-                window.ProtheticAuth.showNotification('A imagem deve ter no máximo 5MB', 'error');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                photoBase64 = event.target.result;
-                photoPreviewImg.src = photoBase64;
-                photoPreviewImg.classList.remove('hidden');
-                removePhotoBtn.classList.remove('hidden');
-            };
-            reader.readAsDataURL(file);
+  if (patientPhoto && photoPreviewImg && removePhotoBtn) {
+    patientPhoto.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        if (!file.type.startsWith('image/')) {
+          window.ProtheticAuth.showNotification('Por favor, selecione uma imagem válida', 'error');
+          return;
         }
+
+        if (file.size > 5 * 1024 * 1024) {
+          window.ProtheticAuth.showNotification('A imagem deve ter no máximo 5MB', 'error');
+          return;
+        }
+
+        const result = await window.R2Upload.uploadPhoto(file);
+        
+        if (result.success) {
+          photoBase64 = result.data;
+          photoPreviewImg.src = photoBase64;
+          photoPreviewImg.classList.remove('hidden');
+          removePhotoBtn.classList.remove('hidden');
+        } else {
+          window.ProtheticAuth.showNotification('Erro ao processar foto', 'error');
+        }
+      }
     });
 
     removePhotoBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        photoBase64 = null;
-        photoPreviewImg.src = '';
-        photoPreviewImg.classList.add('hidden');
-        patientPhoto.value = '';
-        removePhotoBtn.classList.add('hidden');
+      e.stopPropagation();
+      photoBase64 = null;
+      photoPreviewImg.src = '';
+      photoPreviewImg.classList.add('hidden');
+      patientPhoto.value = '';
+      removePhotoBtn.classList.add('hidden');
     });
-}
+  }
 
-// ========================================
-// MÁSCARAS DE INPUT
-// ========================================
+  // ========================================
+  // MÁSCARAS DE INPUT
+  // ========================================
 
-const phoneMask = (value) => {
+  const phoneMask = (value) => {
     value = value.replace(/\D/g, '');
     value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
     value = value.replace(/(\d)(\d{4})$/, '$1-$2');
     return value;
-};
+  };
 
-const phoneInput = document.getElementById('patientPhone');
-if (phoneInput) {
+  const phoneInput = document.getElementById('patientPhone');
+  if (phoneInput) {
     phoneInput.addEventListener('input', (e) => {
-        e.target.value = phoneMask(e.target.value);
+      e.target.value = phoneMask(e.target.value);
     });
-}
+  }
 
-const cpfMask = (value) => {
+  const cpfMask = (value) => {
     value = value.replace(/\D/g, '');
     value = value.replace(/(\d{3})(\d)/, '$1.$2');
     value = value.replace(/(\d{3})(\d)/, '$1.$2');
     value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
     return value;
-};
+  };
 
-const cpfInput = document.getElementById('patientCPF');
-if (cpfInput) {
+  const cpfInput = document.getElementById('patientCPF');
+  if (cpfInput) {
     cpfInput.addEventListener('input', (e) => {
-        e.target.value = cpfMask(e.target.value);
+      e.target.value = cpfMask(e.target.value);
     });
-}
+  }
 
-const moneyMask = (value) => {
+  const moneyMask = (value) => {
     value = value.replace(/\D/g, '');
     value = (Number(value) / 100).toFixed(2);
     value = value.replace('.', ',');
     value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
     return 'R$ ' + value;
-};
+  };
 
-const caseValueInput = document.getElementById('caseValue');
-if (caseValueInput) {
+  const caseValueInput = document.getElementById('caseValue');
+  if (caseValueInput) {
     caseValueInput.addEventListener('input', (e) => {
-        e.target.value = moneyMask(e.target.value);
+      e.target.value = moneyMask(e.target.value);
     });
-}
+  }
 
-// ========================================
-// GERENCIAMENTO DE CASOS
-// ========================================
+  // ========================================
+  // SUBMISSÃO DO FORMULÁRIO
+  // ========================================
 
-const getCases = () => {
-    try {
-        const cases = JSON.parse(localStorage.getItem('protheticflow_cases') || '[]');
-        return cases;
-    } catch (error) {
-        console.error('Erro ao obter casos:', error);
-        return [];
-    }
-};
+  if (newCaseForm) {
+    newCaseForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-const saveCases = (cases) => {
-    try {
-        localStorage.setItem('protheticflow_cases', JSON.stringify(cases));
-        return true;
-    } catch (error) {
-        console.error('Erro ao salvar casos:', error);
-        return false;
-    }
-};
+      console.log('📋 Formulário submetido!');
 
-const addCase = (caseData) => {
-    const cases = getCases();
-    cases.push(caseData);
-    return saveCases(cases);
-};
+      // Coletar dados
+      const patientName = document.getElementById('patientName').value.trim();
+      const patientPhone = document.getElementById('patientPhone').value.trim();
+      const patientEmail = document.getElementById('patientEmail').value.trim();
+      const patientCPF = document.getElementById('patientCPF').value.trim();
+      const caseType = document.getElementById('caseType').value;
+      const caseStatus = document.getElementById('caseStatus').value;
+      const caseValueRaw = caseValueInput ? caseValueInput.value : '';
+      const firstConsultation = document.getElementById('firstConsultation').value;
+      const scanDate = document.getElementById('scanDate').value;
+      const testDate = document.getElementById('testDate').value;
+      const deliveryDate = document.getElementById('deliveryDate').value;
+      const caseNotes = document.getElementById('caseNotes').value.trim();
 
-// ========================================
-// SUBMISSÃO DO FORMULÁRIO
-// ========================================
+      // Validações
+      if (!patientName || patientName.length < 3) {
+        window.ProtheticAuth.showNotification('Nome do paciente deve ter pelo menos 3 caracteres', 'error');
+        return;
+      }
 
-if (newCaseForm) {
-    newCaseForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+      if (!patientPhone || patientPhone.length < 14) {
+        window.ProtheticAuth.showNotification('Digite um telefone válido', 'error');
+        return;
+      }
 
-        console.log('📋 Formulário submetido!');
+      if (!caseType) {
+        window.ProtheticAuth.showNotification('Selecione o tipo de prótese', 'error');
+        return;
+      }
 
-        // Coletar dados
-        const patientName = document.getElementById('patientName').value.trim();
-        const patientPhone = document.getElementById('patientPhone').value.trim();
-        const patientEmail = document.getElementById('patientEmail').value.trim();
-        const patientCPF = document.getElementById('patientCPF').value.trim();
-        const caseType = document.getElementById('caseType').value;
-        const caseStatus = document.getElementById('caseStatus').value;
-        const caseValueRaw = caseValueInput ? caseValueInput.value : '';
-        const firstConsultation = document.getElementById('firstConsultation').value;
-        const scanDate = document.getElementById('scanDate').value;
-        const testDate = document.getElementById('testDate').value;
-        const deliveryDate = document.getElementById('deliveryDate').value;
-        const caseNotes = document.getElementById('caseNotes').value.trim();
+      // Converter valor
+      let caseValue = null;
+      if (caseValueRaw && currentUser.role === 'management') {
+        const cleanValue = caseValueRaw.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
+        caseValue = parseFloat(cleanValue);
+        if (isNaN(caseValue)) caseValue = null;
+      }
 
-        // Validações
-        if (!patientName || patientName.length < 3) {
-            window.ProtheticAuth.showNotification('Nome do paciente deve ter pelo menos 3 caracteres', 'error');
-            return;
-        }
+      // Preparar dados do caso
+      const newCase = {
+        patientName: patientName,
+        patientPhone: patientPhone,
+        patientEmail: patientEmail || null,
+        patientCPF: patientCPF || null,
+        patientPhoto: photoBase64 || null,
+        type: caseType,
+        status: caseStatus,
+        value: caseValue,
+        firstConsultation: firstConsultation || null,
+        scanDate: scanDate || null,
+        testDate: testDate || null,
+        deliveryDate: deliveryDate || null,
+        notes: caseNotes || null,
+        timeline: [{
+          action: 'created',
+          description: 'Caso criado',
+          date: firebase.firestore.FieldValue.serverTimestamp(),
+          user: currentUser.name,
+          userId: currentUser.id
+        }],
+        files: [],
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        createdBy: currentUser.id,
+        createdByName: currentUser.name
+      };
 
-        if (!patientPhone || patientPhone.length < 14) {
-            window.ProtheticAuth.showNotification('Digite um telefone válido', 'error');
-            return;
-        }
+      console.log('✅ Caso preparado:', newCase);
 
-        if (!caseType) {
-            window.ProtheticAuth.showNotification('Selecione o tipo de prótese', 'error');
-            return;
-        }
-
-        // Converter valor
-        let caseValue = null;
-        if (caseValueRaw && currentUser.role === 'management') {
-            const cleanValue = caseValueRaw.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
-            caseValue = parseFloat(cleanValue);
-            if (isNaN(caseValue)) caseValue = null;
-        }
-
-        // Criar caso
-        const newCase = {
-            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-            patientName: patientName,
-            patientPhone: patientPhone,
-            patientEmail: patientEmail || null,
-            patientCPF: patientCPF || null,
-            patientPhoto: photoBase64 || null,
-            type: caseType,
-            status: caseStatus,
-            value: caseValue,
-            firstConsultation: firstConsultation || null,
-            scanDate: scanDate || null,
-            testDate: testDate || null,
-            deliveryDate: deliveryDate || null,
-            notes: caseNotes || null,
-            timeline: [{
-                action: 'created',
-                description: 'Caso criado',
-                date: new Date().toISOString(),
-                user: currentUser.name
-            }],
-            files: [],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            createdBy: currentUser.id
-        };
-
-        console.log('✅ Caso criado:', newCase);
-
-        try {
-            const success = addCase(newCase);
-            
-            if (success) {
-                console.log('💾 Caso salvo no localStorage!');
-                window.ProtheticAuth.showNotification('Caso criado com sucesso!', 'success');
-                
-                // Redirecionar imediatamente
-                setTimeout(() => {
-                    console.log('🔄 Redirecionando para dashboard...');
-                    window.location.href = 'dashboard.html';
-                }, 500);
-            } else {
-                throw new Error('Falha ao salvar caso');
-            }
-        } catch (error) {
-            console.error('❌ Erro ao criar caso:', error);
-            window.ProtheticAuth.showNotification('Erro ao criar caso. Tente novamente.', 'error');
-        }
+      try {
+        // Salvar no Firestore
+        const docRef = await db.collection('cases').add(newCase);
+        
+        console.log('💾 Caso salvo no Firebase! ID:', docRef.id);
+        window.ProtheticAuth.showNotification('Caso criado com sucesso!', 'success');
+        
+        // Redirecionar
+        setTimeout(() => {
+          console.log('🔄 Redirecionando para dashboard...');
+          window.location.href = 'dashboard.html';
+        }, 500);
+        
+      } catch (error) {
+        console.error('❌ Erro ao criar caso:', error);
+        window.ProtheticAuth.showNotification('Erro ao criar caso. Tente novamente.', 'error');
+      }
     });
-}
+  }
 
-// ========================================
-// DEFINIR DATA MÍNIMA
-// ========================================
+  // ========================================
+  // DEFINIR DATA MÍNIMA
+  // ========================================
 
-const today = new Date().toISOString().split('T')[0];
-['firstConsultation', 'scanDate', 'testDate', 'deliveryDate'].forEach(id => {
+  const today = new Date().toISOString().split('T')[0];
+  ['firstConsultation', 'scanDate', 'testDate', 'deliveryDate'].forEach(id => {
     const input = document.getElementById(id);
     if (input) input.setAttribute('min', today);
-});
+  });
 
-console.log('✅ new-case.js carregado!');
+  console.log('✅ new-case.js configurado!');
+};
+
+// Inicializar
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initNewCase);
+} else {
+  initNewCase();
+}
