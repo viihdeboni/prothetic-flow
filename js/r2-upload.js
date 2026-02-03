@@ -3,48 +3,7 @@
 // ========================================
 
 const R2Upload = {
-  // Upload de arquivo
-  uploadFile: async (file, folder = 'files') => {
-    try {
-      // Gerar nome único para o arquivo
-      const timestamp = Date.now();
-      const randomStr = Math.random().toString(36).substring(2, 9);
-      const extension = file.name.split('.').pop();
-      const fileName = `${folder}/${timestamp}-${randomStr}.${extension}`;
-
-      // Preparar FormData
-      const formData = new FormData();
-      formData.append('file', file);
-
-      // Por enquanto, vamos simular o upload e retornar URL mock
-      // Em produção, você usaria um Worker ou API intermediária
-      console.log('📤 Upload simulado:', fileName);
-
-      // Simular delay de upload
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Retornar URL do arquivo
-      const fileUrl = `${window.AppConfig.r2.publicUrl}/${fileName}`;
-
-      return {
-        success: true,
-        url: fileUrl,
-        fileName: fileName,
-        originalName: file.name,
-        size: file.size,
-        type: file.type
-      };
-
-    } catch (error) {
-      console.error('❌ Erro no upload:', error);
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  },
-
-  // Converter arquivo para Base64 (para fotos pequenas)
+  // Converter arquivo para Base64
   fileToBase64: (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -54,15 +13,16 @@ const R2Upload = {
     });
   },
 
-  // Upload de foto (usa Base64 para salvar no Firestore)
+  // Upload de foto (Base64 para Firestore)
   uploadPhoto: async (file) => {
     try {
-      // Para fotos, salvamos como Base64 no Firestore mesmo
+      console.log('📸 Processando foto:', file.name);
       const base64 = await R2Upload.fileToBase64(file);
       return {
         success: true,
         data: base64,
-        size: file.size
+        size: file.size,
+        name: file.name
       };
     } catch (error) {
       console.error('❌ Erro ao processar foto:', error);
@@ -73,15 +33,37 @@ const R2Upload = {
     }
   },
 
-  // Deletar arquivo (marca como deletado no sistema)
-  deleteFile: async (fileUrl) => {
+  // Simular upload de arquivo grande (STL, PDF)
+  // Em produção, você usaria Cloudflare Workers ou backend
+  uploadFile: async (file, folder = 'files') => {
     try {
-      console.log('🗑️ Arquivo marcado para exclusão:', fileUrl);
-      // Em produção, você faria uma chamada para Worker/API para deletar do R2
-      return { success: true };
+      const timestamp = Date.now();
+      const randomStr = Math.random().toString(36).substring(2, 9);
+      const extension = file.name.split('.').pop();
+      const fileName = `${folder}/${timestamp}-${randomStr}.${extension}`;
+
+      console.log('📤 Upload simulado:', fileName);
+
+      // Simular delay de upload
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Por enquanto, apenas retorna a referência do arquivo
+      // Em produção, faria upload real para R2
+      return {
+        success: true,
+        fileName: fileName,
+        originalName: file.name,
+        size: file.size,
+        type: file.type,
+        url: `${window.AppConfig.r2.publicUrl}/${fileName}`
+      };
+
     } catch (error) {
-      console.error('❌ Erro ao deletar:', error);
-      return { success: false, error: error.message };
+      console.error('❌ Erro no upload:', error);
+      return {
+        success: false,
+        error: error.message
+      };
     }
   }
 };
