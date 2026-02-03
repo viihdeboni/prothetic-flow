@@ -19,11 +19,6 @@ db.enablePersistence()
     }
   });
 
-// Configurar timezone
-db.settings({
-  timestampsInSnapshots: true
-});
-
 console.log('✅ Firebase inicializado!');
 
 // Exportar para uso global
