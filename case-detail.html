@@ -66,8 +66,7 @@
                         <option value="teste">Teste</option>
                         <option value="concluido">Concluído</option>
                     </select>
-                    <button class="btn btn-secondary" id="editCaseBtn">✏️ Editar</button>
-                    <button class="btn btn-error" id="deleteCaseBtn">🗑️ Excluir</button>
+                    <button class="btn btn-error" id="deleteCaseBtn">🗑️ Excluir Caso Completo</button>
                 </div>
             </div>
 
@@ -194,14 +193,22 @@
     <div id="deleteModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Excluir Caso</h2>
+                <h2>⚠️ Excluir Caso Completo</h2>
                 <span class="close-modal" id="closeDeleteModal">&times;</span>
             </div>
             <div style="padding: 1.5rem;">
-                <p>Tem certeza que deseja excluir este caso? Esta ação não pode ser desfeita.</p>
-                <div class="form-actions">
+                <p style="margin-bottom: 1rem;"><strong>ATENÇÃO:</strong> Esta ação é irreversível!</p>
+                <p style="margin-bottom: 1rem;">Ao excluir este caso, você irá remover:</p>
+                <ul style="margin-left: 1.5rem; margin-bottom: 1.5rem; color: var(--error);">
+                    <li>Todos os dados do paciente</li>
+                    <li>Todas as informações do caso</li>
+                    <li>Todos os arquivos anexados (STL, PDFs, fotos)</li>
+                    <li>Todo o histórico e timeline</li>
+                </ul>
+                <p><strong>Tem certeza que deseja continuar?</strong></p>
+                <div class="form-actions" style="margin-top: 1.5rem;">
                     <button class="btn btn-secondary" id="cancelDeleteBtn">Cancelar</button>
-                    <button class="btn btn-error" id="confirmDeleteBtn">Excluir</button>
+                    <button class="btn btn-error" id="confirmDeleteBtn">Sim, Excluir Tudo</button>
                 </div>
             </div>
         </div>
@@ -210,7 +217,15 @@
     <!-- Mensagens de feedback -->
     <div id="notification" class="notification"></div>
 
-    <script src="js/auth.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <!-- Configurações -->
+    <script src="js/config.js"></script>
+    <script src="js/firebase-init.js"></script>
+    <script src="js/r2-upload.js"></script>
     <script src="js/case-detail.js"></script>
 </body>
 </html>
