@@ -19,34 +19,39 @@ const initNewCase = async () => {
   const auth = window.FirebaseApp.auth;
   const db = window.FirebaseApp.db;
 
-  // Verificar autenticação
-  const user = auth.currentUser;
-  
-  if (!user) {
-    console.log('❌ Não autenticado, aguardando...');
-    auth.onAuthStateChanged((authUser) => {
+  // Esperar autenticação (UMA VEZ SÓ)
+  const currentUser = await new Promise((resolve) => {
+    const unsubscribe = auth.onAuthStateChanged(async (authUser) => {
+      unsubscribe(); // Parar de escutar depois da primeira vez
+      
       if (!authUser) {
-        console.log('❌ Sem usuário, redirecionando');
+        console.log('❌ Usuário não autenticado, redirecionando...');
         window.location.href = 'index.html';
-      } else {
-        // Recarregar página quando autenticar
-        window.location.reload();
+        resolve(null);
+        return;
+      }
+
+      console.log('✅ Usuário autenticado:', authUser.uid);
+
+      // Buscar dados do usuário
+      try {
+        const userDoc = await db.collection('users').doc(authUser.uid).get();
+        const userData = {
+          id: authUser.uid,
+          email: authUser.email,
+          ...userDoc.data()
+        };
+        console.log('✅ Dados do usuário:', userData);
+        resolve(userData);
+      } catch (error) {
+        console.error('❌ Erro ao buscar dados:', error);
+        window.location.href = 'index.html';
+        resolve(null);
       }
     });
-    return;
-  }
+  });
 
-  console.log('✅ Usuário autenticado:', user.uid);
-
-  // Buscar dados do usuário
-  const userDoc = await db.collection('users').doc(user.uid).get();
-  const currentUser = {
-    id: user.uid,
-    email: user.email,
-    ...userDoc.data()
-  };
-
-  console.log('✅ Dados do usuário:', currentUser);
+  if (!currentUser) return;
 
   // ========================================
   // ELEMENTOS DO DOM
@@ -159,6 +164,7 @@ const initNewCase = async () => {
   if (phoneInput) {
     phoneInput.addEventListener('input', (e) => {
       let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
       value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
       value = value.replace(/(\d)(\d{4})$/, '$1-$2');
       e.target.value = value;
@@ -169,6 +175,7 @@ const initNewCase = async () => {
   if (cpfInput) {
     cpfInput.addEventListener('input', (e) => {
       let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
       value = value.replace(/(\d{3})(\d)/, '$1.$2');
       value = value.replace(/(\d{3})(\d)/, '$1.$2');
       value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
