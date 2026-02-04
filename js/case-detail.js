@@ -4,35 +4,68 @@
 
 console.log('📄 case-detail.js carregado');
 
-// Proteger rota e obter usuário
-let currentUser = null;
-let currentCase = null;
-let caseId = null;
-let unsubscribe = null;
+// ========================================
+// INICIALIZAR
+// ========================================
 
 const initCaseDetail = async () => {
-  currentUser = await window.ProtheticAuth?.protectRoute();
-  
-  if (!currentUser) {
-    console.log('❌ Usuário não autenticado');
-    return;
-  }
-
   // Pegar ID do caso da URL
   const urlParams = new URLSearchParams(window.location.search);
-  caseId = urlParams.get('id');
+  const caseId = urlParams.get('id');
 
   if (!caseId) {
-    window.ProtheticAuth.showNotification('Caso não encontrado', 'error');
-    setTimeout(() => {
-      window.location.href = 'dashboard.html';
-    }, 1500);
+    alert('Caso não encontrado');
+    window.location.href = 'dashboard.html';
     return;
   }
 
-  console.log('✅ Case Detail iniciado para:', currentUser.name, '| Caso:', caseId);
+  console.log('📋 Caso ID:', caseId);
 
-  // Elementos do DOM
+  // Aguardar Firebase
+  while (!window.FirebaseApp?.auth || !window.FirebaseApp?.db) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  console.log('✅ Firebase pronto');
+
+  const auth = window.FirebaseApp.auth;
+  const db = window.FirebaseApp.db;
+
+  // Esperar autenticação
+  const currentUser = await new Promise((resolve) => {
+    const unsubscribe = auth.onAuthStateChanged(async (authUser) => {
+      unsubscribe();
+      
+      if (!authUser) {
+        console.log('❌ Usuário não autenticado');
+        window.location.href = 'index.html';
+        resolve(null);
+        return;
+      }
+
+      try {
+        const userDoc = await db.collection('users').doc(authUser.uid).get();
+        const userData = {
+          id: authUser.uid,
+          email: authUser.email,
+          ...userDoc.data()
+        };
+        console.log('✅ Usuário:', userData);
+        resolve(userData);
+      } catch (error) {
+        console.error('❌ Erro:', error);
+        window.location.href = 'index.html';
+        resolve(null);
+      }
+    });
+  });
+
+  if (!currentUser) return;
+
+  // ========================================
+  // ELEMENTOS DO DOM
+  // ========================================
+
   const userName = document.getElementById('userName');
   const logoutBtn = document.getElementById('logoutBtn');
   const metricsLink = document.getElementById('metricsLink');
@@ -47,45 +80,52 @@ const initCaseDetail = async () => {
   const fileInput = document.getElementById('fileInput');
   const saveNotesBtn = document.getElementById('saveNotesBtn');
   const notesTextarea = document.getElementById('notesTextarea');
+  const notification = document.getElementById('notification');
 
-  // Definir nome do usuário
-  if (userName) {
-    userName.textContent = currentUser.name;
-  }
+  // Nome do usuário
+  if (userName) userName.textContent = currentUser.name;
 
-  // Ocultar elementos para usuário Operacional
+  // Ocultar elementos para Operacional
   if (currentUser.role === 'operational') {
     if (metricsLink) metricsLink.style.display = 'none';
     if (valueCard) valueCard.style.display = 'none';
   }
 
+  // ========================================
+  // NOTIFICAÇÃO
+  // ========================================
+
+  const showNotification = (message, type = 'info') => {
+    if (!notification) return;
+    notification.textContent = message;
+    notification.className = `notification ${type} active`;
+    setTimeout(() => notification.classList.remove('active'), 3000);
+  };
+
   // Logout
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-      window.ProtheticAuth.logout();
+    logoutBtn.addEventListener('click', async () => {
+      await auth.signOut();
+      window.location.href = 'index.html';
     });
   }
 
   // ========================================
-  // FIREBASE
+  // FORMATAÇÃO
   // ========================================
 
-  const db = window.FirebaseApp.db;
-
-  // ========================================
-  // FUNÇÕES DE FORMATAÇÃO
-  // ========================================
-
-  const formatDate = (timestamp) => {
-    if (!timestamp) return '';
+  const formatDate = (dateValue) => {
+    if (!dateValue) return '';
     
     let date;
-    if (timestamp && timestamp.toDate) {
-      date = timestamp.toDate();
-    } else if (timestamp instanceof Date) {
-      date = timestamp;
+    if (dateValue.toDate) {
+      date = dateValue.toDate();
+    } else if (dateValue instanceof Date) {
+      date = dateValue;
+    } else if (typeof dateValue === 'string') {
+      date = new Date(dateValue);
     } else {
-      date = new Date(timestamp);
+      return '';
     }
     
     return date.toLocaleDateString('pt-BR', { 
@@ -95,16 +135,18 @@ const initCaseDetail = async () => {
     });
   };
 
-  const formatDateTime = (timestamp) => {
-    if (!timestamp) return '';
+  const formatDateTime = (dateValue) => {
+    if (!dateValue) return '';
     
     let date;
-    if (timestamp && timestamp.toDate) {
-      date = timestamp.toDate();
-    } else if (timestamp instanceof Date) {
-      date = timestamp;
+    if (dateValue.toDate) {
+      date = dateValue.toDate();
+    } else if (dateValue instanceof Date) {
+      date = dateValue;
+    } else if (typeof dateValue === 'string') {
+      date = new Date(dateValue);
     } else {
-      date = new Date(timestamp);
+      return '';
     }
     
     return date.toLocaleString('pt-BR', {
@@ -157,72 +199,53 @@ const initCaseDetail = async () => {
   };
 
   // ========================================
-  // CARREGAR DETALHES DO CASO (REAL-TIME)
+  // CARREGAR CASO (REAL-TIME)
   // ========================================
 
-  const loadCaseDetails = () => {
-    console.log('🔄 Carregando detalhes do caso:', caseId);
-
-    // Escutar mudanças em tempo real
-    unsubscribe = db.collection('cases').doc(caseId).onSnapshot((doc) => {
-      if (!doc.exists) {
-        console.error('❌ Caso não encontrado');
-        window.ProtheticAuth.showNotification('Caso não encontrado', 'error');
-        setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 1500);
-        return;
-      }
-
-      currentCase = {
-        id: doc.id,
-        ...doc.data()
-      };
-
-      console.log('✅ Caso carregado:', currentCase);
-
-      renderCaseDetails();
-    }, (error) => {
-      console.error('❌ Erro ao carregar caso:', error);
-      window.ProtheticAuth.showNotification('Erro ao carregar caso', 'error');
-    });
-  };
-
-  // ========================================
-  // RENDERIZAR DETALHES
-  // ========================================
+  let currentCase = null;
 
   const renderCaseDetails = () => {
-    // Breadcrumb
-    document.getElementById('breadcrumbPatient').textContent = currentCase.patientName;
+    console.log('🎨 Renderizando caso:', currentCase);
 
-    // Foto do paciente
+    // Breadcrumb
+    const breadcrumb = document.getElementById('breadcrumbPatient');
+    if (breadcrumb) breadcrumb.textContent = currentCase.patientName;
+
+    // Foto
     const patientPhoto = document.getElementById('patientPhoto');
     const photoPlaceholder = document.querySelector('.photo-placeholder-detail');
     
     if (currentCase.patientPhoto) {
-      patientPhoto.src = currentCase.patientPhoto;
-      patientPhoto.style.display = 'block';
+      if (patientPhoto) {
+        patientPhoto.src = currentCase.patientPhoto;
+        patientPhoto.style.display = 'block';
+      }
       if (photoPlaceholder) photoPlaceholder.style.display = 'none';
     } else {
-      patientPhoto.style.display = 'none';
+      if (patientPhoto) patientPhoto.style.display = 'none';
       if (photoPlaceholder) photoPlaceholder.style.display = 'flex';
     }
 
-    // Informações principais
-    document.getElementById('patientName').textContent = currentCase.patientName;
-    document.getElementById('caseId').textContent = '#' + currentCase.id.slice(0, 8);
-    document.getElementById('caseType').textContent = getTypeLabel(currentCase.type);
+    // Info principal
+    const patientNameEl = document.getElementById('patientName');
+    const caseIdEl = document.getElementById('caseId');
+    const caseTypeEl = document.getElementById('caseType');
+
+    if (patientNameEl) patientNameEl.textContent = currentCase.patientName;
+    if (caseIdEl) caseIdEl.textContent = '#' + currentCase.id.slice(0, 8);
+    if (caseTypeEl) caseTypeEl.textContent = getTypeLabel(currentCase.type);
 
     // Status
-    if (statusSelect) {
-      statusSelect.value = currentCase.status;
-    }
+    if (statusSelect) statusSelect.value = currentCase.status;
 
     // Contato
-    document.getElementById('patientPhone').textContent = currentCase.patientPhone || '';
-    document.getElementById('patientEmail').textContent = currentCase.patientEmail || '';
-    document.getElementById('patientCPF').textContent = currentCase.patientCPF || '';
+    const phoneEl = document.getElementById('patientPhone');
+    const emailEl = document.getElementById('patientEmail');
+    const cpfEl = document.getElementById('patientCPF');
+
+    if (phoneEl) phoneEl.textContent = currentCase.patientPhone || 'Não informado';
+    if (emailEl) emailEl.textContent = currentCase.patientEmail || 'Não informado';
+    if (cpfEl) cpfEl.textContent = currentCase.patientCPF || 'Não informado';
 
     // Datas
     const setDate = (elementId, itemId, value) => {
@@ -230,9 +253,9 @@ const initCaseDetail = async () => {
       const item = document.getElementById(itemId);
       if (value) {
         if (el) el.textContent = formatDate(value);
-        if (item) item.classList.remove('hidden');
+        if (item) item.style.display = 'flex';
       } else {
-        if (item) item.classList.add('hidden');
+        if (item) item.style.display = 'none';
       }
     };
 
@@ -241,11 +264,11 @@ const initCaseDetail = async () => {
     setDate('testDate', 'testDateItem', currentCase.testDate);
     setDate('deliveryDate', 'deliveryDateItem', currentCase.deliveryDate);
 
-    // Valor (apenas Gerência)
+    // Valor
     if (currentUser.role === 'management') {
       const valueEl = document.getElementById('caseValue');
       if (valueEl) {
-        valueEl.textContent = currentCase.value ? formatMoney(currentCase.value) : '';
+        valueEl.textContent = currentCase.value ? formatMoney(currentCase.value) : 'Não definido';
       }
     }
 
@@ -261,63 +284,97 @@ const initCaseDetail = async () => {
     loadTimeline();
   };
 
-  // ========================================
-  // TIMELINE
-  // ========================================
+  const loadFiles = () => {
+    const filesList = document.getElementById('filesList');
+    if (!filesList) return;
 
-  const loadTimeline = () => {
-    const timeline = document.getElementById('timeline');
-    
-    if (!currentCase.timeline || currentCase.timeline.length === 0) {
-      if (timeline) {
-        timeline.innerHTML = '<div class="empty-message">Nenhuma atividade registrada</div>';
-      }
+    if (!currentCase.files || currentCase.files.length === 0) {
+      filesList.innerHTML = '<div class="empty-message">Nenhum arquivo anexado ainda</div>';
       return;
     }
 
-    // Ordenar timeline (mais recente primeiro)
+    filesList.innerHTML = currentCase.files.map((file, index) => `
+      <div class="file-item">
+        <div class="file-info">
+          <div class="file-icon">${getFileIcon(file.originalName || file.name)}</div>
+          <div class="file-details">
+            <div class="file-name">${file.originalName || file.name}</div>
+            <div class="file-meta">${formatFileSize(file.size)} • ${formatDateTime(file.uploadedAt)}</div>
+          </div>
+        </div>
+        <div class="file-actions">
+          <button class="file-action-btn delete" onclick="deleteFile(${index})">🗑️</button>
+        </div>
+      </div>
+    `).join('');
+  };
+
+  const loadTimeline = () => {
+    const timeline = document.getElementById('timeline');
+    if (!timeline) return;
+    
+    if (!currentCase.timeline || currentCase.timeline.length === 0) {
+      timeline.innerHTML = '<div class="empty-message">Nenhuma atividade registrada</div>';
+      return;
+    }
+
     const sortedTimeline = [...currentCase.timeline].sort((a, b) => {
-      const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
-      const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
       return dateB - dateA;
     });
 
-    if (timeline) {
-      timeline.innerHTML = sortedTimeline.map(item => `
-        <div class="timeline-item">
-          <div class="timeline-dot"></div>
-          <div class="timeline-content">
-            <div class="timeline-action">${item.description}</div>
-            <div class="timeline-meta">
-              <span>${item.user || 'Sistema'}</span>
-              <span>${formatDateTime(item.date)}</span>
-            </div>
+    timeline.innerHTML = sortedTimeline.map(item => `
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-action">${item.description}</div>
+          <div class="timeline-meta">
+            <span>${item.user || 'Sistema'}</span>
+            <span>${formatDateTime(item.date)}</span>
           </div>
         </div>
-      `).join('');
-    }
+      </div>
+    `).join('');
   };
 
   const addTimelineItem = async (description) => {
     try {
-      const newTimelineItem = {
+      const newItem = {
         action: 'update',
         description: description,
-        date: new Date().toISOString(), // ← MUDOU AQUI!
+        date: new Date().toISOString(),
         user: currentUser.name,
         userId: currentUser.id
       };
 
       await db.collection('cases').doc(caseId).update({
-        timeline: firebase.firestore.FieldValue.arrayUnion(newTimelineItem),
+        timeline: firebase.firestore.FieldValue.arrayUnion(newItem),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
 
       console.log('✅ Timeline atualizada');
     } catch (error) {
-      console.error('❌ Erro ao atualizar timeline:', error);
+      console.error('❌ Erro:', error);
     }
   };
+
+  // Carregar caso
+  db.collection('cases').doc(caseId).onSnapshot((doc) => {
+    if (!doc.exists) {
+      showNotification('Caso não encontrado', 'error');
+      setTimeout(() => window.location.href = 'dashboard.html', 1500);
+      return;
+    }
+
+    currentCase = {
+      id: doc.id,
+      ...doc.data()
+    };
+
+    console.log('✅ Caso carregado:', currentCase);
+    renderCaseDetails();
+  });
 
   // ========================================
   // MUDANÇA DE STATUS
@@ -328,28 +385,28 @@ const initCaseDetail = async () => {
       const newStatus = e.target.value;
       const oldStatus = currentCase.status;
 
-      if (newStatus !== oldStatus) {
-        const statusLabels = {
-          'escaneamento': 'Escaneamento',
-          'planejamento': 'Planejamento',
-          'impressao': 'Impressão',
-          'teste': 'Teste',
-          'concluido': 'Concluído'
-        };
+      if (newStatus === oldStatus) return;
 
-        try {
-          await db.collection('cases').doc(caseId).update({
-            status: newStatus,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
+      const labels = {
+        'escaneamento': 'Escaneamento',
+        'planejamento': 'Planejamento',
+        'impressao': 'Impressão',
+        'teste': 'Teste',
+        'concluido': 'Concluído'
+      };
 
-          await addTimelineItem(`Status alterado para: ${statusLabels[newStatus]}`);
-          window.ProtheticAuth.showNotification('Status atualizado com sucesso!', 'success');
-        } catch (error) {
-          console.error('❌ Erro ao atualizar status:', error);
-          window.ProtheticAuth.showNotification('Erro ao atualizar status', 'error');
-          statusSelect.value = oldStatus;
-        }
+      try {
+        await db.collection('cases').doc(caseId).update({
+          status: newStatus,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        await addTimelineItem(`Status alterado para: ${labels[newStatus]}`);
+        showNotification('Status atualizado!', 'success');
+      } catch (error) {
+        console.error('❌ Erro:', error);
+        showNotification('Erro ao atualizar status', 'error');
+        statusSelect.value = oldStatus;
       }
     });
   }
@@ -358,87 +415,38 @@ const initCaseDetail = async () => {
   // ARQUIVOS
   // ========================================
 
-  const loadFiles = () => {
-    const filesList = document.getElementById('filesList');
-
-    if (!currentCase.files || currentCase.files.length === 0) {
-      if (filesList) {
-        filesList.innerHTML = '<div class="empty-message">Nenhum arquivo anexado ainda</div>';
-      }
-      return;
-    }
-
-    if (filesList) {
-      filesList.innerHTML = currentCase.files.map((file, index) => `
-        <div class="file-item">
-          <div class="file-info">
-            <div class="file-icon">${getFileIcon(file.originalName || file.name)}</div>
-            <div class="file-details">
-              <div class="file-name">${file.originalName || file.name}</div>
-              <div class="file-meta">${formatFileSize(file.size)} • ${formatDateTime(file.uploadedAt)}</div>
-            </div>
-          </div>
-          <div class="file-actions">
-            <button class="file-action-btn delete" onclick="window.deleteFile(${index})">🗑️</button>
-          </div>
-        </div>
-      `).join('');
-    }
-  };
-
   if (uploadFileBtn && fileInput) {
-    uploadFileBtn.addEventListener('click', () => {
-      fileInput.click();
-    });
+    uploadFileBtn.addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', async (e) => {
       const files = Array.from(e.target.files);
-
       if (files.length === 0) return;
 
-      window.ProtheticAuth.showNotification('Processando arquivos...', 'info');
+      showNotification('Processando arquivos...', 'info');
 
       try {
-        const newFiles = [];
+        const newFiles = files.map(file => ({
+          name: `${Date.now()}-${file.name}`,
+          originalName: file.name,
+          size: file.size,
+          type: file.type,
+          url: '#',
+          uploadedAt: new Date().toISOString(),
+          uploadedBy: currentUser.name,
+          uploadedById: currentUser.id
+        }));
 
-        for (const file of files) {
-          // Validar tamanho (máximo 100MB para STL)
-          if (file.size > 100 * 1024 * 1024) {
-            window.ProtheticAuth.showNotification(`Arquivo ${file.name} muito grande (máx 100MB)`, 'error');
-            continue;
-          }
+        await db.collection('cases').doc(caseId).update({
+          files: firebase.firestore.FieldValue.arrayUnion(...newFiles),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
 
-          // Simular upload (em produção, usaria R2)
-          const result = await window.R2Upload.uploadFile(file, 'cases');
-
-          if (result.success) {
-            newFiles.push({
-              name: result.fileName,
-              originalName: result.originalName,
-              size: result.size,
-              type: result.type,
-              url: result.url,
-              uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
-              uploadedBy: currentUser.name,
-              uploadedById: currentUser.id
-            });
-          }
-        }
-
-        if (newFiles.length > 0) {
-          await db.collection('cases').doc(caseId).update({
-            files: firebase.firestore.FieldValue.arrayUnion(...newFiles),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-
-          await addTimelineItem(`${newFiles.length} arquivo(s) adicionado(s)`);
-          window.ProtheticAuth.showNotification('Arquivo(s) adicionado(s) com sucesso!', 'success');
-        }
-
+        await addTimelineItem(`${newFiles.length} arquivo(s) adicionado(s)`);
+        showNotification('Arquivo(s) adicionado(s)!', 'success');
         fileInput.value = '';
       } catch (error) {
-        console.error('❌ Erro ao adicionar arquivos:', error);
-        window.ProtheticAuth.showNotification('Erro ao adicionar arquivos', 'error');
+        console.error('❌ Erro:', error);
+        showNotification('Erro ao adicionar arquivos', 'error');
       }
     });
   }
@@ -447,7 +455,7 @@ const initCaseDetail = async () => {
     if (!confirm('Deseja realmente excluir este arquivo?')) return;
 
     try {
-      const fileName = currentCase.files[index].originalName || currentCase.files[index].name;
+      const fileName = currentCase.files[index].originalName;
       const newFiles = currentCase.files.filter((_, i) => i !== index);
 
       await db.collection('cases').doc(caseId).update({
@@ -456,10 +464,10 @@ const initCaseDetail = async () => {
       });
 
       await addTimelineItem(`Arquivo removido: ${fileName}`);
-      window.ProtheticAuth.showNotification('Arquivo excluído com sucesso!', 'success');
+      showNotification('Arquivo excluído!', 'success');
     } catch (error) {
-      console.error('❌ Erro ao excluir arquivo:', error);
-      window.ProtheticAuth.showNotification('Erro ao excluir arquivo', 'error');
+      console.error('❌ Erro:', error);
+      showNotification('Erro ao excluir arquivo', 'error');
     }
   };
 
@@ -478,16 +486,16 @@ const initCaseDetail = async () => {
         });
 
         await addTimelineItem('Observações atualizadas');
-        window.ProtheticAuth.showNotification('Observações salvas com sucesso!', 'success');
+        showNotification('Observações salvas!', 'success');
       } catch (error) {
-        console.error('❌ Erro ao salvar observações:', error);
-        window.ProtheticAuth.showNotification('Erro ao salvar observações', 'error');
+        console.error('❌ Erro:', error);
+        showNotification('Erro ao salvar observações', 'error');
       }
     });
   }
 
   // ========================================
-  // EXCLUIR CASO COMPLETO
+  // EXCLUIR CASO
   // ========================================
 
   if (deleteCaseBtn && deleteModal) {
@@ -518,41 +526,25 @@ const initCaseDetail = async () => {
 
   if (confirmDeleteBtn) {
     confirmDeleteBtn.addEventListener('click', async () => {
-      console.log('🗑️ Excluindo caso completo:', caseId);
+      console.log('🗑️ Excluindo caso:', caseId);
 
       try {
-        // Excluir do Firestore
         await db.collection('cases').doc(caseId).delete();
-
-        console.log('✅ Caso excluído do Firebase');
         
-        // Em produção, aqui você também excluiria os arquivos do R2
-        // Por enquanto, apenas marca como excluído
-        
-        window.ProtheticAuth.showNotification('Caso excluído completamente!', 'success');
+        console.log('✅ Caso excluído');
+        showNotification('Caso excluído completamente!', 'success');
         
         setTimeout(() => {
           window.location.href = 'dashboard.html';
         }, 1000);
       } catch (error) {
-        console.error('❌ Erro ao excluir caso:', error);
-        window.ProtheticAuth.showNotification('Erro ao excluir caso', 'error');
+        console.error('❌ Erro:', error);
+        showNotification('Erro ao excluir caso', 'error');
       }
     });
   }
 
-  // ========================================
-  // INICIALIZAR
-  // ========================================
-
-  loadCaseDetails();
-
-  // Limpar listener ao sair
-  window.addEventListener('beforeunload', () => {
-    if (unsubscribe) {
-      unsubscribe();
-    }
-  });
+  console.log('✅ case-detail.js pronto!');
 };
 
 // Inicializar
