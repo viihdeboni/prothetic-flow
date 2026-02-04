@@ -4,20 +4,58 @@
 
 console.log('📊 dashboard.js carregado');
 
-// Proteger rota e obter usuário
-let currentUser = null;
+// ========================================
+// INICIALIZAR
+// ========================================
 
 const initDashboard = async () => {
-  currentUser = await window.ProtheticAuth?.protectRoute();
-  
-  if (!currentUser) {
-    console.log('❌ Usuário não autenticado');
-    return;
+  // Aguardar Firebase
+  while (!window.FirebaseApp?.auth || !window.FirebaseApp?.db) {
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
 
-  console.log('✅ Dashboard iniciado para:', currentUser.name);
+  console.log('✅ Firebase pronto');
 
-  // Elementos do DOM
+  const auth = window.FirebaseApp.auth;
+  const db = window.FirebaseApp.db;
+
+  // Esperar autenticação
+  const currentUser = await new Promise((resolve) => {
+    const unsubscribe = auth.onAuthStateChanged(async (authUser) => {
+      unsubscribe();
+      
+      if (!authUser) {
+        console.log('❌ Usuário não autenticado, redirecionando...');
+        window.location.href = 'index.html';
+        resolve(null);
+        return;
+      }
+
+      console.log('✅ Usuário autenticado:', authUser.uid);
+
+      try {
+        const userDoc = await db.collection('users').doc(authUser.uid).get();
+        const userData = {
+          id: authUser.uid,
+          email: authUser.email,
+          ...userDoc.data()
+        };
+        console.log('✅ Dados do usuário:', userData);
+        resolve(userData);
+      } catch (error) {
+        console.error('❌ Erro ao buscar dados:', error);
+        window.location.href = 'index.html';
+        resolve(null);
+      }
+    });
+  });
+
+  if (!currentUser) return;
+
+  // ========================================
+  // ELEMENTOS DO DOM
+  // ========================================
+
   const userName = document.getElementById('userName');
   const logoutBtn = document.getElementById('logoutBtn');
   const metricsLink = document.getElementById('metricsLink');
@@ -36,38 +74,35 @@ const initDashboard = async () => {
     userName.textContent = currentUser.name;
   }
 
-  // Ocultar link de Métricas se for usuário Operacional
+  // Ocultar Métricas para Operacional
   if (currentUser.role === 'operational' && metricsLink) {
     metricsLink.style.display = 'none';
   }
 
   // Logout
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-      window.ProtheticAuth.logout();
+    logoutBtn.addEventListener('click', async () => {
+      await auth.signOut();
+      window.location.href = 'index.html';
     });
   }
 
   // ========================================
-  // FIREBASE - GERENCIAMENTO DE CASOS
+  // FUNÇÕES DE FORMATAÇÃO
   // ========================================
 
-  const db = window.FirebaseApp.db;
-
-  // ========================================
-  // RENDERIZAÇÃO DE CASOS
-  // ========================================
-
-  const formatDate = (timestamp) => {
-    if (!timestamp) return 'Não definida';
+  const formatDate = (dateValue) => {
+    if (!dateValue) return 'Não definida';
     
     let date;
-    if (timestamp && timestamp.toDate) {
-      date = timestamp.toDate();
-    } else if (timestamp instanceof Date) {
-      date = timestamp;
+    if (dateValue.toDate) {
+      date = dateValue.toDate();
+    } else if (dateValue instanceof Date) {
+      date = dateValue;
+    } else if (typeof dateValue === 'string') {
+      date = new Date(dateValue);
     } else {
-      date = new Date(timestamp);
+      return 'Não definida';
     }
     
     return date.toLocaleDateString('pt-BR', { 
@@ -98,6 +133,10 @@ const initDashboard = async () => {
     };
     return labels[type] || type;
   };
+
+  // ========================================
+  // RENDERIZAÇÃO
+  // ========================================
 
   const renderCase = (caseData) => {
     return `
@@ -136,17 +175,19 @@ const initDashboard = async () => {
     console.log('🎨 Renderizando casos:', cases.length);
     
     if (cases.length === 0) {
-      casesGrid.innerHTML = '';
-      emptyState.classList.remove('hidden');
+      if (casesGrid) casesGrid.innerHTML = '';
+      if (emptyState) emptyState.classList.remove('hidden');
       return;
     }
     
-    emptyState.classList.add('hidden');
-    casesGrid.innerHTML = cases.map(renderCase).join('');
+    if (emptyState) emptyState.classList.add('hidden');
+    if (casesGrid) {
+      casesGrid.innerHTML = cases.map(renderCase).join('');
+    }
   };
 
   // ========================================
-  // ATUALIZAR ESTATÍSTICAS
+  // ESTATÍSTICAS
   // ========================================
 
   const updateStats = (cases) => {
@@ -162,11 +203,10 @@ const initDashboard = async () => {
   };
 
   // ========================================
-  // FILTROS E BUSCA
+  // FILTROS
   // ========================================
 
   let allCases = [];
-  let unsubscribe = null;
 
   const applyFilters = () => {
     const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
@@ -175,7 +215,6 @@ const initDashboard = async () => {
     
     let filtered = allCases;
     
-    // Filtro de busca
     if (searchTerm) {
       filtered = filtered.filter(c => 
         c.patientName.toLowerCase().includes(searchTerm) ||
@@ -183,12 +222,10 @@ const initDashboard = async () => {
       );
     }
     
-    // Filtro de status
     if (statusValue) {
       filtered = filtered.filter(c => c.status === statusValue);
     }
     
-    // Filtro de tipo
     if (typeValue) {
       filtered = filtered.filter(c => c.type === typeValue);
     }
@@ -202,7 +239,7 @@ const initDashboard = async () => {
   if (typeFilter) typeFilter.addEventListener('change', applyFilters);
 
   // ========================================
-  // CARREGAR CASOS DO FIREBASE (REAL-TIME)
+  // CARREGAR CASOS (REAL-TIME)
   // ========================================
 
   const loadCases = () => {
@@ -213,7 +250,7 @@ const initDashboard = async () => {
     if (emptyState) emptyState.classList.add('hidden');
     
     // Escutar mudanças em tempo real
-    unsubscribe = db.collection('cases')
+    db.collection('cases')
       .orderBy('createdAt', 'desc')
       .onSnapshot((snapshot) => {
         console.log('📦 Snapshot recebido:', snapshot.size, 'casos');
@@ -227,7 +264,7 @@ const initDashboard = async () => {
           });
         });
         
-        console.log('✅ Casos carregados:', allCases.length);
+        console.log('✅ Casos carregados:', allCases);
         
         updateStats(allCases);
         applyFilters();
@@ -235,23 +272,17 @@ const initDashboard = async () => {
         if (loadingState) loadingState.classList.add('hidden');
       }, (error) => {
         console.error('❌ Erro ao carregar casos:', error);
-        window.ProtheticAuth?.showNotification('Erro ao carregar casos', 'error');
         if (loadingState) loadingState.classList.add('hidden');
       });
   };
 
-  // Carregar casos ao iniciar
+  // Carregar casos
   loadCases();
 
-  // Limpar listener ao sair da página
-  window.addEventListener('beforeunload', () => {
-    if (unsubscribe) {
-      unsubscribe();
-    }
-  });
+  console.log('✅ Dashboard pronto!');
 };
 
-// Inicializar quando o DOM estiver pronto
+// Inicializar
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initDashboard);
 } else {
