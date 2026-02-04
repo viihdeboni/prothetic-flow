@@ -5,43 +5,53 @@
 console.log('📝 new-case.js carregado');
 
 // ========================================
-// AGUARDAR FIREBASE ESTAR PRONTO
-// ========================================
-
-const waitForFirebase = () => {
-  return new Promise((resolve) => {
-    const checkFirebase = () => {
-      if (window.FirebaseApp?.auth && window.FirebaseApp?.db && window.ProtheticAuth) {
-        resolve();
-      } else {
-        setTimeout(checkFirebase, 100);
-      }
-    };
-    checkFirebase();
-  });
-};
-
-// ========================================
-// INICIALIZAR NEW CASE
+// INICIALIZAR
 // ========================================
 
 const initNewCase = async () => {
-  // Aguardar Firebase estar pronto
-  await waitForFirebase();
+  // Aguardar Firebase
+  while (!window.FirebaseApp?.auth || !window.FirebaseApp?.db) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  console.log('✅ Firebase pronto');
+
+  const auth = window.FirebaseApp.auth;
+  const db = window.FirebaseApp.db;
+
+  // Verificar autenticação
+  const user = auth.currentUser;
   
-  console.log('🔄 Verificando autenticação...');
-  
-  // Proteger rota e obter usuário
-  const currentUser = await window.ProtheticAuth.protectRoute();
-  
-  if (!currentUser) {
-    console.log('❌ Usuário não autenticado');
+  if (!user) {
+    console.log('❌ Não autenticado, aguardando...');
+    auth.onAuthStateChanged((authUser) => {
+      if (!authUser) {
+        console.log('❌ Sem usuário, redirecionando');
+        window.location.href = 'index.html';
+      } else {
+        // Recarregar página quando autenticar
+        window.location.reload();
+      }
+    });
     return;
   }
 
-  console.log('✅ New Case iniciado para:', currentUser.name);
+  console.log('✅ Usuário autenticado:', user.uid);
 
-  // Elementos do DOM
+  // Buscar dados do usuário
+  const userDoc = await db.collection('users').doc(user.uid).get();
+  const currentUser = {
+    id: user.uid,
+    email: user.email,
+    ...userDoc.data()
+  };
+
+  console.log('✅ Dados do usuário:', currentUser);
+
+  // ========================================
+  // ELEMENTOS DO DOM
+  // ========================================
+
   const userName = document.getElementById('userName');
   const logoutBtn = document.getElementById('logoutBtn');
   const metricsLink = document.getElementById('metricsLink');
@@ -52,30 +62,40 @@ const initNewCase = async () => {
   const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
   const removePhotoBtn = document.getElementById('removePhotoBtn');
   const valueRow = document.getElementById('valueRow');
+  const notification = document.getElementById('notification');
 
   // Definir nome do usuário
   if (userName) {
     userName.textContent = currentUser.name;
   }
 
-  // Ocultar link de Métricas e campo de Valor se for usuário Operacional
+  // Ocultar elementos para Operacional
   if (currentUser.role === 'operational') {
     if (metricsLink) metricsLink.style.display = 'none';
     if (valueRow) valueRow.style.display = 'none';
   }
 
-  // Logout
+  // ========================================
+  // NOTIFICAÇÃO
+  // ========================================
+
+  const showNotification = (message, type = 'info') => {
+    if (!notification) return;
+    notification.textContent = message;
+    notification.className = `notification ${type} active`;
+    setTimeout(() => notification.classList.remove('active'), 3000);
+  };
+
+  // ========================================
+  // LOGOUT
+  // ========================================
+
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-      window.ProtheticAuth.logout();
+    logoutBtn.addEventListener('click', async () => {
+      await auth.signOut();
+      window.location.href = 'index.html';
     });
   }
-
-  // ========================================
-  // FIREBASE
-  // ========================================
-
-  const db = window.FirebaseApp.db;
 
   // ========================================
   // UPLOAD DE FOTO
@@ -91,37 +111,34 @@ const initNewCase = async () => {
 
   if (photoPreview && patientPhoto) {
     photoPreview.addEventListener('click', () => {
-      if (!photoBase64) {
-        patientPhoto.click();
-      }
+      if (!photoBase64) patientPhoto.click();
     });
   }
 
   if (patientPhoto && photoPreviewImg && removePhotoBtn) {
     patientPhoto.addEventListener('change', async (e) => {
       const file = e.target.files[0];
-      if (file) {
-        if (!file.type.startsWith('image/')) {
-          window.ProtheticAuth.showNotification('Por favor, selecione uma imagem válida', 'error');
-          return;
-        }
+      if (!file) return;
 
-        if (file.size > 5 * 1024 * 1024) {
-          window.ProtheticAuth.showNotification('A imagem deve ter no máximo 5MB', 'error');
-          return;
-        }
-
-        const result = await window.R2Upload.uploadPhoto(file);
-        
-        if (result.success) {
-          photoBase64 = result.data;
-          photoPreviewImg.src = photoBase64;
-          photoPreviewImg.classList.remove('hidden');
-          removePhotoBtn.classList.remove('hidden');
-        } else {
-          window.ProtheticAuth.showNotification('Erro ao processar foto', 'error');
-        }
+      if (!file.type.startsWith('image/')) {
+        showNotification('Por favor, selecione uma imagem válida', 'error');
+        return;
       }
+
+      if (file.size > 5 * 1024 * 1024) {
+        showNotification('A imagem deve ter no máximo 5MB', 'error');
+        return;
+      }
+
+      // Converter para Base64
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        photoBase64 = event.target.result;
+        photoPreviewImg.src = photoBase64;
+        photoPreviewImg.classList.remove('hidden');
+        removePhotoBtn.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
     });
 
     removePhotoBtn.addEventListener('click', (e) => {
@@ -138,47 +155,35 @@ const initNewCase = async () => {
   // MÁSCARAS DE INPUT
   // ========================================
 
-  const phoneMask = (value) => {
-    value = value.replace(/\D/g, '');
-    value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
-    value = value.replace(/(\d)(\d{4})$/, '$1-$2');
-    return value;
-  };
-
   const phoneInput = document.getElementById('patientPhone');
   if (phoneInput) {
     phoneInput.addEventListener('input', (e) => {
-      e.target.value = phoneMask(e.target.value);
+      let value = e.target.value.replace(/\D/g, '');
+      value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+      value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+      e.target.value = value;
     });
   }
-
-  const cpfMask = (value) => {
-    value = value.replace(/\D/g, '');
-    value = value.replace(/(\d{3})(\d)/, '$1.$2');
-    value = value.replace(/(\d{3})(\d)/, '$1.$2');
-    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-    return value;
-  };
 
   const cpfInput = document.getElementById('patientCPF');
   if (cpfInput) {
     cpfInput.addEventListener('input', (e) => {
-      e.target.value = cpfMask(e.target.value);
+      let value = e.target.value.replace(/\D/g, '');
+      value = value.replace(/(\d{3})(\d)/, '$1.$2');
+      value = value.replace(/(\d{3})(\d)/, '$1.$2');
+      value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+      e.target.value = value;
     });
   }
-
-  const moneyMask = (value) => {
-    value = value.replace(/\D/g, '');
-    value = (Number(value) / 100).toFixed(2);
-    value = value.replace('.', ',');
-    value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
-    return 'R$ ' + value;
-  };
 
   const caseValueInput = document.getElementById('caseValue');
   if (caseValueInput) {
     caseValueInput.addEventListener('input', (e) => {
-      e.target.value = moneyMask(e.target.value);
+      let value = e.target.value.replace(/\D/g, '');
+      value = (Number(value) / 100).toFixed(2);
+      value = value.replace('.', ',');
+      value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+      e.target.value = 'R$ ' + value;
     });
   }
 
@@ -208,17 +213,17 @@ const initNewCase = async () => {
 
       // Validações
       if (!patientName || patientName.length < 3) {
-        window.ProtheticAuth.showNotification('Nome do paciente deve ter pelo menos 3 caracteres', 'error');
+        showNotification('Nome do paciente deve ter pelo menos 3 caracteres', 'error');
         return;
       }
 
       if (!patientPhone || patientPhone.length < 14) {
-        window.ProtheticAuth.showNotification('Digite um telefone válido', 'error');
+        showNotification('Digite um telefone válido', 'error');
         return;
       }
 
       if (!caseType) {
-        window.ProtheticAuth.showNotification('Selecione o tipo de prótese', 'error');
+        showNotification('Selecione o tipo de prótese', 'error');
         return;
       }
 
@@ -230,10 +235,10 @@ const initNewCase = async () => {
         if (isNaN(caseValue)) caseValue = null;
       }
 
-      // Preparar dados do caso
+      // Criar caso
       const newCase = {
-        patientName: patientName,
-        patientPhone: patientPhone,
+        patientName,
+        patientPhone,
         patientEmail: patientEmail || null,
         patientCPF: patientCPF || null,
         patientPhoto: photoBase64 || null,
@@ -263,37 +268,31 @@ const initNewCase = async () => {
 
       try {
         console.log('💾 Salvando no Firebase...');
-        
-        // Salvar no Firestore
         const docRef = await db.collection('cases').add(newCase);
         
-        console.log('✅ Caso salvo no Firebase! ID:', docRef.id);
-        window.ProtheticAuth.showNotification('Caso criado com sucesso!', 'success');
+        console.log('✅ Caso salvo! ID:', docRef.id);
+        showNotification('Caso criado com sucesso!', 'success');
         
-        // Redirecionar
         setTimeout(() => {
-          console.log('🔄 Redirecionando para dashboard...');
+          console.log('🔄 Redirecionando...');
           window.location.href = 'dashboard.html';
         }, 500);
         
       } catch (error) {
         console.error('❌ Erro ao criar caso:', error);
-        window.ProtheticAuth.showNotification('Erro ao criar caso. Tente novamente.', 'error');
+        showNotification('Erro ao criar caso. Tente novamente.', 'error');
       }
     });
   }
 
-  // ========================================
-  // DEFINIR DATA MÍNIMA
-  // ========================================
-
+  // Data mínima
   const today = new Date().toISOString().split('T')[0];
   ['firstConsultation', 'scanDate', 'testDate', 'deliveryDate'].forEach(id => {
     const input = document.getElementById(id);
     if (input) input.setAttribute('min', today);
   });
 
-  console.log('✅ new-case.js configurado!');
+  console.log('✅ new-case.js pronto!');
 };
 
 // Inicializar
