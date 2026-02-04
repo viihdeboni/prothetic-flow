@@ -4,11 +4,35 @@
 
 console.log('📝 new-case.js carregado');
 
-// Proteger rota e obter usuário
-let currentUser = null;
+// ========================================
+// AGUARDAR FIREBASE ESTAR PRONTO
+// ========================================
+
+const waitForFirebase = () => {
+  return new Promise((resolve) => {
+    const checkFirebase = () => {
+      if (window.FirebaseApp?.auth && window.FirebaseApp?.db && window.ProtheticAuth) {
+        resolve();
+      } else {
+        setTimeout(checkFirebase, 100);
+      }
+    };
+    checkFirebase();
+  });
+};
+
+// ========================================
+// INICIALIZAR NEW CASE
+// ========================================
 
 const initNewCase = async () => {
-  currentUser = await window.ProtheticAuth?.protectRoute();
+  // Aguardar Firebase estar pronto
+  await waitForFirebase();
+  
+  console.log('🔄 Verificando autenticação...');
+  
+  // Proteger rota e obter usuário
+  const currentUser = await window.ProtheticAuth.protectRoute();
   
   if (!currentUser) {
     console.log('❌ Usuário não autenticado');
@@ -238,10 +262,12 @@ const initNewCase = async () => {
       console.log('✅ Caso preparado:', newCase);
 
       try {
+        console.log('💾 Salvando no Firebase...');
+        
         // Salvar no Firestore
         const docRef = await db.collection('cases').add(newCase);
         
-        console.log('💾 Caso salvo no Firebase! ID:', docRef.id);
+        console.log('✅ Caso salvo no Firebase! ID:', docRef.id);
         window.ProtheticAuth.showNotification('Caso criado com sucesso!', 'success');
         
         // Redirecionar
