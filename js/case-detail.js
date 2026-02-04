@@ -303,7 +303,7 @@ const initCaseDetail = async () => {
       const newTimelineItem = {
         action: 'update',
         description: description,
-        date: firebase.firestore.FieldValue.serverTimestamp(),
+        date: new Date().toISOString(), // ← MUDOU AQUI!
         user: currentUser.name,
         userId: currentUser.id
       };
