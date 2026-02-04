@@ -260,7 +260,7 @@ const initNewCase = async () => {
         timeline: [{
           action: 'created',
           description: 'Caso criado',
-          date: firebase.firestore.FieldValue.serverTimestamp(),
+          date: new Date().toISOString(), // ← MUDOU AQUI!
           user: currentUser.name,
           userId: currentUser.id
         }],
@@ -270,7 +270,7 @@ const initNewCase = async () => {
         createdBy: currentUser.id,
         createdByName: currentUser.name
       };
-
+      
       console.log('✅ Caso preparado:', newCase);
 
       try {
