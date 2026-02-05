@@ -125,31 +125,83 @@ const initDashboard = async () => {
 
   const getTypeLabel = (type) => {
     const labels = {
-        // Próteses Fixas
-        'coroa': '🦷 Coroa',
-        'ponte': '🦷 Ponte',
-        'implante': '🦷 Implante',
-        // Próteses Removíveis
-        'protese-total': '🦷 Prótese Total',
-        'protese-parcial': '🦷 Prótese Parcial',
-        // Placas
-        'placa-funcional': '🦴 Placa Funcional',
-        'placa-miorrelaxante': '🦴 Placa Miorrelaxante',
-        'placa-clareamento': '✨ Placa de Clareamento',
-        // Modelos
-        'modelo-zocal': '🏛️ Modelo Zocal',
-        'modelo-ferradura': '🏛️ Modelo Ferradura',
-        // Ortodontia
-        'contencao-estetica': '😁 Contenção Estética'
+      'coroa': '🦷 Coroa',
+      'ponte': '🦷 Ponte',
+      'implante': '🦷 Implante',
+      'protese-total': '🦷 Prótese Total',
+      'protese-parcial': '🦷 Prótese Parcial',
+      'placa-funcional': '🦴 Placa Funcional',
+      'placa-miorrelaxante': '🦴 Placa Miorrelaxante',
+      'placa-clareamento': '✨ Placa de Clareamento',
+      'modelo-zocal': '🏛️ Modelo Zocal',
+      'modelo-ferradura': '🏛️ Modelo Ferradura',
+      'contencao-estetica': '😁 Contenção Estética'
     };
     return labels[type] || type;
-};
+  };
+
+  const getProsthesesSummary = (prostheses) => {
+    if (!prostheses || prostheses.length === 0) return '';
+    
+    if (prostheses.length === 1) {
+      return getTypeLabel(prostheses[0].type);
+    }
+    
+    // Múltiplas próteses - mostrar resumo
+    const types = prostheses.map(p => getTypeLabel(p.type)).join(' + ');
+    return types;
+  };
+
+  const getProsthesesBadge = (prostheses) => {
+    if (!prostheses || prostheses.length <= 1) return '';
+    
+    return `<span class="prostheses-count-badge">${prostheses.length} próteses</span>`;
+  };
+
+  const getMostAdvancedStatus = (prostheses) => {
+    if (!prostheses || prostheses.length === 0) return 'escaneamento';
+    
+    const statusOrder = ['escaneamento', 'planejamento', 'impressao', 'teste', 'concluido'];
+    
+    let mostAdvanced = 'escaneamento';
+    let maxIndex = 0;
+    
+    prostheses.forEach(p => {
+      const index = statusOrder.indexOf(p.status);
+      if (index > maxIndex) {
+        maxIndex = index;
+        mostAdvanced = p.status;
+      }
+    });
+    
+    return mostAdvanced;
+  };
+
+  const hasAnyProsthesisCompleted = (prostheses) => {
+    if (!prostheses || prostheses.length === 0) return false;
+    return prostheses.every(p => p.status === 'concluido');
+  };
 
   // ========================================
   // RENDERIZAÇÃO
   // ========================================
 
   const renderCase = (caseData) => {
+    const prostheses = caseData.prostheses || [];
+    const mainStatus = getMostAdvancedStatus(prostheses);
+    const isCompleted = hasAnyProsthesisCompleted(prostheses);
+    
+    // Pegar a data mais recente das próteses
+    let earliestDate = null;
+    prostheses.forEach(p => {
+      if (p.firstConsultation) {
+        const date = new Date(p.firstConsultation);
+        if (!earliestDate || date < earliestDate) {
+          earliestDate = p.firstConsultation;
+        }
+      }
+    });
+
     return `
       <a href="case-detail.html?id=${caseData.id}" class="case-card">
         <div class="case-header">
@@ -157,13 +209,16 @@ const initDashboard = async () => {
             <div class="case-patient-name">${caseData.patientName}</div>
             <div class="case-id">#${caseData.id.slice(0, 8)}</div>
           </div>
-          <span class="case-status-badge ${caseData.status}">
-            ${getStatusLabel(caseData.status)}
+          <span class="case-status-badge ${isCompleted ? 'concluido' : mainStatus}">
+            ${isCompleted ? 'Concluído' : getStatusLabel(mainStatus)}
           </span>
         </div>
         
-        <div class="case-type">
-          🦷 ${getTypeLabel(caseData.type)}
+        <div class="case-prostheses">
+          <div class="case-type">
+            ${getProsthesesSummary(prostheses)}
+          </div>
+          ${getProsthesesBadge(prostheses)}
         </div>
         
         <div class="case-dates">
@@ -171,10 +226,10 @@ const initDashboard = async () => {
             <span class="case-date-label">Criado em:</span>
             <span class="case-date-value">${formatDate(caseData.createdAt)}</span>
           </div>
-          ${caseData.firstConsultation ? `
+          ${earliestDate ? `
             <div class="case-date-item">
               <span class="case-date-label">1ª Consulta:</span>
-              <span class="case-date-value">${formatDate(caseData.firstConsultation)}</span>
+              <span class="case-date-value">${formatDate(earliestDate)}</span>
             </div>
           ` : ''}
         </div>
@@ -203,7 +258,14 @@ const initDashboard = async () => {
 
   const updateStats = (cases) => {
     const total = cases.length;
-    const completed = cases.filter(c => c.status === 'concluido').length;
+    
+    let completed = 0;
+    cases.forEach(c => {
+      if (hasAnyProsthesisCompleted(c.prostheses)) {
+        completed++;
+      }
+    });
+    
     const active = total - completed;
     
     if (totalCasesEl) totalCasesEl.textContent = total;
@@ -226,6 +288,7 @@ const initDashboard = async () => {
     
     let filtered = allCases;
     
+    // Busca por nome ou ID
     if (searchTerm) {
       filtered = filtered.filter(c => 
         c.patientName.toLowerCase().includes(searchTerm) ||
@@ -233,12 +296,25 @@ const initDashboard = async () => {
       );
     }
     
+    // Filtro por status - verifica se ALGUMA prótese tem esse status
     if (statusValue) {
-      filtered = filtered.filter(c => c.status === statusValue);
+      filtered = filtered.filter(c => {
+        if (!c.prostheses || c.prostheses.length === 0) return false;
+        
+        if (statusValue === 'concluido') {
+          return hasAnyProsthesisCompleted(c.prostheses);
+        }
+        
+        return c.prostheses.some(p => p.status === statusValue);
+      });
     }
     
+    // Filtro por tipo - verifica se ALGUMA prótese é desse tipo
     if (typeValue) {
-      filtered = filtered.filter(c => c.type === typeValue);
+      filtered = filtered.filter(c => {
+        if (!c.prostheses || c.prostheses.length === 0) return false;
+        return c.prostheses.some(p => p.type === typeValue);
+      });
     }
     
     console.log('🔍 Casos filtrados:', filtered.length);
