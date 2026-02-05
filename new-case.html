@@ -139,13 +139,29 @@
                                 <label for="caseType">Tipo de Prótese *</label>
                                 <select id="caseType" required>
                                     <option value="">Selecione o tipo...</option>
-                                    <option value="coroa">Coroa</option>
-                                    <option value="ponte">Ponte</option>
-                                    <option value="protese-total">Prótese Total</option>
-                                    <option value="protese-parcial">Prótese Parcial</option>
-                                    <option value="implante">Implante</option>
+                                    <optgroup label="Próteses Fixas">
+                                        <option value="coroa">Coroa</option>
+                                        <option value="ponte">Ponte</option>
+                                        <option value="implante">Implante</option>
+                                    </optgroup>
+                                    <optgroup label="Próteses Removíveis">
+                                        <option value="protese-total">Prótese Total</option>
+                                        <option value="protese-parcial">Prótese Parcial</option>
+                                    </optgroup>
+                                    <optgroup label="Placas">
+                                        <option value="placa-funcional">Placa Funcional</option>
+                                        <option value="placa-miorrelaxante">Placa Miorrelaxante</option>
+                                        <option value="placa-clareamento">Placa de Clareamento</option>
+                                    </optgroup>
+                                    <optgroup label="Modelos">
+                                        <option value="modelo-zocal">Modelo Zocal</option>
+                                        <option value="modelo-ferradura">Modelo Ferradura</option>
+                                    </optgroup>
+                                    <optgroup label="Ortodontia">
+                                        <option value="contencao-estetica">Contenção Estética</option>
+                                    </optgroup>
                                 </select>
-                            </div>
+                            </div>    
 
                             <div class="form-group">
                                 <label for="caseStatus">Status Inicial *</label>
