@@ -196,8 +196,13 @@ const initCaseDetail = async () => {
       'jpg': '🖼️',
       'jpeg': '🖼️',
       'png': '🖼️',
+      'gif': '🖼️',
+      'webp': '🖼️',
+      'heic': '🖼️',
       'stl': '🔷',
-      'ply': '🔷'
+      'ply': '🔷',
+      'obj': '🔷',
+      '3mf': '🔷'
     };
     return icons[ext] || '📎';
   };
@@ -462,11 +467,117 @@ const initCaseDetail = async () => {
     `;
   };
 
+  // ========================================
+  // RENDERIZAR ARQUIVOS COM CATEGORIAS
+  // ========================================
+
   const renderFiles = (prosthesis) => {
     const files = prosthesis.files || [];
     
-    if (files.length === 0) {
+    // Categorizar arquivos
+    const categories = {
+      fotos: files.filter(f => {
+        const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
+        return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic'].includes(ext);
+      }),
+      stl: files.filter(f => {
+        const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
+        return ['stl', 'ply', 'obj', '3mf'].includes(ext);
+      }),
+      maxila: files.filter(f => f.arcada === 'maxila'),
+      mandibula: files.filter(f => f.arcada === 'mandibula'),
+      outros: files.filter(f => {
+        const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
+        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic'].includes(ext);
+        const is3D = ['stl', 'ply', 'obj', '3mf'].includes(ext);
+        return !isImage && !is3D && f.arcada !== 'maxila' && f.arcada !== 'mandibula';
+      })
+    };
+
+    // Contar arquivos por categoria
+    const counts = {
+      fotos: categories.fotos.length,
+      stl: categories.stl.length,
+      maxila: categories.maxila.length,
+      mandibula: categories.mandibula.length,
+      outros: categories.outros.length
+    };
+
+    const totalFiles = files.length;
+
+    if (totalFiles === 0) {
       return '<div class="empty-message">Nenhum arquivo anexado</div>';
+    }
+
+    return `
+      <!-- Abas de Categorias -->
+      <div class="file-categories-tabs">
+        <button class="file-category-tab active" data-category="todos" data-prosthesis-id="${prosthesis.id}">
+          📋 Todos (${totalFiles})
+        </button>
+        ${counts.fotos > 0 ? `
+          <button class="file-category-tab" data-category="fotos" data-prosthesis-id="${prosthesis.id}">
+            📸 Fotos (${counts.fotos})
+          </button>
+        ` : ''}
+        ${counts.stl > 0 ? `
+          <button class="file-category-tab" data-category="stl" data-prosthesis-id="${prosthesis.id}">
+            🔷 STL/3D (${counts.stl})
+          </button>
+        ` : ''}
+        ${counts.maxila > 0 ? `
+          <button class="file-category-tab" data-category="maxila" data-prosthesis-id="${prosthesis.id}">
+            🦷 Maxila (${counts.maxila})
+          </button>
+        ` : ''}
+        ${counts.mandibula > 0 ? `
+          <button class="file-category-tab" data-category="mandibula" data-prosthesis-id="${prosthesis.id}">
+            🦷 Mandíbula (${counts.mandibula})
+          </button>
+        ` : ''}
+        ${counts.outros > 0 ? `
+          <button class="file-category-tab" data-category="outros" data-prosthesis-id="${prosthesis.id}">
+            📄 Outros (${counts.outros})
+          </button>
+        ` : ''}
+      </div>
+
+      <!-- Container de Arquivos -->
+      <div class="files-list-container" data-prosthesis-id="${prosthesis.id}">
+        ${renderFilesList(files, 'todos', prosthesis.id)}
+      </div>
+    `;
+  };
+
+  const renderFilesList = (files, category, prosthesisId) => {
+    let filteredFiles = files;
+
+    // Filtrar por categoria
+    if (category === 'fotos') {
+      filteredFiles = files.filter(f => {
+        const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
+        return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic'].includes(ext);
+      });
+    } else if (category === 'stl') {
+      filteredFiles = files.filter(f => {
+        const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
+        return ['stl', 'ply', 'obj', '3mf'].includes(ext);
+      });
+    } else if (category === 'maxila') {
+      filteredFiles = files.filter(f => f.arcada === 'maxila');
+    } else if (category === 'mandibula') {
+      filteredFiles = files.filter(f => f.arcada === 'mandibula');
+    } else if (category === 'outros') {
+      filteredFiles = files.filter(f => {
+        const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
+        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic'].includes(ext);
+        const is3D = ['stl', 'ply', 'obj', '3mf'].includes(ext);
+        return !isImage && !is3D && f.arcada !== 'maxila' && f.arcada !== 'mandibula';
+      });
+    }
+
+    if (filteredFiles.length === 0) {
+      return '<div class="empty-message">Nenhum arquivo nesta categoria</div>';
     }
 
     const arcadaLabels = {
@@ -477,29 +588,68 @@ const initCaseDetail = async () => {
 
     return `
       <div class="files-list">
-        ${files.map((file, fileIndex) => `
-          <div class="file-item">
-            <div class="file-info">
-              <div class="file-icon">${getFileIcon(file.originalName || file.name)}</div>
-              <div class="file-details">
-                <div class="file-name">
-                  ${file.originalName || file.name}
-                  ${file.arcada && file.arcada !== 'outros' ? 
-                    `<span class="file-arcada-badge ${file.arcada}">${arcadaLabels[file.arcada]}</span>` 
-                    : ''}
+        ${filteredFiles.map((file) => {
+          const fileIndex = files.indexOf(file); // Índice real no array original
+          return `
+            <div class="file-item">
+              <div class="file-info">
+                <div class="file-icon">${getFileIcon(file.originalName || file.name)}</div>
+                <div class="file-details">
+                  <div class="file-name">
+                    ${file.originalName || file.name}
+                    ${file.arcada ? 
+                      `<span class="file-arcada-badge ${file.arcada}">${arcadaLabels[file.arcada] || file.arcada}</span>` 
+                      : ''}
+                  </div>
+                  <div class="file-meta">${formatFileSize(file.size)} • ${formatDateTime(file.uploadedAt)}</div>
                 </div>
-                <div class="file-meta">${formatFileSize(file.size)} • ${formatDateTime(file.uploadedAt)}</div>
+              </div>
+              <div class="file-actions">
+                <button class="file-action-btn delete delete-file-btn" 
+                        data-prosthesis-id="${prosthesisId}" 
+                        data-file-index="${fileIndex}">🗑️</button>
               </div>
             </div>
-            <div class="file-actions">
-              <button class="file-action-btn delete delete-file-btn" 
-                      data-prosthesis-id="${prosthesis.id}" 
-                      data-file-index="${fileIndex}">🗑️</button>
-            </div>
-          </div>
-        `).join('')}
+          `;
+        }).join('')}
       </div>
     `;
+  };
+
+  // ========================================
+  // TROCAR CATEGORIA DE ARQUIVOS
+  // ========================================
+
+  const switchFileCategory = (prosthesisId, category) => {
+    const prostheses = currentCase.prostheses || [];
+    const prosthesis = prostheses.find(p => p.id === prosthesisId);
+    
+    if (!prosthesis) return;
+
+    const files = prosthesis.files || [];
+    
+    // Atualizar abas ativas
+    document.querySelectorAll(`.file-category-tab[data-prosthesis-id="${prosthesisId}"]`).forEach(tab => {
+      tab.classList.remove('active');
+    });
+    
+    const activeTab = document.querySelector(`.file-category-tab[data-category="${category}"][data-prosthesis-id="${prosthesisId}"]`);
+    if (activeTab) activeTab.classList.add('active');
+
+    // Atualizar lista de arquivos
+    const container = document.querySelector(`.files-list-container[data-prosthesis-id="${prosthesisId}"]`);
+    if (container) {
+      container.innerHTML = renderFilesList(files, category, prosthesisId);
+      
+      // Re-adicionar event listeners para os botões de deletar
+      container.querySelectorAll('.delete-file-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const pId = e.target.dataset.prosthesisId;
+          const fileIndex = parseInt(e.target.dataset.fileIndex);
+          await deleteFileFromProsthesis(pId, fileIndex);
+        });
+      });
+    }
   };
 
   const renderTimeline = (prosthesis) => {
@@ -622,6 +772,15 @@ const initCaseDetail = async () => {
         const prosthesisId = e.target.dataset.prosthesisId;
         const dateIndex = parseInt(e.target.dataset.dateIndex);
         await deleteCustomDate(prosthesisId, dateIndex);
+      });
+    });
+
+    // Abas de categorias de arquivos
+    document.querySelectorAll('.file-category-tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        const prosthesisId = e.target.dataset.prosthesisId;
+        const category = e.target.dataset.category;
+        switchFileCategory(prosthesisId, category);
       });
     });
 
