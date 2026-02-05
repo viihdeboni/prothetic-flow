@@ -1,5 +1,5 @@
 /* ========================================
-   TELA DE LOGIN - DESIGN MODERNO
+   TELA DE LOGIN - DESIGN PREMIUM
    ======================================== */
 
 .login-page {
@@ -7,45 +7,111 @@
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 1rem;
+    padding: 2rem;
     position: relative;
     overflow: hidden;
+    background: #0f172a;
 }
 
-/* Background Pattern Animado */
+/* Background com Gradiente Animado */
 .login-page::before {
     content: '';
     position: absolute;
+    top: -50%;
+    left: -50%;
     width: 200%;
     height: 200%;
-    background-image: 
-        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
-    animation: backgroundMove 20s ease-in-out infinite;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(147, 51, 234, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(236, 72, 153, 0.2) 0%, transparent 50%);
+    animation: gradientMove 15s ease-in-out infinite;
 }
 
-@keyframes backgroundMove {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(-50px, -50px); }
+@keyframes gradientMove {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    33% { transform: translate(5%, 5%) rotate(120deg); }
+    66% { transform: translate(-5%, 5%) rotate(240deg); }
+}
+
+/* Grid Pattern */
+.login-page::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(50px, 50px); }
 }
 
 .login-container {
     width: 100%;
-    max-width: 440px;
+    max-width: 480px;
     position: relative;
-    z-index: 1;
+    z-index: 10;
 }
 
 .login-card {
-    background-color: var(--white);
-    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 32px;
     box-shadow: 
-        0 20px 60px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-    padding: 3rem 2.5rem;
-    animation: slideUpFade 0.6s ease-out;
-    backdrop-filter: blur(10px);
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        0 30px 80px rgba(0, 0, 0, 0.4),
+        0 10px 40px rgba(59, 130, 246, 0.2);
+    padding: 3.5rem 3rem;
+    animation: cardEntrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Brilho sutil no topo do card */
+.login-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(59, 130, 246, 0.5) 20%,
+        rgba(147, 51, 234, 0.5) 50%,
+        rgba(236, 72, 153, 0.5) 80%,
+        transparent 100%
+    );
+}
+
+/* Glow effect nos cantos */
+.login-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+@keyframes cardEntrance {
+    0% {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 /* ========================================
@@ -54,50 +120,83 @@
 
 .logo-container {
     text-align: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 3rem;
+    position: relative;
+    z-index: 1;
 }
 
 .logo {
-    width: 90px;
-    height: 90px;
+    width: 100px;
+    height: 100px;
     object-fit: contain;
-    margin: 0 auto 1.25rem;
-    border-radius: 20px;
-    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.2);
-    transition: transform var(--transition-normal);
+    margin: 0 auto 1.5rem;
+    border-radius: 24px;
+    box-shadow: 
+        0 10px 30px rgba(59, 130, 246, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+    transition: all var(--transition-normal);
+    position: relative;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+    animation: logoFloat 3s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
 }
 
 .logo:hover {
-    transform: scale(1.05) rotate(2deg);
+    transform: translateY(-8px) rotate(5deg) scale(1.05);
+    box-shadow: 
+        0 15px 40px rgba(59, 130, 246, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.2);
 }
 
-/* Placeholder para logo quando não houver imagem */
-.logo[src*="logo.png"] {
-    background: linear-gradient(135deg, var(--primary-blue) 0%, #8b5cf6 100%);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 2.5rem;
-    font-weight: 700;
+/* Anel de glow ao redor da logo */
+.logo-container::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%);
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+    z-index: -1;
+}
+
+@keyframes pulse {
+    0%, 100% { 
+        transform: translate(-50%, -60%) scale(1);
+        opacity: 0.5;
+    }
+    50% { 
+        transform: translate(-50%, -60%) scale(1.1);
+        opacity: 0.8;
+    }
 }
 
 .brand-name {
-    font-size: 2rem;
-    font-weight: 800;
-    margin-bottom: 0.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-size: 2.25rem;
+    font-weight: 900;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    letter-spacing: -0.5px;
+    letter-spacing: -1px;
+    text-shadow: 0 2px 10px rgba(59, 130, 246, 0.2);
+    position: relative;
 }
 
 .brand-tagline {
-    font-size: 0.9375rem;
-    color: var(--gray-500);
+    font-size: 1rem;
+    color: var(--gray-600);
     margin: 0;
-    font-weight: 400;
+    font-weight: 500;
+    letter-spacing: 0.3px;
 }
 
 /* ========================================
@@ -106,135 +205,273 @@
 
 .auth-form {
     width: 100%;
+    position: relative;
+    z-index: 1;
 }
 
 .auth-form .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.75rem;
+    position: relative;
 }
 
 .auth-form label {
-    display: block;
-    margin-bottom: 0.625rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
     font-size: 0.9375rem;
     font-weight: 600;
     color: var(--gray-700);
+    letter-spacing: 0.3px;
+}
+
+/* Ícones nos labels */
+.auth-form label::before {
+    content: '●';
+    color: #3b82f6;
+    font-size: 0.5rem;
 }
 
 .auth-form input {
     width: 100%;
-    padding: 0.875rem 1rem;
-    font-size: 0.9375rem;
-    border: 2px solid var(--gray-200);
-    border-radius: 12px;
-    transition: all var(--transition-fast);
-    background-color: var(--gray-50);
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 
+        0 1px 2px rgba(0, 0, 0, 0.05),
+        inset 0 1px 1px rgba(255, 255, 255, 0.9);
 }
 
 .auth-form input:focus {
-    background-color: var(--white);
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    background: #ffffff;
+    border-color: #3b82f6;
+    box-shadow: 
+        0 0 0 4px rgba(59, 130, 246, 0.1),
+        0 4px 12px rgba(59, 130, 246, 0.15);
+    transform: translateY(-2px);
 }
 
 .auth-form input::placeholder {
     color: var(--gray-400);
+    font-weight: 400;
+}
+
+/* Efeito de shine ao focar */
+.auth-form .form-group::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(59, 130, 246, 0.1) 50%, 
+        transparent 100%
+    );
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+    pointer-events: none;
+    border-radius: 16px;
+}
+
+.auth-form .form-group:focus-within::after {
+    transform: translateX(100%);
 }
 
 .auth-form .btn {
     width: 100%;
-    padding: 0.875rem;
-    font-size: 1rem;
-    font-weight: 600;
-    margin-top: 0.5rem;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1.125rem;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    margin-top: 1rem;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+    background-size: 200% 200%;
     border: none;
     color: white;
     cursor: pointer;
-    transition: all var(--transition-normal);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 10px 25px rgba(59, 130, 246, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.5px;
+}
+
+/* Efeito de brilho no botão */
+.auth-form .btn::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, 
+        transparent 30%, 
+        rgba(255, 255, 255, 0.3) 50%, 
+        transparent 70%
+    );
+    transform: rotate(45deg);
+    animation: buttonShine 3s linear infinite;
+}
+
+@keyframes buttonShine {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
 }
 
 .auth-form .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    transform: translateY(-4px);
+    box-shadow: 
+        0 15px 35px rgba(59, 130, 246, 0.4),
+        0 5px 15px rgba(147, 51, 234, 0.3);
+    background-position: 100% 50%;
 }
 
 .auth-form .btn:active {
-    transform: translateY(0);
+    transform: translateY(-2px);
 }
 
 .form-footer {
-    margin-top: 2rem;
+    margin-top: 2.5rem;
     text-align: center;
     font-size: 0.9375rem;
     color: var(--gray-600);
+    padding-top: 2rem;
+    border-top: 1px solid var(--gray-200);
 }
 
 .form-footer a {
-    font-weight: 600;
-    color: #667eea;
+    font-weight: 700;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     text-decoration: none;
-    transition: color var(--transition-fast);
+    transition: all var(--transition-fast);
+    position: relative;
 }
 
-.form-footer a:hover {
-    color: #764ba2;
-    text-decoration: underline;
+.form-footer a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    transition: width 0.3s;
+}
+
+.form-footer a:hover::after {
+    width: 100%;
 }
 
 /* ========================================
    MODAL DE CADASTRO
    ======================================== */
 
+.modal {
+    backdrop-filter: blur(8px);
+    background-color: rgba(15, 23, 42, 0.8);
+}
+
 .modal-content {
-    border-radius: 20px;
-    max-width: 480px;
+    border-radius: 28px;
+    max-width: 520px;
+    box-shadow: 
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        0 30px 80px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
 }
 
 .modal-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
     color: white;
-    padding: 1.75rem 2rem;
-    border-radius: 20px 20px 0 0;
+    padding: 2rem 2.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Efeito de partículas no header */
+.modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+    animation: particles 20s linear infinite;
+}
+
+@keyframes particles {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(20px, 20px); }
 }
 
 .modal-header h2 {
     color: white;
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 1.75rem;
+    font-weight: 800;
     margin: 0;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .close-modal {
     color: white;
     opacity: 0.9;
-    font-size: 1.75rem;
+    font-size: 2rem;
     font-weight: 300;
+    transition: all var(--transition-fast);
+    position: relative;
+    z-index: 1;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
 }
 
 .close-modal:hover {
     opacity: 1;
     transform: rotate(90deg);
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .modal-content .auth-form {
-    padding: 2rem;
+    padding: 2.5rem;
+    background: #ffffff;
 }
 
 .modal-content .form-group select {
-    padding: 0.875rem 1rem;
-    font-size: 0.9375rem;
-    border: 2px solid var(--gray-200);
-    border-radius: 12px;
-    background-color: var(--gray-50);
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
     cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modal-content .form-group select:focus {
     background-color: var(--white);
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    border-color: #3b82f6;
+    box-shadow: 
+        0 0 0 4px rgba(59, 130, 246, 0.1),
+        0 4px 12px rgba(59, 130, 246, 0.15);
+    transform: translateY(-2px);
 }
 
 /* ========================================
@@ -244,29 +481,41 @@
 .form-actions {
     display: flex;
     gap: 1rem;
-    margin-top: 2rem;
+    margin-top: 2.5rem;
 }
 
 .form-actions .btn {
     flex: 1;
-    padding: 0.875rem;
-    border-radius: 12px;
-    font-weight: 600;
+    padding: 1rem;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .form-actions .btn-secondary {
-    background-color: var(--gray-200);
+    background: linear-gradient(to bottom, #ffffff 0%, #f1f5f9 100%);
     color: var(--gray-700);
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .form-actions .btn-secondary:hover {
-    background-color: var(--gray-300);
+    background: linear-gradient(to bottom, #f8fafc 0%, #e2e8f0 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
 
 .form-actions .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
     color: white;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    border: none;
+}
+
+.form-actions .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(59, 130, 246, 0.4);
 }
 
 /* ========================================
@@ -274,127 +523,111 @@
    ======================================== */
 
 #managementPasswordGroup {
-    background-color: rgba(239, 68, 68, 0.05);
-    border: 2px solid rgba(239, 68, 68, 0.2);
-    border-radius: 12px;
-    padding: 1rem;
-    margin-top: 1rem;
+    background: linear-gradient(135deg, 
+        rgba(239, 68, 68, 0.05) 0%, 
+        rgba(220, 38, 38, 0.08) 100%
+    );
+    border: 2px solid rgba(239, 68, 68, 0.3);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Ícone de alerta animado */
+#managementPasswordGroup::before {
+    content: '⚠️';
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    animation: warningPulse 2s ease-in-out infinite;
+}
+
+@keyframes warningPulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.1); opacity: 1; }
 }
 
 #managementPasswordGroup label {
-    color: var(--error);
-    font-weight: 700;
+    color: #dc2626;
+    font-weight: 800;
+}
+
+#managementPasswordGroup label::before {
+    content: '🔒';
+    font-size: 1rem;
 }
 
 #managementPasswordGroup input {
-    border-color: rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.4);
+    background: rgba(255, 255, 255, 0.9);
 }
 
 #managementPasswordGroup input:focus {
-    border-color: var(--error);
-    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+    border-color: #dc2626;
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+}
+
+#managementPasswordGroup small {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    font-weight: 600;
 }
 
 /* ========================================
    RESPONSIVIDADE
    ======================================== */
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
+    .login-page {
+        padding: 1rem;
+    }
+
     .login-card {
-        padding: 2rem 1.5rem;
-        border-radius: 20px;
+        padding: 2.5rem 2rem;
+        border-radius: 24px;
     }
     
     .brand-name {
-        font-size: 1.75rem;
+        font-size: 1.875rem;
     }
     
     .logo {
-        width: 70px;
-        height: 70px;
+        width: 80px;
+        height: 80px;
+    }
+
+    .logo-container::before {
+        width: 120px;
+        height: 120px;
     }
 
     .auth-form input,
     .auth-form .btn {
-        padding: 0.75rem;
+        padding: 0.875rem 1rem;
+        font-size: 0.9375rem;
     }
 
     .modal-content {
         width: 95%;
-        margin: 0 1rem;
+        margin: 0 0.5rem;
     }
 
     .modal-content .auth-form {
-        padding: 1.5rem;
+        padding: 2rem 1.5rem;
     }
-}
 
-/* ========================================
-   ANIMAÇÃO DE ENTRADA
-   ======================================== */
-
-@keyframes slideUpFade {
-    from {
-        transform: translateY(30px);
-        opacity: 0;
+    .modal-header {
+        padding: 1.5rem 1.75rem;
     }
-    to {
-        transform: translateY(0);
-        opacity: 1;
+
+    .form-actions {
+        flex-direction: column;
     }
-}
-
-/* ========================================
-   PÁGINA DE CADASTRO (register.html)
-   ======================================== */
-
-.page-intro {
-    text-align: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 2px solid var(--gray-100);
-}
-
-.form-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--gray-900);
-    margin-bottom: 0.5rem;
-}
-
-.form-description {
-    font-size: 0.9375rem;
-    color: var(--gray-600);
-    margin: 0;
-}
-
-/* Input hints */
-.input-hint {
-    display: block;
-    margin-top: 0.5rem;
-    font-size: 0.8125rem;
-    color: var(--gray-500);
-    line-height: 1.5;
-}
-
-.input-hint strong {
-    color: var(--gray-700);
-    font-weight: 600;
-}
-
-/* Select com ícones */
-.form-group select option {
-    padding: 0.75rem;
-}
-
-/* Validação visual */
-.form-group input:invalid:not(:placeholder-shown),
-.form-group select:invalid:not(:placeholder-shown) {
-    border-color: var(--error);
-}
-
-.form-group input:valid:not(:placeholder-shown) {
-    border-color: var(--success);
 }
 
 /* ========================================
@@ -403,4 +636,71 @@
 
 .hidden {
     display: none !important;
+}
+
+/* ========================================
+   LOADING STATE
+   ======================================== */
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.btn:disabled::before {
+    animation: none;
+}
+
+/* ========================================
+   PÁGINA DE CADASTRO (register.html)
+   ======================================== */
+
+.page-intro {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid var(--gray-100);
+    position: relative;
+}
+
+.page-intro::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    border-radius: 2px;
+}
+
+.form-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--gray-900);
+    margin-bottom: 0.75rem;
+}
+
+.form-description {
+    font-size: 1rem;
+    color: var(--gray-600);
+    margin: 0;
+}
+
+/* Input hints */
+.input-hint {
+    display: block;
+    margin-top: 0.625rem;
+    font-size: 0.8125rem;
+    color: var(--gray-500);
+    line-height: 1.6;
+    padding-left: 0.5rem;
+    border-left: 2px solid var(--gray-300);
+}
+
+.input-hint strong {
+    color: var(--gray-700);
+    font-weight: 700;
 }
