@@ -540,3 +540,139 @@
         padding: 1.5rem;
     }
 }
+
+/* ========================================
+   ABAS DE ARCADAS
+   ======================================== */
+
+.arcadas-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--gray-200);
+    padding-bottom: 0.5rem;
+}
+
+.arcada-tab {
+    padding: 0.5rem 1rem;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.arcada-tab:hover {
+    color: var(--primary-blue);
+    background-color: var(--gray-50);
+}
+
+.arcada-tab.active {
+    color: var(--primary-blue);
+    border-bottom-color: var(--primary-blue);
+    font-weight: 600;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    margin-bottom: 0.75rem;
+    transition: all var(--transition-fast);
+}
+
+.file-item:hover {
+    background-color: var(--gray-100);
+    border-color: var(--primary-blue);
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.file-icon {
+    font-size: 1.5rem;
+}
+
+.file-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.file-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--gray-900);
+}
+
+.file-meta {
+    font-size: 0.75rem;
+    color: var(--gray-600);
+}
+
+.file-arcada-badge {
+    display: inline-flex;
+    padding: 0.25rem 0.5rem;
+    background-color: var(--gray-200);
+    border-radius: var(--radius-sm);
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: 0.5rem;
+}
+
+.file-arcada-badge.mandibula {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: var(--primary-blue);
+}
+
+.file-arcada-badge.maxila {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+.file-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.file-action-btn {
+    padding: 0.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all var(--transition-fast);
+    border-radius: var(--radius-sm);
+}
+
+.file-action-btn:hover {
+    background-color: var(--gray-200);
+}
+
+.file-action-btn.delete:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+@media (max-width: 768px) {
+    .arcadas-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .arcada-tab {
+        white-space: nowrap;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+}
