@@ -7,6 +7,94 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/case-form.css">
+    <style>
+        /* Estilos específicos para múltiplas próteses */
+        .prostheses-section {
+            background-color: var(--gray-50);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            margin-top: 1.5rem;
+        }
+
+        .prosthesis-card {
+            background-color: var(--white);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .prosthesis-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .prosthesis-number {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        .remove-prosthesis-btn {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+        }
+
+        .remove-prosthesis-btn:hover {
+            background-color: var(--error);
+            color: var(--white);
+        }
+
+        .add-prosthesis-btn {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--white);
+            border: 2px dashed var(--gray-300);
+            color: var(--gray-600);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .add-prosthesis-btn:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+            background-color: rgba(37, 99, 235, 0.05);
+        }
+
+        .prosthesis-summary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            background-color: var(--gray-100);
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+    </style>
 </head>
 <body>
     <!-- Header/Navegação -->
@@ -43,7 +131,7 @@
             <div class="case-form-container">
                 <div class="form-header">
                     <h2>Criar Novo Caso</h2>
-                    <p>Preencha as informações do paciente e do caso de prótese</p>
+                    <p>Preencha as informações do paciente e das próteses</p>
                 </div>
 
                 <form id="newCaseForm" class="case-form">
@@ -127,128 +215,22 @@
                         </div>
                     </div>
 
-                    <!-- Seção: Informações do Caso -->
+                    <!-- Seção: Próteses -->
                     <div class="form-section">
                         <h3 class="section-title">
                             <span class="section-icon">🦷</span>
-                            Informações do Caso
+                            Próteses
+                            <span class="prosthesis-summary" id="prosthesisSummary">1 prótese</span>
                         </h3>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="caseType">Tipo de Prótese *</label>
-                                <select id="caseType" required>
-                                    <option value="">Selecione o tipo...</option>
-                                    <optgroup label="Próteses Fixas">
-                                        <option value="coroa">Coroa</option>
-                                        <option value="ponte">Ponte</option>
-                                        <option value="implante">Implante</option>
-                                    </optgroup>
-                                    <optgroup label="Próteses Removíveis">
-                                        <option value="protese-total">Prótese Total</option>
-                                        <option value="protese-parcial">Prótese Parcial</option>
-                                    </optgroup>
-                                    <optgroup label="Placas">
-                                        <option value="placa-funcional">Placa Funcional</option>
-                                        <option value="placa-miorrelaxante">Placa Miorrelaxante</option>
-                                        <option value="placa-clareamento">Placa de Clareamento</option>
-                                    </optgroup>
-                                    <optgroup label="Modelos">
-                                        <option value="modelo-zocal">Modelo Zocal</option>
-                                        <option value="modelo-ferradura">Modelo Ferradura</option>
-                                    </optgroup>
-                                    <optgroup label="Ortodontia">
-                                        <option value="contencao-estetica">Contenção Estética</option>
-                                    </optgroup>
-                                </select>
-                            </div>    
-
-                            <div class="form-group">
-                                <label for="caseStatus">Status Inicial *</label>
-                                <select id="caseStatus" required>
-                                    <option value="escaneamento">Escaneamento</option>
-                                    <option value="planejamento">Planejamento</option>
-                                    <option value="impressao">Impressão</option>
-                                    <option value="teste">Teste</option>
-                                    <option value="concluido">Concluído</option>
-                                </select>
-                            </div>
+                        <div id="prosthesesContainer" class="prostheses-section">
+                            <!-- Próteses serão adicionadas aqui pelo JS -->
                         </div>
 
-                        <div class="form-row" id="valueRow">
-                            <div class="form-group">
-                                <label for="caseValue">Valor da Prótese (R$)</label>
-                                <input 
-                                    type="text" 
-                                    id="caseValue" 
-                                    placeholder="R$ 0,00"
-                                >
-                                <small class="input-hint">Apenas usuários Gerência têm acesso a valores</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Seção: Datas e Agendamentos -->
-                    <div class="form-section">
-                        <h3 class="section-title">
-                            <span class="section-icon">📅</span>
-                            Datas e Agendamentos
-                        </h3>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="firstConsultation">Data da Primeira Consulta</label>
-                                <input 
-                                    type="date" 
-                                    id="firstConsultation"
-                                >
-                            </div>
-
-                            <div class="form-group">
-                                <label for="scanDate">Data do Escaneamento</label>
-                                <input 
-                                    type="date" 
-                                    id="scanDate"
-                                >
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="testDate">Data do Teste</label>
-                                <input 
-                                    type="date" 
-                                    id="testDate"
-                                >
-                            </div>
-
-                            <div class="form-group">
-                                <label for="deliveryDate">Data de Entrega Prevista</label>
-                                <input 
-                                    type="date" 
-                                    id="deliveryDate"
-                                >
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Seção: Observações -->
-                    <div class="form-section">
-                        <h3 class="section-title">
-                            <span class="section-icon">📝</span>
-                            Observações
-                        </h3>
-
-                        <div class="form-row">
-                            <div class="form-group full-width">
-                                <label for="caseNotes">Notas e Observações</label>
-                                <textarea 
-                                    id="caseNotes" 
-                                    rows="4"
-                                    placeholder="Adicione observações importantes sobre o caso..."
-                                ></textarea>
-                            </div>
-                        </div>
+                        <button type="button" class="add-prosthesis-btn" id="addProsthesisBtn">
+                            <span>➕</span>
+                            <span>Adicionar Outra Prótese</span>
+                        </button>
                     </div>
 
                     <!-- Ações do Formulário -->
