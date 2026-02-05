@@ -26,5 +26,7 @@ window.AppConfig = {
 
 console.log('✅ Configurações carregadas');
 
-// Senha mestra para criar conta de Gerência
-window.AppConfig.managementPassword = "ProtheticFlow2026!Admin";
+// ========================================
+// 🔒 SENHA MESTRA PARA CRIAR CONTA DE GERÊNCIA
+// ========================================
+window.AppConfig.managementPassword = "Admin2026Oi";
