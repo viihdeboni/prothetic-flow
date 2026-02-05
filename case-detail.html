@@ -151,11 +151,27 @@
                             <button class="btn btn-secondary btn-sm" id="uploadFileBtn">+ Adicionar</button>
                         </h3>
                         <input type="file" id="fileInput" class="hidden" multiple>
-                        <div class="files-list" id="filesList">
-                            <div class="empty-message">Nenhum arquivo anexado ainda</div>
-                        </div>
+    
+    <!-- Abas de Arcadas -->
+                    <div class="arcadas-tabs">
+                        <button class="arcada-tab active" data-arcada="todos" id="tabTodos">
+                            📋 Todos
+                        </button>
+                        <button class="arcada-tab" data-arcada="mandibula" id="tabMandibula">
+                            🦷 Mandíbula
+                        </button>
+                        <button class="arcada-tab" data-arcada="maxila" id="tabMaxila">
+                            🦷 Maxila
+                        </button>
+                        <button class="arcada-tab" data-arcada="outros" id="tabOutros">
+                            📄 Outros
+                        </button>
                     </div>
-
+    
+                    <div class="files-list" id="filesList">
+                        <div class="empty-message">Nenhum arquivo anexado ainda</div>
+                    </div>
+                </div>
                     <!-- Observações -->
                     <div class="detail-card">
                         <h3 class="card-title">
