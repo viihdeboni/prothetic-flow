@@ -168,25 +168,25 @@ const initCaseDetail = async () => {
 
   const getTypeLabel = (type) => {
     const labels = {
-        // Próteses Fixas
-        'coroa': '🦷 Coroa',
-        'ponte': '🦷 Ponte',
-        'implante': '🦷 Implante',
-        // Próteses Removíveis
-        'protese-total': '🦷 Prótese Total',
-        'protese-parcial': '🦷 Prótese Parcial',
-        // Placas
-        'placa-funcional': '🦴 Placa Funcional',
-        'placa-miorrelaxante': '🦴 Placa Miorrelaxante',
-        'placa-clareamento': '✨ Placa de Clareamento',
-        // Modelos
-        'modelo-zocal': '🏛️ Modelo Zocal',
-        'modelo-ferradura': '🏛️ Modelo Ferradura',
-        // Ortodontia
-        'contencao-estetica': '😁 Contenção Estética'
+      // Próteses Fixas
+      'coroa': '🦷 Coroa',
+      'ponte': '🦷 Ponte',
+      'implante': '🦷 Implante',
+      // Próteses Removíveis
+      'protese-total': '🦷 Prótese Total',
+      'protese-parcial': '🦷 Prótese Parcial',
+      // Placas
+      'placa-funcional': '🦴 Placa Funcional',
+      'placa-miorrelaxante': '🦴 Placa Miorrelaxante',
+      'placa-clareamento': '✨ Placa de Clareamento',
+      // Modelos
+      'modelo-zocal': '🏛️ Modelo Zocal',
+      'modelo-ferradura': '🏛️ Modelo Ferradura',
+      // Ortodontia
+      'contencao-estetica': '😁 Contenção Estética'
     };
     return labels[type] || type;
-};
+  };
 
   const getFileIcon = (filename) => {
     const ext = filename.split('.').pop().toLowerCase();
@@ -208,6 +208,37 @@ const initCaseDetail = async () => {
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
+
+  // ========================================
+  // ARCADAS - TABS
+  // ========================================
+
+  let currentArcada = 'todos';
+
+  const tabTodos = document.getElementById('tabTodos');
+  const tabMandibula = document.getElementById('tabMandibula');
+  const tabMaxila = document.getElementById('tabMaxila');
+  const tabOutros = document.getElementById('tabOutros');
+
+  const switchArcadaTab = (arcada) => {
+    currentArcada = arcada;
+    
+    // Atualizar tabs
+    [tabTodos, tabMandibula, tabMaxila, tabOutros].forEach(tab => {
+      if (tab) tab.classList.remove('active');
+    });
+    
+    const activeTab = document.querySelector(`[data-arcada="${arcada}"]`);
+    if (activeTab) activeTab.classList.add('active');
+    
+    // Recarregar arquivos filtrados
+    loadFiles();
+  };
+
+  if (tabTodos) tabTodos.addEventListener('click', () => switchArcadaTab('todos'));
+  if (tabMandibula) tabMandibula.addEventListener('click', () => switchArcadaTab('mandibula'));
+  if (tabMaxila) tabMaxila.addEventListener('click', () => switchArcadaTab('maxila'));
+  if (tabOutros) tabOutros.addEventListener('click', () => switchArcadaTab('outros'));
 
   // ========================================
   // CARREGAR CASO (REAL-TIME)
@@ -304,20 +335,43 @@ const initCaseDetail = async () => {
       return;
     }
 
-    filesList.innerHTML = currentCase.files.map((file, index) => `
-      <div class="file-item">
-        <div class="file-info">
-          <div class="file-icon">${getFileIcon(file.originalName || file.name)}</div>
-          <div class="file-details">
-            <div class="file-name">${file.originalName || file.name}</div>
-            <div class="file-meta">${formatFileSize(file.size)} • ${formatDateTime(file.uploadedAt)}</div>
+    // Filtrar por arcada
+    let filteredFiles = currentCase.files;
+    if (currentArcada !== 'todos') {
+      filteredFiles = currentCase.files.filter(f => f.arcada === currentArcada);
+    }
+
+    if (filteredFiles.length === 0) {
+      filesList.innerHTML = `<div class="empty-message">Nenhum arquivo nesta categoria</div>`;
+      return;
+    }
+
+    const arcadaLabels = {
+      'mandibula': 'Mandíbula',
+      'maxila': 'Maxila',
+      'outros': 'Outros'
+    };
+
+    filesList.innerHTML = filteredFiles.map((file, index) => {
+      const realIndex = currentCase.files.indexOf(file);
+      return `
+        <div class="file-item">
+          <div class="file-info">
+            <div class="file-icon">${getFileIcon(file.originalName || file.name)}</div>
+            <div class="file-details">
+              <div class="file-name">
+                ${file.originalName || file.name}
+                ${file.arcada && file.arcada !== 'outros' ? `<span class="file-arcada-badge ${file.arcada}">${arcadaLabels[file.arcada]}</span>` : ''}
+              </div>
+              <div class="file-meta">${formatFileSize(file.size)} • ${formatDateTime(file.uploadedAt)}</div>
+            </div>
+          </div>
+          <div class="file-actions">
+            <button class="file-action-btn delete" onclick="deleteFile(${realIndex})">🗑️</button>
           </div>
         </div>
-        <div class="file-actions">
-          <button class="file-action-btn delete" onclick="deleteFile(${index})">🗑️</button>
-        </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   };
 
   const loadTimeline = () => {
@@ -423,36 +477,6 @@ const initCaseDetail = async () => {
   }
 
   // ========================================
-  // ARCADAS - TABS
-  // ========================================
-
-  let currentArcada = 'todos';
-
-  const tabTodos = document.getElementById('tabTodos');
-  const tabMandibula = document.getElementById('tabMandibula');
-  const tabMaxila = document.getElementById('tabMaxila');
-  const tabOutros = document.getElementById('tabOutros');
-
-  const switchArcadaTab = (arcada) => {
-    currentArcada = arcada;
-    
-    // Atualizar tabs
-    [tabTodos, tabMandibula, tabMaxila, tabOutros].forEach(tab => {
-      if (tab) tab.classList.remove('active');
-    });
-    
-    const activeTab = document.querySelector(`[data-arcada="${arcada}"]`);
-    if (activeTab) activeTab.classList.add('active');
-    
-    // Recarregar arquivos filtrados
-    loadFiles();
-  };
-
-  if (tabTodos) tabTodos.addEventListener('click', () => switchArcadaTab('todos'));
-  if (tabMandibula) tabMandibula.addEventListener('click', () => switchArcadaTab('mandibula'));
-  if (tabMaxila) tabMaxila.addEventListener('click', () => switchArcadaTab('maxila'));
-  if (tabOutros) tabOutros.addEventListener('click', () => switchArcadaTab('outros'));
-  // ========================================
   // ARQUIVOS
   // ========================================
 
@@ -463,6 +487,13 @@ const initCaseDetail = async () => {
       const files = Array.from(e.target.files);
       if (files.length === 0) return;
 
+      // Perguntar arcada
+      const arcada = prompt('Para qual arcada são esses arquivos?\n\n1 - Mandíbula\n2 - Maxila\n3 - Outros\n\nDigite o número:');
+      
+      let arcadaValue = 'outros';
+      if (arcada === '1') arcadaValue = 'mandibula';
+      else if (arcada === '2') arcadaValue = 'maxila';
+
       showNotification('Processando arquivos...', 'info');
 
       try {
@@ -472,6 +503,7 @@ const initCaseDetail = async () => {
           size: file.size,
           type: file.type,
           url: '#',
+          arcada: arcadaValue,
           uploadedAt: new Date().toISOString(),
           uploadedBy: currentUser.name,
           uploadedById: currentUser.id
@@ -482,7 +514,8 @@ const initCaseDetail = async () => {
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        await addTimelineItem(`${newFiles.length} arquivo(s) adicionado(s)`);
+        const arcadaLabel = arcadaValue === 'mandibula' ? 'Mandíbula' : arcadaValue === 'maxila' ? 'Maxila' : 'Outros';
+        await addTimelineItem(`${newFiles.length} arquivo(s) adicionado(s) - ${arcadaLabel}`);
         showNotification('Arquivo(s) adicionado(s)!', 'success');
         fileInput.value = '';
       } catch (error) {
