@@ -1,5 +1,5 @@
 /* ========================================
-   TELA DE LOGIN
+   TELA DE LOGIN - DESIGN MODERNO
    ======================================== */
 
 .login-page {
@@ -9,19 +9,43 @@
     min-height: 100vh;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Background Pattern Animado */
+.login-page::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background-image: 
+        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
+    animation: backgroundMove 20s ease-in-out infinite;
+}
+
+@keyframes backgroundMove {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-50px, -50px); }
 }
 
 .login-container {
     width: 100%;
-    max-width: 420px;
+    max-width: 440px;
+    position: relative;
+    z-index: 1;
 }
 
 .login-card {
     background-color: var(--white);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-xl);
-    padding: 2.5rem;
-    animation: slideUp 0.4s ease-out;
+    border-radius: 24px;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    padding: 3rem 2.5rem;
+    animation: slideUpFade 0.6s ease-out;
+    backdrop-filter: blur(10px);
 }
 
 /* ========================================
@@ -30,39 +54,50 @@
 
 .logo-container {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
 }
 
 .logo {
-    width: 80px;
-    height: 80px;
+    width: 90px;
+    height: 90px;
     object-fit: contain;
-    margin-bottom: 1rem;
-    border-radius: var(--radius-lg);
+    margin: 0 auto 1.25rem;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.2);
+    transition: transform var(--transition-normal);
+}
+
+.logo:hover {
+    transform: scale(1.05) rotate(2deg);
 }
 
 /* Placeholder para logo quando não houver imagem */
 .logo[src*="logo.png"] {
-    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-light) 100%);
-    display: inline-block;
-    padding: 1rem;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, #8b5cf6 100%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2.5rem;
+    font-weight: 700;
 }
 
 .brand-name {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--gray-900);
-    margin-bottom: 0.25rem;
-    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-light) 100%);
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    letter-spacing: -0.5px;
 }
 
 .brand-tagline {
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     color: var(--gray-500);
     margin: 0;
+    font-weight: 400;
 }
 
 /* ========================================
@@ -73,27 +108,133 @@
     width: 100%;
 }
 
+.auth-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.auth-form label {
+    display: block;
+    margin-bottom: 0.625rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    font-size: 0.9375rem;
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    transition: all var(--transition-fast);
+    background-color: var(--gray-50);
+}
+
+.auth-form input:focus {
+    background-color: var(--white);
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.auth-form input::placeholder {
+    color: var(--gray-400);
+}
+
 .auth-form .btn {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.875rem;
     font-size: 1rem;
+    font-weight: 600;
     margin-top: 0.5rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.auth-form .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.auth-form .btn:active {
+    transform: translateY(0);
 }
 
 .form-footer {
-    margin-top: 1.5rem;
+    margin-top: 2rem;
     text-align: center;
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     color: var(--gray-600);
 }
 
 .form-footer a {
-    font-weight: 500;
-    color: var(--primary-blue);
+    font-weight: 600;
+    color: #667eea;
+    text-decoration: none;
+    transition: color var(--transition-fast);
 }
 
 .form-footer a:hover {
-    color: var(--primary-blue-dark);
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+/* ========================================
+   MODAL DE CADASTRO
+   ======================================== */
+
+.modal-content {
+    border-radius: 20px;
+    max-width: 480px;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.75rem 2rem;
+    border-radius: 20px 20px 0 0;
+}
+
+.modal-header h2 {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.close-modal {
+    color: white;
+    opacity: 0.9;
+    font-size: 1.75rem;
+    font-weight: 300;
+}
+
+.close-modal:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+.modal-content .auth-form {
+    padding: 2rem;
+}
+
+.modal-content .form-group select {
+    padding: 0.875rem 1rem;
+    font-size: 0.9375rem;
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    background-color: var(--gray-50);
+    cursor: pointer;
+}
+
+.modal-content .form-group select:focus {
+    background-color: var(--white);
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
 }
 
 /* ========================================
@@ -102,12 +243,56 @@
 
 .form-actions {
     display: flex;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
+    gap: 1rem;
+    margin-top: 2rem;
 }
 
 .form-actions .btn {
     flex: 1;
+    padding: 0.875rem;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.form-actions .btn-secondary {
+    background-color: var(--gray-200);
+    color: var(--gray-700);
+}
+
+.form-actions .btn-secondary:hover {
+    background-color: var(--gray-300);
+}
+
+.form-actions .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* ========================================
+   CAMPO DE SENHA MESTRA
+   ======================================== */
+
+#managementPasswordGroup {
+    background-color: rgba(239, 68, 68, 0.05);
+    border: 2px solid rgba(239, 68, 68, 0.2);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+#managementPasswordGroup label {
+    color: var(--error);
+    font-weight: 700;
+}
+
+#managementPasswordGroup input {
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+#managementPasswordGroup input:focus {
+    border-color: var(--error);
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
 }
 
 /* ========================================
@@ -116,40 +301,69 @@
 
 @media (max-width: 480px) {
     .login-card {
-        padding: 1.5rem;
+        padding: 2rem 1.5rem;
+        border-radius: 20px;
     }
     
     .brand-name {
-        font-size: 1.5rem;
+        font-size: 1.75rem;
     }
     
     .logo {
-        width: 60px;
-        height: 60px;
+        width: 70px;
+        height: 70px;
+    }
+
+    .auth-form input,
+    .auth-form .btn {
+        padding: 0.75rem;
+    }
+
+    .modal-content {
+        width: 95%;
+        margin: 0 1rem;
+    }
+
+    .modal-content .auth-form {
+        padding: 1.5rem;
     }
 }
 
+/* ========================================
+   ANIMAÇÃO DE ENTRADA
+   ======================================== */
+
+@keyframes slideUpFade {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
 
 /* ========================================
-   PÁGINA DE CADASTRO
+   PÁGINA DE CADASTRO (register.html)
    ======================================== */
 
 .page-intro {
     text-align: center;
     margin-bottom: 2rem;
     padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--gray-200);
+    border-bottom: 2px solid var(--gray-100);
 }
 
 .form-title {
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--gray-900);
     margin-bottom: 0.5rem;
 }
 
 .form-description {
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     color: var(--gray-600);
     margin: 0;
 }
@@ -157,10 +371,10 @@
 /* Input hints */
 .input-hint {
     display: block;
-    margin-top: 0.375rem;
-    font-size: 0.75rem;
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
     color: var(--gray-500);
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 .input-hint strong {
@@ -170,7 +384,7 @@
 
 /* Select com ícones */
 .form-group select option {
-    padding: 0.5rem;
+    padding: 0.75rem;
 }
 
 /* Validação visual */
@@ -183,32 +397,10 @@
     border-color: var(--success);
 }
 
-/* Strength indicator para senha */
-.password-strength {
-    height: 4px;
-    background-color: var(--gray-200);
-    border-radius: 2px;
-    margin-top: 0.5rem;
-    overflow: hidden;
-}
+/* ========================================
+   ESTADOS HIDDEN
+   ======================================== */
 
-.password-strength-bar {
-    height: 100%;
-    transition: all var(--transition-normal);
-    border-radius: 2px;
-}
-
-.password-strength-bar.weak {
-    width: 33%;
-    background-color: var(--error);
-}
-
-.password-strength-bar.medium {
-    width: 66%;
-    background-color: var(--warning);
-}
-
-.password-strength-bar.strong {
-    width: 100%;
-    background-color: var(--success);
+.hidden {
+    display: none !important;
 }
