@@ -7,6 +7,136 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/case-detail.css">
+    <style>
+        /* Estilos para múltiplas próteses */
+        .prostheses-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .prosthesis-section {
+            background-color: var(--white);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .prosthesis-header {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(37, 99, 235, 0.02) 100%);
+            padding: 1.5rem;
+            border-bottom: 2px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .prosthesis-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .prosthesis-number {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .prosthesis-type-label {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .prosthesis-badges {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .prosthesis-arcada-badge {
+            padding: 0.375rem 0.75rem;
+            background-color: var(--gray-100);
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        .prosthesis-arcada-badge.mandibula {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--primary-blue);
+        }
+
+        .prosthesis-arcada-badge.maxila {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .prosthesis-arcada-badge.ambas {
+            background-color: rgba(139, 92, 246, 0.1);
+            color: #6d28d9;
+        }
+
+        .prosthesis-status-select {
+            padding: 0.5rem 0.875rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: 2px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            background-color: var(--white);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .prosthesis-content {
+            padding: 1.5rem;
+        }
+
+        .prosthesis-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            .prosthesis-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .prosthesis-main {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .prosthesis-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .prosthesis-card {
+            background-color: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+        }
+
+        .prosthesis-card-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+    </style>
 </head>
 <body>
     <!-- Header/Navegação -->
@@ -54,181 +184,39 @@
                         <h2 class="case-patient-name-detail" id="patientName"></h2>
                         <div class="case-meta">
                             <span class="case-id-detail" id="caseId"></span>
-                            <span class="case-type-badge" id="caseType"></span>
                         </div>
                     </div>
                 </div>
                 <div class="case-header-actions">
-                    <select id="statusSelect" class="status-select">
-                        <option value="escaneamento">Escaneamento</option>
-                        <option value="planejamento">Planejamento</option>
-                        <option value="impressao">Impressão</option>
-                        <option value="teste">Teste</option>
-                        <option value="concluido">Concluído</option>
-                    </select>
                     <button class="btn btn-error" id="deleteCaseBtn">🗑️ Excluir Caso Completo</button>
                 </div>
             </div>
 
-            <!-- Grid de Conteúdo -->
-            <div class="detail-grid">
-                <!-- Coluna Esquerda -->
-                <div class="detail-main">
-                    <!-- Informações de Contato -->
-                    <div class="detail-card">
-                        <h3 class="card-title">
-                            <span class="card-icon">📞</span>
-                            Informações de Contato
-                        </h3>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <span class="info-label">Telefone</span>
-                                <span class="info-value" id="patientPhone"></span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">E-mail</span>
-                                <span class="info-value" id="patientEmail"></span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">CPF</span>
-                                <span class="info-value" id="patientCPF"></span>
-                            </div>
-                        </div>
+            <!-- Informações de Contato -->
+            <div class="detail-card">
+                <h3 class="card-title">
+                    <span class="card-icon">📞</span>
+                    Informações de Contato
+                </h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Telefone</span>
+                        <span class="info-value" id="patientPhone"></span>
                     </div>
-
-                    <!-- Datas Importantes -->
-                    <div class="detail-card">
-                        <h3 class="card-title">
-                            <span class="card-icon">📅</span>
-                            Datas Importantes
-                            <button class="btn btn-secondary btn-sm" id="editDatesBtn">✏️ Editar Datas</button>
-                        </h3>
-                        <div class="dates-grid">
-                            <div class="date-item" id="firstConsultationItem">
-                                <div class="date-icon">📋</div>
-                                <div class="date-content">
-                                    <span class="date-label">Primeira Consulta</span>
-                                    <span class="date-value" id="firstConsultation"></span>
-                                </div>
-                            </div>
-                            <div class="date-item" id="scanDateItem">
-                                <div class="date-icon">🔍</div>
-                                <div class="date-content">
-                                    <span class="date-label">Escaneamento</span>
-                                    <span class="date-value" id="scanDate"></span>
-                                </div>
-                            </div>
-                            <div class="date-item" id="testDateItem">
-                                <div class="date-icon">🧪</div>
-                                <div class="date-content">
-                                    <span class="date-label">Teste</span>
-                                    <span class="date-value" id="testDate"></span>
-                                </div>
-                            </div>
-                            <div class="date-item" id="deliveryDateItem">
-                                <div class="date-icon">✅</div>
-                                <div class="date-content">
-                                    <span class="date-label">Entrega Prevista</span>
-                                    <span class="date-value" id="deliveryDate"></span>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="info-item">
+                        <span class="info-label">E-mail</span>
+                        <span class="info-value" id="patientEmail"></span>
                     </div>
-
-                    <!-- Valor (apenas Gerência) -->
-                    <div class="detail-card" id="valueCard">
-                        <h3 class="card-title">
-                            <span class="card-icon">💰</span>
-                            Valor da Prótese
-                        </h3>
-                        <div class="value-display" id="caseValue"></div>
-                    </div>
-
-                    <!-- Arquivos -->
-                    <div class="detail-card">
-                        <h3 class="card-title">
-                            <span class="card-icon">📎</span>
-                            Arquivos
-                            <button class="btn btn-secondary btn-sm" id="uploadFileBtn">+ Adicionar</button>
-                        </h3>
-                        <input type="file" id="fileInput" class="hidden" multiple>
-                        
-                        <!-- Abas de Arcadas -->
-                        <div class="arcadas-tabs">
-                            <button class="arcada-tab active" data-arcada="todos" id="tabTodos">
-                                📋 Todos
-                            </button>
-                            <button class="arcada-tab" data-arcada="mandibula" id="tabMandibula">
-                                🦷 Mandíbula
-                            </button>
-                            <button class="arcada-tab" data-arcada="maxila" id="tabMaxila">
-                                🦷 Maxila
-                            </button>
-                            <button class="arcada-tab" data-arcada="outros" id="tabOutros">
-                                📄 Outros
-                            </button>
-                        </div>
-                        
-                        <div class="files-list" id="filesList">
-                            <div class="empty-message">Nenhum arquivo anexado ainda</div>
-                        </div>
-                    </div>
-
-                    <!-- Observações -->
-                    <div class="detail-card">
-                        <h3 class="card-title">
-                            <span class="card-icon">📝</span>
-                            Observações
-                        </h3>
-                        <div class="notes-container">
-                            <textarea 
-                                id="notesTextarea" 
-                                class="notes-textarea"
-                                placeholder="Adicione observações sobre o caso..."
-                            ></textarea>
-                            <button class="btn btn-primary btn-sm" id="saveNotesBtn">Salvar Observações</button>
-                        </div>
+                    <div class="info-item">
+                        <span class="info-label">CPF</span>
+                        <span class="info-value" id="patientCPF"></span>
                     </div>
                 </div>
+            </div>
 
-                <!-- Coluna Direita - Timeline -->
-                <div class="detail-sidebar">
-                    <div class="detail-card timeline-card">
-                        <h3 class="card-title">
-                            <span class="card-icon">⏱️</span>
-                            Timeline
-                        </h3>
-                        <div class="timeline" id="timeline">
-                            <!-- Timeline items will be loaded here -->
-                        </div>
-                    </div>
-
-                    <!-- Mini Calendário -->
-                    <div class="detail-card">
-                        <h3 class="card-title">
-                            <span class="card-icon">📆</span>
-                            Calendário do Caso
-                        </h3>
-                        <div class="mini-calendar">
-                            <div class="calendar-event" id="calendarFirstConsultation">
-                                <div class="calendar-event-date"></div>
-                                <div class="calendar-event-label">Primeira Consulta</div>
-                            </div>
-                            <div class="calendar-event" id="calendarScan">
-                                <div class="calendar-event-date"></div>
-                                <div class="calendar-event-label">Escaneamento</div>
-                            </div>
-                            <div class="calendar-event" id="calendarTest">
-                                <div class="calendar-event-date"></div>
-                                <div class="calendar-event-label">Teste</div>
-                            </div>
-                            <div class="calendar-event" id="calendarDelivery">
-                                <div class="calendar-event-date"></div>
-                                <div class="calendar-event-label">Entrega Prevista</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- Container de Próteses -->
+            <div class="prostheses-container" id="prosthesesContainer">
+                <!-- Próteses serão carregadas aqui pelo JS -->
             </div>
         </div>
     </main>
@@ -241,6 +229,7 @@
                 <span class="close-modal" id="closeEditDatesModal">&times;</span>
             </div>
             <div style="padding: 1.5rem;">
+                <input type="hidden" id="editProsthesisId">
                 <div class="form-group">
                     <label for="editFirstConsultation">Data da Primeira Consulta</label>
                     <input type="date" id="editFirstConsultation" class="form-control">
@@ -277,9 +266,9 @@
                 <p style="margin-bottom: 1rem;">Ao excluir este caso, você irá remover:</p>
                 <ul style="margin-left: 1.5rem; margin-bottom: 1.5rem; color: var(--error);">
                     <li>Todos os dados do paciente</li>
-                    <li>Todas as informações do caso</li>
-                    <li>Todos os arquivos anexados (STL, PDFs, fotos)</li>
-                    <li>Todo o histórico e timeline</li>
+                    <li>Todas as próteses e suas informações</li>
+                    <li>Todos os arquivos anexados</li>
+                    <li>Todo o histórico e timelines</li>
                 </ul>
                 <p><strong>Tem certeza que deseja continuar?</strong></p>
                 <div class="form-actions" style="margin-top: 1.5rem;">
