@@ -6,14 +6,18 @@ console.log('🔐 auth.js carregado');
 
 // Elementos do DOM
 const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
 const notification = document.getElementById('notification');
 const logo = document.getElementById('logo');
+const registerModal = document.getElementById('registerModal');
+const showRegisterModal = document.getElementById('showRegisterModal');
+const closeRegisterModal = document.getElementById('closeRegisterModal');
+const cancelRegister = document.getElementById('cancelRegister');
 
 // ========================================
 // AGUARDAR FIREBASE ESTAR PRONTO
 // ========================================
 
-// Função para aguardar Firebase estar disponível
 const waitForFirebase = () => {
   return new Promise((resolve) => {
     const checkFirebase = () => {
@@ -100,11 +104,9 @@ const initLogin = async () => {
       console.log('🔐 Tentando login:', email);
       
       try {
-        // Login com Firebase
         const userCredential = await window.FirebaseApp.auth.signInWithEmailAndPassword(email, password);
         console.log('✅ Login bem-sucedido:', userCredential.user.uid);
         
-        // Buscar dados adicionais do usuário
         const userData = await getCurrentUserData();
         
         if (!userData) {
@@ -135,6 +137,163 @@ const initLogin = async () => {
         }
         
         showNotification(message, 'error');
+      }
+    });
+  }
+
+  // ========================================
+  // MODAL DE CADASTRO
+  // ========================================
+
+  if (showRegisterModal && registerModal) {
+    showRegisterModal.addEventListener('click', (e) => {
+      e.preventDefault();
+      registerModal.classList.add('active');
+    });
+  }
+
+  if (closeRegisterModal && registerModal) {
+    closeRegisterModal.addEventListener('click', () => {
+      registerModal.classList.remove('active');
+    });
+  }
+
+  if (cancelRegister && registerModal) {
+    cancelRegister.addEventListener('click', () => {
+      registerModal.classList.remove('active');
+    });
+  }
+
+  if (registerModal) {
+    registerModal.addEventListener('click', (e) => {
+      if (e.target === registerModal) {
+        registerModal.classList.remove('active');
+      }
+    });
+  }
+
+  // ========================================
+  // MOSTRAR/OCULTAR CAMPO DE SENHA MESTRA
+  // ========================================
+
+  const registerRole = document.getElementById('registerRole');
+  const managementPasswordGroup = document.getElementById('managementPasswordGroup');
+  const managementPasswordInput = document.getElementById('managementPassword');
+
+  if (registerRole && managementPasswordGroup) {
+    registerRole.addEventListener('change', (e) => {
+      if (e.target.value === 'management') {
+        managementPasswordGroup.classList.remove('hidden');
+        if (managementPasswordInput) {
+          managementPasswordInput.required = true;
+        }
+      } else {
+        managementPasswordGroup.classList.add('hidden');
+        if (managementPasswordInput) {
+          managementPasswordInput.required = false;
+          managementPasswordInput.value = '';
+        }
+      }
+    });
+  }
+
+  // ========================================
+  // CADASTRO COM VALIDAÇÃO DE SENHA MESTRA
+  // ========================================
+
+  if (registerForm) {
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      console.log('📝 Formulário de cadastro submetido');
+
+      const name = document.getElementById('registerName').value.trim();
+      const email = document.getElementById('registerEmail').value.trim();
+      const password = document.getElementById('registerPassword').value;
+      const role = document.getElementById('registerRole').value;
+
+      // Validações
+      if (!name || name.length < 3) {
+        showNotification('Nome deve ter pelo menos 3 caracteres', 'error');
+        return;
+      }
+
+      if (!email || !email.includes('@')) {
+        showNotification('Digite um e-mail válido', 'error');
+        return;
+      }
+
+      if (!password || password.length < 6) {
+        showNotification('Senha deve ter pelo menos 6 caracteres', 'error');
+        return;
+      }
+
+      if (!role) {
+        showNotification('Selecione o tipo de conta', 'error');
+        return;
+      }
+
+      // ⚠️ VALIDAR SENHA MESTRA PARA GERÊNCIA
+      if (role === 'management') {
+        const managementPassword = document.getElementById('managementPassword').value;
+        
+        if (!managementPassword) {
+          showNotification('Digite a senha de gerência', 'error');
+          return;
+        }
+
+        if (managementPassword !== window.AppConfig.managementPassword) {
+          showNotification('❌ Senha de gerência incorreta! Apenas administradores podem criar contas de gerência.', 'error');
+          return;
+        }
+      }
+
+      console.log('✅ Validações passaram');
+
+      try {
+        showNotification('Criando conta...', 'info');
+
+        // Criar usuário no Firebase Auth
+        const userCredential = await window.FirebaseApp.auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        console.log('✅ Usuário criado no Auth:', user.uid);
+
+        // Salvar dados adicionais no Firestore
+        await window.FirebaseApp.db.collection('users').doc(user.uid).set({
+          name: name,
+          email: email,
+          role: role,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        console.log('✅ Dados salvos no Firestore');
+
+        showNotification('Conta criada com sucesso!', 'success');
+
+        // Fechar modal
+        if (registerModal) {
+          registerModal.classList.remove('active');
+        }
+
+        // Redirecionar para dashboard
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1000);
+
+      } catch (error) {
+        console.error('❌ Erro no cadastro:', error);
+        
+        let errorMessage = 'Erro ao criar conta. Tente novamente.';
+        
+        if (error.code === 'auth/email-already-in-use') {
+          errorMessage = 'Este e-mail já está cadastrado';
+        } else if (error.code === 'auth/invalid-email') {
+          errorMessage = 'E-mail inválido';
+        } else if (error.code === 'auth/weak-password') {
+          errorMessage = 'Senha muito fraca';
+        }
+        
+        showNotification(errorMessage, 'error');
       }
     });
   }
