@@ -1121,81 +1121,126 @@ const initCaseDetail = async () => {
   };
 
   // ========================================
-  // UPLOAD DE ARQUIVOS
+  // UPLOAD DE ARQUIVOS COM MODAL
   // ========================================
+
+  let pendingFilesUpload = null;
+  let pendingProsthesisId = null;
 
   const uploadFilesToProsthesis = async (prosthesisId, files) => {
     if (files.length === 0) return;
 
-    // Perguntar arcada
-    const arcadaPrompt = prompt(
-      'Para qual arcada são esses arquivos?\n\n' +
-      '1 - Mandíbula\n' +
-      '2 - Maxila\n' +
-      '3 - Outros\n\n' +
-      'Digite o número:'
-    );
-    
-    let arcada = 'outros';
-    if (arcadaPrompt === '1') arcada = 'mandibula';
-    else if (arcadaPrompt === '2') arcada = 'maxila';
+    // Armazenar arquivos pendentes
+    pendingFilesUpload = files;
+    pendingProsthesisId = prosthesisId;
 
-    showNotification('Processando arquivos...', 'info');
+    // Abrir modal de seleção
+    const selectArcadaModal = document.getElementById('selectArcadaModal');
+    if (selectArcadaModal) {
+      selectArcadaModal.classList.add('active');
+    }
+  };
 
-    try {
-      const prostheses = currentCase.prostheses || [];
-      const prosthesisIndex = prostheses.findIndex(p => p.id === prosthesisId);
+  // Modal de seleção de arcada
+  const selectArcadaModal = document.getElementById('selectArcadaModal');
+  const closeSelectArcadaModal = document.getElementById('closeSelectArcadaModal');
+
+  if (closeSelectArcadaModal && selectArcadaModal) {
+    closeSelectArcadaModal.addEventListener('click', () => {
+      selectArcadaModal.classList.remove('active');
+      pendingFilesUpload = null;
+      pendingProsthesisId = null;
+    });
+  }
+
+  if (selectArcadaModal) {
+    selectArcadaModal.addEventListener('click', (e) => {
+      if (e.target === selectArcadaModal) {
+        selectArcadaModal.classList.remove('active');
+        pendingFilesUpload = null;
+        pendingProsthesisId = null;
+      }
+    });
+  }
+
+  // Botões de seleção de arcada
+  document.querySelectorAll('.arcada-option-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
       
-      if (prosthesisIndex === -1) {
-        showNotification('Prótese não encontrada', 'error');
+      const arcada = btn.dataset.arcada;
+      
+      if (!pendingFilesUpload || !pendingProsthesisId) {
         return;
       }
 
-      const newFiles = files.map(file => ({
-        name: `${Date.now()}-${file.name}`,
-        originalName: file.name,
-        size: file.size,
-        type: file.type,
-        url: '#',
-        arcada: arcada,
-        uploadedAt: new Date().toISOString(),
-        uploadedBy: currentUser.name,
-        uploadedById: currentUser.id
-      }));
+      // Fechar modal
+      if (selectArcadaModal) {
+        selectArcadaModal.classList.remove('active');
+      }
 
-      // Adicionar arquivos
-      prostheses[prosthesisIndex].files = prostheses[prosthesisIndex].files || [];
-      prostheses[prosthesisIndex].files.push(...newFiles);
+      showNotification('Processando arquivos...', 'info');
 
-      // Adicionar à timeline
-      const arcadaLabels = {
-        'mandibula': 'Mandíbula',
-        'maxila': 'Maxila',
-        'outros': 'Outros'
-      };
+      try {
+        const prostheses = currentCase.prostheses || [];
+        const prosthesisIndex = prostheses.findIndex(p => p.id === pendingProsthesisId);
+        
+        if (prosthesisIndex === -1) {
+          showNotification('Prótese não encontrada', 'error');
+          return;
+        }
 
-      const timelineItem = {
-        action: 'files_upload',
-        description: `${newFiles.length} arquivo(s) adicionado(s) - ${arcadaLabels[arcada]}`,
-        date: new Date().toISOString(),
-        user: currentUser.name,
-        userId: currentUser.id
-      };
+        const newFiles = pendingFilesUpload.map(file => ({
+          name: `${Date.now()}-${file.name}`,
+          originalName: file.name,
+          size: file.size,
+          type: file.type,
+          url: '#',
+          arcada: arcada,
+          uploadedAt: new Date().toISOString(),
+          uploadedBy: currentUser.name,
+          uploadedById: currentUser.id
+        }));
 
-      prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
-      prostheses[prosthesisIndex].timeline.push(timelineItem);
+        // Adicionar arquivos
+        prostheses[prosthesisIndex].files = prostheses[prosthesisIndex].files || [];
+        prostheses[prosthesisIndex].files.push(...newFiles);
 
-      await db.collection('cases').doc(caseId).update({
-        prostheses: prostheses,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
+        // Adicionar à timeline
+        const arcadaLabels = {
+          'mandibula': 'Mandíbula',
+          'maxila': 'Maxila',
+          'outros': 'Outros'
+        };
 
-      showNotification('Arquivo(s) adicionado(s)!', 'success');
-    } catch (error) {
-      console.error('❌ Erro ao adicionar arquivos:', error);
-      showNotification('Erro ao adicionar arquivos', 'error');
-    }
-  };
+        const timelineItem = {
+          action: 'files_upload',
+          description: `${newFiles.length} arquivo(s) adicionado(s) - ${arcadaLabels[arcada]}`,
+          date: new Date().toISOString(),
+          user: currentUser.name,
+          userId: currentUser.id
+        };
+
+        prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
+        prostheses[prosthesisIndex].timeline.push(timelineItem);
+
+        await db.collection('cases').doc(caseId).update({
+          prostheses: prostheses,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        showNotification('Arquivo(s) adicionado(s)!', 'success');
+        
+        // Limpar arquivos pendentes
+        pendingFilesUpload = null;
+        pendingProsthesisId = null;
+
+      } catch (error) {
+        console.error('❌ Erro ao adicionar arquivos:', error);
+        showNotification('Erro ao adicionar arquivos', 'error');
+      }
+    });
+  });
 
   // ========================================
   // DELETAR ARQUIVO
