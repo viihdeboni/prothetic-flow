@@ -134,7 +134,32 @@
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 0.5rem;
+        }
+
+        /* Datas personalizadas */
+        .date-item.custom-date {
+            position: relative;
+            padding-right: 3rem;
+        }
+
+        .delete-custom-date-btn {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            color: var(--gray-400);
+            transition: all var(--transition-fast);
+        }
+
+        .delete-custom-date-btn:hover {
+            color: var(--error);
         }
     </style>
 </head>
@@ -230,25 +255,74 @@
             </div>
             <div style="padding: 1.5rem;">
                 <input type="hidden" id="editProsthesisId">
+                
                 <div class="form-group">
                     <label for="editFirstConsultation">Data da Primeira Consulta</label>
                     <input type="date" id="editFirstConsultation" class="form-control">
                 </div>
+                
+                <div class="form-group">
+                    <label for="editPhotoDate">Data das Fotos</label>
+                    <input type="date" id="editPhotoDate" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editMoldingDate">Data da Moldagem</label>
+                    <input type="date" id="editMoldingDate" class="form-control">
+                </div>
+                
                 <div class="form-group">
                     <label for="editScanDate">Data do Escaneamento</label>
                     <input type="date" id="editScanDate" class="form-control">
                 </div>
+                
                 <div class="form-group">
                     <label for="editTestDate">Data do Teste</label>
                     <input type="date" id="editTestDate" class="form-control">
                 </div>
+                
                 <div class="form-group">
                     <label for="editDeliveryDate">Data de Entrega Prevista</label>
                     <input type="date" id="editDeliveryDate" class="form-control">
                 </div>
+                
                 <div class="form-actions" style="margin-top: 1.5rem;">
                     <button class="btn btn-secondary" id="cancelEditDatesBtn">Cancelar</button>
                     <button class="btn btn-primary" id="saveEditDatesBtn">💾 Salvar Datas</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Adicionar Data Personalizada -->
+    <div id="addCustomDateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📅 Adicionar Data Personalizada</h2>
+                <span class="close-modal" id="closeAddCustomDateModal">&times;</span>
+            </div>
+            <div style="padding: 1.5rem;">
+                <input type="hidden" id="customDateProsthesisId">
+                
+                <div class="form-group">
+                    <label for="customDateLabel">Nome da Data *</label>
+                    <input 
+                        type="text" 
+                        id="customDateLabel" 
+                        class="form-control"
+                        placeholder="Ex: Prova Estética, Ajuste Final..."
+                        required
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="customDateValue">Data *</label>
+                    <input type="date" id="customDateValue" class="form-control" required>
+                </div>
+                
+                <div class="form-actions" style="margin-top: 1.5rem;">
+                    <button class="btn btn-secondary" id="cancelAddCustomDateBtn">Cancelar</button>
+                    <button class="btn btn-primary" id="saveAddCustomDateBtn">💾 Adicionar Data</button>
                 </div>
             </div>
         </div>
