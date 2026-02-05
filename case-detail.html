@@ -161,6 +161,80 @@
         .delete-custom-date-btn:hover {
             color: var(--error);
         }
+
+        /* Categorias de Arquivos */
+        .file-categories-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            border-bottom: 2px solid var(--gray-200);
+            padding-bottom: 0.5rem;
+        }
+
+        .file-category-tab {
+            padding: 0.5rem 1rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            white-space: nowrap;
+        }
+
+        .file-category-tab:hover {
+            color: var(--primary-blue);
+            background-color: var(--gray-50);
+        }
+
+        .file-category-tab.active {
+            color: var(--primary-blue);
+            border-bottom-color: var(--primary-blue);
+            font-weight: 600;
+            background-color: rgba(37, 99, 235, 0.05);
+        }
+
+        .files-list-container {
+            min-height: 100px;
+        }
+
+        .file-arcada-badge {
+            display: inline-flex;
+            padding: 0.2rem 0.5rem;
+            background-color: var(--gray-200);
+            border-radius: var(--radius-sm);
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 0.5rem;
+        }
+
+        .file-arcada-badge.mandibula {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--primary-blue);
+        }
+
+        .file-arcada-badge.maxila {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        @media (max-width: 768px) {
+            .file-categories-tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                flex-wrap: nowrap;
+            }
+            
+            .file-category-tab {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+            }
+        }
     </style>
 </head>
 <body>
