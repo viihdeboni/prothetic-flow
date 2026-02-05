@@ -423,6 +423,36 @@ const initCaseDetail = async () => {
   }
 
   // ========================================
+  // ARCADAS - TABS
+  // ========================================
+
+  let currentArcada = 'todos';
+
+  const tabTodos = document.getElementById('tabTodos');
+  const tabMandibula = document.getElementById('tabMandibula');
+  const tabMaxila = document.getElementById('tabMaxila');
+  const tabOutros = document.getElementById('tabOutros');
+
+  const switchArcadaTab = (arcada) => {
+    currentArcada = arcada;
+    
+    // Atualizar tabs
+    [tabTodos, tabMandibula, tabMaxila, tabOutros].forEach(tab => {
+      if (tab) tab.classList.remove('active');
+    });
+    
+    const activeTab = document.querySelector(`[data-arcada="${arcada}"]`);
+    if (activeTab) activeTab.classList.add('active');
+    
+    // Recarregar arquivos filtrados
+    loadFiles();
+  };
+
+  if (tabTodos) tabTodos.addEventListener('click', () => switchArcadaTab('todos'));
+  if (tabMandibula) tabMandibula.addEventListener('click', () => switchArcadaTab('mandibula'));
+  if (tabMaxila) tabMaxila.addEventListener('click', () => switchArcadaTab('maxila'));
+  if (tabOutros) tabOutros.addEventListener('click', () => switchArcadaTab('outros'));
+  // ========================================
   // ARQUIVOS
   // ========================================
 
