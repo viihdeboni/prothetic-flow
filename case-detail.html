@@ -97,43 +97,43 @@
                     </div>
 
                     <!-- Datas Importantes -->
-<div class="detail-card">
-    <h3 class="card-title">
-        <span class="card-icon">📅</span>
-        Datas Importantes
-        <button class="btn btn-secondary btn-sm" id="editDatesBtn">✏️ Editar Datas</button>
-    </h3>
-    <div class="dates-grid">
-        <div class="date-item" id="firstConsultationItem">
-            <div class="date-icon">📋</div>
-            <div class="date-content">
-                <span class="date-label">Primeira Consulta</span>
-                <span class="date-value" id="firstConsultation"></span>
-            </div>
-        </div>
-        <div class="date-item" id="scanDateItem">
-            <div class="date-icon">🔍</div>
-            <div class="date-content">
-                <span class="date-label">Escaneamento</span>
-                <span class="date-value" id="scanDate"></span>
-            </div>
-        </div>
-        <div class="date-item" id="testDateItem">
-            <div class="date-icon">🧪</div>
-            <div class="date-content">
-                <span class="date-label">Teste</span>
-                <span class="date-value" id="testDate"></span>
-            </div>
-        </div>
-        <div class="date-item" id="deliveryDateItem">
-            <div class="date-icon">✅</div>
-            <div class="date-content">
-                <span class="date-label">Entrega Prevista</span>
-                <span class="date-value" id="deliveryDate"></span>
-            </div>
-        </div>
-    </div>
-</div>
+                    <div class="detail-card">
+                        <h3 class="card-title">
+                            <span class="card-icon">📅</span>
+                            Datas Importantes
+                            <button class="btn btn-secondary btn-sm" id="editDatesBtn">✏️ Editar Datas</button>
+                        </h3>
+                        <div class="dates-grid">
+                            <div class="date-item" id="firstConsultationItem">
+                                <div class="date-icon">📋</div>
+                                <div class="date-content">
+                                    <span class="date-label">Primeira Consulta</span>
+                                    <span class="date-value" id="firstConsultation"></span>
+                                </div>
+                            </div>
+                            <div class="date-item" id="scanDateItem">
+                                <div class="date-icon">🔍</div>
+                                <div class="date-content">
+                                    <span class="date-label">Escaneamento</span>
+                                    <span class="date-value" id="scanDate"></span>
+                                </div>
+                            </div>
+                            <div class="date-item" id="testDateItem">
+                                <div class="date-icon">🧪</div>
+                                <div class="date-content">
+                                    <span class="date-label">Teste</span>
+                                    <span class="date-value" id="testDate"></span>
+                                </div>
+                            </div>
+                            <div class="date-item" id="deliveryDateItem">
+                                <div class="date-icon">✅</div>
+                                <div class="date-content">
+                                    <span class="date-label">Entrega Prevista</span>
+                                    <span class="date-value" id="deliveryDate"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Valor (apenas Gerência) -->
                     <div class="detail-card" id="valueCard">
@@ -152,27 +152,28 @@
                             <button class="btn btn-secondary btn-sm" id="uploadFileBtn">+ Adicionar</button>
                         </h3>
                         <input type="file" id="fileInput" class="hidden" multiple>
-    
-    <!-- Abas de Arcadas -->
-                    <div class="arcadas-tabs">
-                        <button class="arcada-tab active" data-arcada="todos" id="tabTodos">
-                            📋 Todos
-                        </button>
-                        <button class="arcada-tab" data-arcada="mandibula" id="tabMandibula">
-                            🦷 Mandíbula
-                        </button>
-                        <button class="arcada-tab" data-arcada="maxila" id="tabMaxila">
-                            🦷 Maxila
-                        </button>
-                        <button class="arcada-tab" data-arcada="outros" id="tabOutros">
-                            📄 Outros
-                        </button>
+                        
+                        <!-- Abas de Arcadas -->
+                        <div class="arcadas-tabs">
+                            <button class="arcada-tab active" data-arcada="todos" id="tabTodos">
+                                📋 Todos
+                            </button>
+                            <button class="arcada-tab" data-arcada="mandibula" id="tabMandibula">
+                                🦷 Mandíbula
+                            </button>
+                            <button class="arcada-tab" data-arcada="maxila" id="tabMaxila">
+                                🦷 Maxila
+                            </button>
+                            <button class="arcada-tab" data-arcada="outros" id="tabOutros">
+                                📄 Outros
+                            </button>
+                        </div>
+                        
+                        <div class="files-list" id="filesList">
+                            <div class="empty-message">Nenhum arquivo anexado ainda</div>
+                        </div>
                     </div>
-    
-                    <div class="files-list" id="filesList">
-                        <div class="empty-message">Nenhum arquivo anexado ainda</div>
-                    </div>
-                </div>
+
                     <!-- Observações -->
                     <div class="detail-card">
                         <h3 class="card-title">
@@ -201,10 +202,68 @@
                             <!-- Timeline items will be loaded here -->
                         </div>
                     </div>
+
+                    <!-- Mini Calendário -->
+                    <div class="detail-card">
+                        <h3 class="card-title">
+                            <span class="card-icon">📆</span>
+                            Calendário do Caso
+                        </h3>
+                        <div class="mini-calendar">
+                            <div class="calendar-event" id="calendarFirstConsultation">
+                                <div class="calendar-event-date"></div>
+                                <div class="calendar-event-label">Primeira Consulta</div>
+                            </div>
+                            <div class="calendar-event" id="calendarScan">
+                                <div class="calendar-event-date"></div>
+                                <div class="calendar-event-label">Escaneamento</div>
+                            </div>
+                            <div class="calendar-event" id="calendarTest">
+                                <div class="calendar-event-date"></div>
+                                <div class="calendar-event-label">Teste</div>
+                            </div>
+                            <div class="calendar-event" id="calendarDelivery">
+                                <div class="calendar-event-date"></div>
+                                <div class="calendar-event-label">Entrega Prevista</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
+
+    <!-- Modal de Edição de Datas -->
+    <div id="editDatesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📅 Editar Datas</h2>
+                <span class="close-modal" id="closeEditDatesModal">&times;</span>
+            </div>
+            <div style="padding: 1.5rem;">
+                <div class="form-group">
+                    <label for="editFirstConsultation">Data da Primeira Consulta</label>
+                    <input type="date" id="editFirstConsultation" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="editScanDate">Data do Escaneamento</label>
+                    <input type="date" id="editScanDate" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="editTestDate">Data do Teste</label>
+                    <input type="date" id="editTestDate" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="editDeliveryDate">Data de Entrega Prevista</label>
+                    <input type="date" id="editDeliveryDate" class="form-control">
+                </div>
+                <div class="form-actions" style="margin-top: 1.5rem;">
+                    <button class="btn btn-secondary" id="cancelEditDatesBtn">Cancelar</button>
+                    <button class="btn btn-primary" id="saveEditDatesBtn">💾 Salvar Datas</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal de Confirmação de Exclusão -->
     <div id="deleteModal" class="modal">
