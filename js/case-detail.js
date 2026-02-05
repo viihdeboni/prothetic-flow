@@ -324,6 +324,9 @@ const initCaseDetail = async () => {
 
     // Timeline
     loadTimeline();
+
+    // Calendário
+    renderCalendar();
   };
 
   const loadFiles = () => {
@@ -422,6 +425,64 @@ const initCaseDetail = async () => {
     } catch (error) {
       console.error('❌ Erro:', error);
     }
+  };
+
+  // ========================================
+  // MINI CALENDÁRIO
+  // ========================================
+
+  const renderCalendar = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const renderCalendarEvent = (elementId, dateValue, label) => {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+
+      const dateEl = element.querySelector('.calendar-event-date');
+      const labelEl = element.querySelector('.calendar-event-label');
+
+      element.classList.remove('has-date', 'past', 'today', 'future', 'empty');
+
+      if (!dateValue) {
+        dateEl.textContent = '—';
+        labelEl.textContent = label;
+        element.classList.add('empty');
+        return;
+      }
+
+      let date;
+      if (dateValue.toDate) {
+        date = dateValue.toDate();
+      } else if (typeof dateValue === 'string') {
+        date = new Date(dateValue);
+      } else {
+        date = dateValue;
+      }
+
+      date.setHours(0, 0, 0, 0);
+
+      const day = date.getDate();
+      const month = date.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
+
+      dateEl.textContent = `${day} ${month}`;
+      labelEl.textContent = label;
+
+      element.classList.add('has-date');
+
+      if (date < today) {
+        element.classList.add('past');
+      } else if (date.getTime() === today.getTime()) {
+        element.classList.add('today');
+      } else {
+        element.classList.add('future');
+      }
+    };
+
+    renderCalendarEvent('calendarFirstConsultation', currentCase.firstConsultation, 'Primeira Consulta');
+    renderCalendarEvent('calendarScan', currentCase.scanDate, 'Escaneamento');
+    renderCalendarEvent('calendarTest', currentCase.testDate, 'Teste');
+    renderCalendarEvent('calendarDelivery', currentCase.deliveryDate, 'Entrega Prevista');
   };
 
   // Carregar caso
@@ -564,6 +625,86 @@ const initCaseDetail = async () => {
       } catch (error) {
         console.error('❌ Erro:', error);
         showNotification('Erro ao salvar observações', 'error');
+      }
+    });
+  }
+
+  // ========================================
+  // EDITAR DATAS
+  // ========================================
+
+  const editDatesModal = document.getElementById('editDatesModal');
+  const editDatesBtn = document.getElementById('editDatesBtn');
+  const closeEditDatesModal = document.getElementById('closeEditDatesModal');
+  const cancelEditDatesBtn = document.getElementById('cancelEditDatesBtn');
+  const saveEditDatesBtn = document.getElementById('saveEditDatesBtn');
+
+  const editFirstConsultation = document.getElementById('editFirstConsultation');
+  const editScanDate = document.getElementById('editScanDate');
+  const editTestDate = document.getElementById('editTestDate');
+  const editDeliveryDate = document.getElementById('editDeliveryDate');
+
+  if (editDatesBtn && editDatesModal) {
+    editDatesBtn.addEventListener('click', () => {
+      // Preencher campos com valores atuais
+      if (editFirstConsultation) {
+        editFirstConsultation.value = currentCase.firstConsultation || '';
+      }
+      if (editScanDate) {
+        editScanDate.value = currentCase.scanDate || '';
+      }
+      if (editTestDate) {
+        editTestDate.value = currentCase.testDate || '';
+      }
+      if (editDeliveryDate) {
+        editDeliveryDate.value = currentCase.deliveryDate || '';
+      }
+
+      editDatesModal.classList.add('active');
+    });
+  }
+
+  if (closeEditDatesModal && editDatesModal) {
+    closeEditDatesModal.addEventListener('click', () => {
+      editDatesModal.classList.remove('active');
+    });
+  }
+
+  if (cancelEditDatesBtn && editDatesModal) {
+    cancelEditDatesBtn.addEventListener('click', () => {
+      editDatesModal.classList.remove('active');
+    });
+  }
+
+  if (editDatesModal) {
+    editDatesModal.addEventListener('click', (e) => {
+      if (e.target === editDatesModal) {
+        editDatesModal.classList.remove('active');
+      }
+    });
+  }
+
+  if (saveEditDatesBtn) {
+    saveEditDatesBtn.addEventListener('click', async () => {
+      console.log('💾 Salvando datas...');
+
+      const newDates = {
+        firstConsultation: editFirstConsultation.value || null,
+        scanDate: editScanDate.value || null,
+        testDate: editTestDate.value || null,
+        deliveryDate: editDeliveryDate.value || null,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      try {
+        await db.collection('cases').doc(caseId).update(newDates);
+
+        await addTimelineItem('Datas atualizadas');
+        showNotification('Datas atualizadas com sucesso!', 'success');
+        editDatesModal.classList.remove('active');
+      } catch (error) {
+        console.error('❌ Erro ao atualizar datas:', error);
+        showNotification('Erro ao atualizar datas', 'error');
       }
     });
   }
