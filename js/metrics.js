@@ -186,13 +186,27 @@ const initMetrics = async () => {
     const container = document.getElementById('revenueByType');
     if (!container) return;
 
-    const typeLabels = {
-      'coroa': 'Coroa',
-      'ponte': 'Ponte',
-      'protese-total': 'Prótese Total',
-      'protese-parcial': 'Prótese Parcial',
-      'implante': 'Implante'
+    const getTypeLabel = (type) => {
+    const labels = {
+        // Próteses Fixas
+        'coroa': '🦷 Coroa',
+        'ponte': '🦷 Ponte',
+        'implante': '🦷 Implante',
+        // Próteses Removíveis
+        'protese-total': '🦷 Prótese Total',
+        'protese-parcial': '🦷 Prótese Parcial',
+        // Placas
+        'placa-funcional': '🦴 Placa Funcional',
+        'placa-miorrelaxante': '🦴 Placa Miorrelaxante',
+        'placa-clareamento': '✨ Placa de Clareamento',
+        // Modelos
+        'modelo-zocal': '🏛️ Modelo Zocal',
+        'modelo-ferradura': '🏛️ Modelo Ferradura',
+        // Ortodontia
+        'contencao-estetica': '😁 Contenção Estética'
     };
+    return labels[type] || type;
+};
 
     const colors = {
       'coroa': 'success',
