@@ -292,13 +292,6 @@ const initNewCase = async () => {
     });
   }
 
-  // Data mínima
-  const today = new Date().toISOString().split('T')[0];
-  ['firstConsultation', 'scanDate', 'testDate', 'deliveryDate'].forEach(id => {
-    const input = document.getElementById(id);
-    if (input) input.setAttribute('min', today);
-  });
-
   console.log('✅ new-case.js pronto!');
 };
 
