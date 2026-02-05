@@ -168,14 +168,25 @@ const initCaseDetail = async () => {
 
   const getTypeLabel = (type) => {
     const labels = {
-      'coroa': '🦷 Coroa',
-      'ponte': '🦷 Ponte',
-      'protese-total': '🦷 Prótese Total',
-      'protese-parcial': '🦷 Prótese Parcial',
-      'implante': '🦷 Implante'
+        // Próteses Fixas
+        'coroa': '🦷 Coroa',
+        'ponte': '🦷 Ponte',
+        'implante': '🦷 Implante',
+        // Próteses Removíveis
+        'protese-total': '🦷 Prótese Total',
+        'protese-parcial': '🦷 Prótese Parcial',
+        // Placas
+        'placa-funcional': '🦴 Placa Funcional',
+        'placa-miorrelaxante': '🦴 Placa Miorrelaxante',
+        'placa-clareamento': '✨ Placa de Clareamento',
+        // Modelos
+        'modelo-zocal': '🏛️ Modelo Zocal',
+        'modelo-ferradura': '🏛️ Modelo Ferradura',
+        // Ortodontia
+        'contencao-estetica': '😁 Contenção Estética'
     };
     return labels[type] || type;
-  };
+};
 
   const getFileIcon = (filename) => {
     const ext = filename.split('.').pop().toLowerCase();
