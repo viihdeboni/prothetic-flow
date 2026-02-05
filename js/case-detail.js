@@ -311,7 +311,7 @@ const initCaseDetail = async () => {
               <!-- Datas -->
               <div class="prosthesis-card">
                 <div class="prosthesis-card-title">
-                  📅 Datas Importantes
+                  <span>📅 Datas Importantes</span>
                   <button class="btn btn-secondary btn-sm edit-dates-btn" data-prosthesis-id="${prosthesis.id}">✏️ Editar</button>
                 </div>
                 ${renderDates(prosthesis)}
@@ -330,7 +330,7 @@ const initCaseDetail = async () => {
               <!-- Arquivos -->
               <div class="prosthesis-card">
                 <div class="prosthesis-card-title">
-                  📎 Arquivos
+                  <span>📎 Arquivos</span>
                   <button class="btn btn-secondary btn-sm upload-file-btn" data-prosthesis-id="${prosthesis.id}">+ Adicionar</button>
                 </div>
                 <input type="file" class="hidden file-input" data-prosthesis-id="${prosthesis.id}" multiple>
@@ -372,6 +372,8 @@ const initCaseDetail = async () => {
   };
 
   const renderDates = (prosthesis) => {
+    const customDates = prosthesis.customDates || [];
+    
     return `
       <div class="dates-grid">
         ${prosthesis.firstConsultation ? `
@@ -380,6 +382,26 @@ const initCaseDetail = async () => {
             <div class="date-content">
               <span class="date-label">Primeira Consulta</span>
               <span class="date-value">${formatDate(prosthesis.firstConsultation)}</span>
+            </div>
+          </div>
+        ` : ''}
+        
+        ${prosthesis.photoDate ? `
+          <div class="date-item">
+            <div class="date-icon">📸</div>
+            <div class="date-content">
+              <span class="date-label">Fotos</span>
+              <span class="date-value">${formatDate(prosthesis.photoDate)}</span>
+            </div>
+          </div>
+        ` : ''}
+        
+        ${prosthesis.moldingDate ? `
+          <div class="date-item">
+            <div class="date-icon">🦷</div>
+            <div class="date-content">
+              <span class="date-label">Moldagem</span>
+              <span class="date-value">${formatDate(prosthesis.moldingDate)}</span>
             </div>
           </div>
         ` : ''}
@@ -414,10 +436,29 @@ const initCaseDetail = async () => {
           </div>
         ` : ''}
         
-        ${!prosthesis.firstConsultation && !prosthesis.scanDate && !prosthesis.testDate && !prosthesis.deliveryDate ? `
+        ${customDates.map((cd, index) => `
+          <div class="date-item custom-date">
+            <div class="date-icon">📅</div>
+            <div class="date-content">
+              <span class="date-label">${cd.label}</span>
+              <span class="date-value">${formatDate(cd.date)}</span>
+            </div>
+            <button class="delete-custom-date-btn" 
+                    data-prosthesis-id="${prosthesis.id}" 
+                    data-date-index="${index}">🗑️</button>
+          </div>
+        `).join('')}
+        
+        ${!prosthesis.firstConsultation && !prosthesis.photoDate && !prosthesis.moldingDate && !prosthesis.scanDate && !prosthesis.testDate && !prosthesis.deliveryDate && customDates.length === 0 ? `
           <div class="empty-message">Nenhuma data definida</div>
         ` : ''}
       </div>
+      
+      <button class="btn btn-secondary btn-sm add-custom-date-btn" 
+              data-prosthesis-id="${prosthesis.id}" 
+              style="margin-top: 1rem; width: 100%;">
+        ➕ Adicionar Data Personalizada
+      </button>
     `;
   };
 
@@ -428,6 +469,12 @@ const initCaseDetail = async () => {
       return '<div class="empty-message">Nenhum arquivo anexado</div>';
     }
 
+    const arcadaLabels = {
+      'mandibula': 'Mandíbula',
+      'maxila': 'Maxila',
+      'outros': 'Outros'
+    };
+
     return `
       <div class="files-list">
         ${files.map((file, fileIndex) => `
@@ -435,7 +482,12 @@ const initCaseDetail = async () => {
             <div class="file-info">
               <div class="file-icon">${getFileIcon(file.originalName || file.name)}</div>
               <div class="file-details">
-                <div class="file-name">${file.originalName || file.name}</div>
+                <div class="file-name">
+                  ${file.originalName || file.name}
+                  ${file.arcada && file.arcada !== 'outros' ? 
+                    `<span class="file-arcada-badge ${file.arcada}">${arcadaLabels[file.arcada]}</span>` 
+                    : ''}
+                </div>
                 <div class="file-meta">${formatFileSize(file.size)} • ${formatDateTime(file.uploadedAt)}</div>
               </div>
             </div>
@@ -516,13 +568,18 @@ const initCaseDetail = async () => {
       `;
     };
 
+    const customDates = prosthesis.customDates || [];
+
     return `
       <div class="mini-calendar">
         ${renderEvent(prosthesis.firstConsultation, 'Primeira Consulta', '📋')}
+        ${renderEvent(prosthesis.photoDate, 'Fotos', '📸')}
+        ${renderEvent(prosthesis.moldingDate, 'Moldagem', '🦷')}
         ${renderEvent(prosthesis.scanDate, 'Escaneamento', '🔍')}
         ${renderEvent(prosthesis.testDate, 'Teste', '🧪')}
         ${renderEvent(prosthesis.deliveryDate, 'Entrega', '✅')}
-        ${!prosthesis.firstConsultation && !prosthesis.scanDate && !prosthesis.testDate && !prosthesis.deliveryDate ? `
+        ${customDates.map(cd => renderEvent(cd.date, cd.label, '📅')).join('')}
+        ${!prosthesis.firstConsultation && !prosthesis.photoDate && !prosthesis.moldingDate && !prosthesis.scanDate && !prosthesis.testDate && !prosthesis.deliveryDate && customDates.length === 0 ? `
           <div class="empty-message">Nenhuma data no calendário</div>
         ` : ''}
       </div>
@@ -548,6 +605,23 @@ const initCaseDetail = async () => {
       btn.addEventListener('click', (e) => {
         const prosthesisId = e.target.dataset.prosthesisId;
         openEditDatesModal(prosthesisId);
+      });
+    });
+
+    // Botões de adicionar data personalizada
+    document.querySelectorAll('.add-custom-date-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const prosthesisId = e.target.dataset.prosthesisId;
+        openAddCustomDateModal(prosthesisId);
+      });
+    });
+
+    // Botões de deletar data personalizada
+    document.querySelectorAll('.delete-custom-date-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const prosthesisId = e.target.dataset.prosthesisId;
+        const dateIndex = parseInt(e.target.dataset.dateIndex);
+        await deleteCustomDate(prosthesisId, dateIndex);
       });
     });
 
@@ -656,6 +730,8 @@ const initCaseDetail = async () => {
   const saveEditDatesBtn = document.getElementById('saveEditDatesBtn');
   const editProsthesisId = document.getElementById('editProsthesisId');
   const editFirstConsultation = document.getElementById('editFirstConsultation');
+  const editPhotoDate = document.getElementById('editPhotoDate');
+  const editMoldingDate = document.getElementById('editMoldingDate');
   const editScanDate = document.getElementById('editScanDate');
   const editTestDate = document.getElementById('editTestDate');
   const editDeliveryDate = document.getElementById('editDeliveryDate');
@@ -669,6 +745,8 @@ const initCaseDetail = async () => {
     // Preencher campos
     if (editProsthesisId) editProsthesisId.value = prosthesisId;
     if (editFirstConsultation) editFirstConsultation.value = prosthesis.firstConsultation || '';
+    if (editPhotoDate) editPhotoDate.value = prosthesis.photoDate || '';
+    if (editMoldingDate) editMoldingDate.value = prosthesis.moldingDate || '';
     if (editScanDate) editScanDate.value = prosthesis.scanDate || '';
     if (editTestDate) editTestDate.value = prosthesis.testDate || '';
     if (editDeliveryDate) editDeliveryDate.value = prosthesis.deliveryDate || '';
@@ -711,6 +789,8 @@ const initCaseDetail = async () => {
 
         // Atualizar datas
         prostheses[prosthesisIndex].firstConsultation = editFirstConsultation.value || null;
+        prostheses[prosthesisIndex].photoDate = editPhotoDate.value || null;
+        prostheses[prosthesisIndex].moldingDate = editMoldingDate.value || null;
         prostheses[prosthesisIndex].scanDate = editScanDate.value || null;
         prostheses[prosthesisIndex].testDate = editTestDate.value || null;
         prostheses[prosthesisIndex].deliveryDate = editDeliveryDate.value || null;
@@ -742,11 +822,164 @@ const initCaseDetail = async () => {
   }
 
   // ========================================
+  // MODAL DE ADICIONAR DATA PERSONALIZADA
+  // ========================================
+
+  const addCustomDateModal = document.getElementById('addCustomDateModal');
+  const closeAddCustomDateModal = document.getElementById('closeAddCustomDateModal');
+  const cancelAddCustomDateBtn = document.getElementById('cancelAddCustomDateBtn');
+  const saveAddCustomDateBtn = document.getElementById('saveAddCustomDateBtn');
+  const customDateProsthesisId = document.getElementById('customDateProsthesisId');
+  const customDateLabel = document.getElementById('customDateLabel');
+  const customDateValue = document.getElementById('customDateValue');
+
+  const openAddCustomDateModal = (prosthesisId) => {
+    if (customDateProsthesisId) customDateProsthesisId.value = prosthesisId;
+    if (customDateLabel) customDateLabel.value = '';
+    if (customDateValue) customDateValue.value = '';
+    
+    if (addCustomDateModal) addCustomDateModal.classList.add('active');
+  };
+
+  const closeAddCustomDateModalFunc = () => {
+    if (addCustomDateModal) addCustomDateModal.classList.remove('active');
+  };
+
+  if (closeAddCustomDateModal) {
+    closeAddCustomDateModal.addEventListener('click', closeAddCustomDateModalFunc);
+  }
+
+  if (cancelAddCustomDateBtn) {
+    cancelAddCustomDateBtn.addEventListener('click', closeAddCustomDateModalFunc);
+  }
+
+  if (addCustomDateModal) {
+    addCustomDateModal.addEventListener('click', (e) => {
+      if (e.target === addCustomDateModal) {
+        closeAddCustomDateModalFunc();
+      }
+    });
+  }
+
+  if (saveAddCustomDateBtn) {
+    saveAddCustomDateBtn.addEventListener('click', async () => {
+      const prosthesisId = customDateProsthesisId.value;
+      const label = customDateLabel.value.trim();
+      const date = customDateValue.value;
+
+      if (!label || !date) {
+        showNotification('Preencha todos os campos', 'error');
+        return;
+      }
+
+      try {
+        const prostheses = currentCase.prostheses || [];
+        const prosthesisIndex = prostheses.findIndex(p => p.id === prosthesisId);
+        
+        if (prosthesisIndex === -1) {
+          showNotification('Prótese não encontrada', 'error');
+          return;
+        }
+
+        // Adicionar data personalizada
+        prostheses[prosthesisIndex].customDates = prostheses[prosthesisIndex].customDates || [];
+        prostheses[prosthesisIndex].customDates.push({
+          label: label,
+          date: date
+        });
+
+        // Adicionar à timeline
+        const timelineItem = {
+          action: 'custom_date_add',
+          description: `Data adicionada: ${label}`,
+          date: new Date().toISOString(),
+          user: currentUser.name,
+          userId: currentUser.id
+        };
+
+        prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
+        prostheses[prosthesisIndex].timeline.push(timelineItem);
+
+        await db.collection('cases').doc(caseId).update({
+          prostheses: prostheses,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        showNotification('Data adicionada!', 'success');
+        closeAddCustomDateModalFunc();
+      } catch (error) {
+        console.error('❌ Erro ao adicionar data:', error);
+        showNotification('Erro ao adicionar data', 'error');
+      }
+    });
+  }
+
+  // ========================================
+  // DELETAR DATA PERSONALIZADA
+  // ========================================
+
+  const deleteCustomDate = async (prosthesisId, dateIndex) => {
+    if (!confirm('Deseja realmente excluir esta data?')) return;
+
+    try {
+      const prostheses = currentCase.prostheses || [];
+      const prosthesisIndex = prostheses.findIndex(p => p.id === prosthesisId);
+      
+      if (prosthesisIndex === -1) {
+        showNotification('Prótese não encontrada', 'error');
+        return;
+      }
+
+      const customDates = prostheses[prosthesisIndex].customDates || [];
+      const dateLabel = customDates[dateIndex].label;
+
+      // Remover data
+      customDates.splice(dateIndex, 1);
+      prostheses[prosthesisIndex].customDates = customDates;
+
+      // Adicionar à timeline
+      const timelineItem = {
+        action: 'custom_date_delete',
+        description: `Data removida: ${dateLabel}`,
+        date: new Date().toISOString(),
+        user: currentUser.name,
+        userId: currentUser.id
+      };
+
+      prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
+      prostheses[prosthesisIndex].timeline.push(timelineItem);
+
+      await db.collection('cases').doc(caseId).update({
+        prostheses: prostheses,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      showNotification('Data excluída!', 'success');
+    } catch (error) {
+      console.error('❌ Erro ao excluir data:', error);
+      showNotification('Erro ao excluir data', 'error');
+    }
+  };
+
+  // ========================================
   // UPLOAD DE ARQUIVOS
   // ========================================
 
   const uploadFilesToProsthesis = async (prosthesisId, files) => {
     if (files.length === 0) return;
+
+    // Perguntar arcada
+    const arcadaPrompt = prompt(
+      'Para qual arcada são esses arquivos?\n\n' +
+      '1 - Mandíbula\n' +
+      '2 - Maxila\n' +
+      '3 - Outros\n\n' +
+      'Digite o número:'
+    );
+    
+    let arcada = 'outros';
+    if (arcadaPrompt === '1') arcada = 'mandibula';
+    else if (arcadaPrompt === '2') arcada = 'maxila';
 
     showNotification('Processando arquivos...', 'info');
 
@@ -765,6 +998,7 @@ const initCaseDetail = async () => {
         size: file.size,
         type: file.type,
         url: '#',
+        arcada: arcada,
         uploadedAt: new Date().toISOString(),
         uploadedBy: currentUser.name,
         uploadedById: currentUser.id
@@ -775,9 +1009,15 @@ const initCaseDetail = async () => {
       prostheses[prosthesisIndex].files.push(...newFiles);
 
       // Adicionar à timeline
+      const arcadaLabels = {
+        'mandibula': 'Mandíbula',
+        'maxila': 'Maxila',
+        'outros': 'Outros'
+      };
+
       const timelineItem = {
         action: 'files_upload',
-        description: `${newFiles.length} arquivo(s) adicionado(s)`,
+        description: `${newFiles.length} arquivo(s) adicionado(s) - ${arcadaLabels[arcada]}`,
         date: new Date().toISOString(),
         user: currentUser.name,
         userId: currentUser.id
