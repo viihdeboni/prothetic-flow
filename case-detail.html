@@ -235,6 +235,91 @@
                 font-size: 0.8rem;
             }
         }
+
+        /* Modal de Seleção de Arcada */
+        .arcada-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .arcada-option-btn {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.25rem;
+            background-color: var(--white);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-align: left;
+            width: 100%;
+        }
+
+        .arcada-option-btn:hover {
+            border-color: var(--primary-blue);
+            background-color: rgba(37, 99, 235, 0.05);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .arcada-option-icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .arcada-option-label {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .arcada-option-desc {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            display: block;
+        }
+
+        .arcada-option-btn[data-arcada="mandibula"]:hover {
+            border-color: var(--primary-blue);
+        }
+
+        .arcada-option-btn[data-arcada="mandibula"]:hover .arcada-option-icon {
+            color: var(--primary-blue);
+        }
+
+        .arcada-option-btn[data-arcada="maxila"]:hover {
+            border-color: var(--warning);
+        }
+
+        .arcada-option-btn[data-arcada="maxila"]:hover .arcada-option-icon {
+            color: var(--warning);
+        }
+
+        .arcada-option-btn[data-arcada="outros"]:hover {
+            border-color: var(--gray-400);
+        }
+
+        @media (max-width: 480px) {
+            .arcada-option-btn {
+                padding: 1rem;
+            }
+
+            .arcada-option-icon {
+                font-size: 1.5rem;
+            }
+
+            .arcada-option-label {
+                font-size: 0.9375rem;
+            }
+
+            .arcada-option-desc {
+                font-size: 0.8125rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -402,6 +487,40 @@
         </div>
     </div>
 
+    <!-- Modal de Seleção de Arcada -->
+    <div id="selectArcadaModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>📁 Selecione a Arcada</h2>
+                <span class="close-modal" id="closeSelectArcadaModal">&times;</span>
+            </div>
+            <div style="padding: 1.5rem;">
+                <p style="margin-bottom: 1.5rem; color: var(--gray-600);">
+                    Para qual arcada são esses arquivos?
+                </p>
+                
+                <div class="arcada-options">
+                    <button class="arcada-option-btn" data-arcada="mandibula">
+                        <span class="arcada-option-icon">🦷</span>
+                        <span class="arcada-option-label">Mandíbula</span>
+                        <span class="arcada-option-desc">Arcada inferior</span>
+                    </button>
+                    
+                    <button class="arcada-option-btn" data-arcada="maxila">
+                        <span class="arcada-option-icon">🦷</span>
+                        <span class="arcada-option-label">Maxila</span>
+                        <span class="arcada-option-desc">Arcada superior</span>
+                    </button>
+                    
+                    <button class="arcada-option-btn" data-arcada="outros">
+                        <span class="arcada-option-icon">📄</span>
+                        <span class="arcada-option-label">Outros</span>
+                        <span class="arcada-option-desc">Documentos gerais</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Modal de Confirmação de Exclusão -->
     <div id="deleteModal" class="modal">
         <div class="modal-content">
