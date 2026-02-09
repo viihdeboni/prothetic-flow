@@ -1206,20 +1206,25 @@ const initCaseDetail = async () => {
   };
 
   // ========================================
-  // MODAL DE SELEÇÃO DE ARCADA E ESTÁGIO
+  // MODAL DE SELEÇÃO DE ARCADA E ETAPA
   // ========================================
 
   let pendingFilesUpload = null;
   let pendingProsthesisId = null;
+  let selectedArcada = null;
 
   const selectArcadaModal = document.getElementById('selectArcadaModal');
   const closeSelectArcadaModal = document.getElementById('closeSelectArcadaModal');
+  const selectStageModal = document.getElementById('selectStageModal');
+  const closeSelectStageModal = document.getElementById('closeSelectStageModal');
 
+  // Fechar modal de arcada
   if (closeSelectArcadaModal && selectArcadaModal) {
     closeSelectArcadaModal.addEventListener('click', () => {
       selectArcadaModal.classList.remove('active');
       pendingFilesUpload = null;
       pendingProsthesisId = null;
+      selectedArcada = null;
     });
   }
 
@@ -1229,12 +1234,28 @@ const initCaseDetail = async () => {
         selectArcadaModal.classList.remove('active');
         pendingFilesUpload = null;
         pendingProsthesisId = null;
+        selectedArcada = null;
+      }
+    });
+  }
+
+  // Fechar modal de etapa
+  if (closeSelectStageModal && selectStageModal) {
+    closeSelectStageModal.addEventListener('click', () => {
+      selectStageModal.classList.remove('active');
+    });
+  }
+
+  if (selectStageModal) {
+    selectStageModal.addEventListener('click', (e) => {
+      if (e.target === selectStageModal) {
+        selectStageModal.classList.remove('active');
       }
     });
   }
 
   // ========================================
-  // UPLOAD DE ARQUIVOS COM MODAL
+  // UPLOAD DE ARQUIVOS COM MODAIS
   // ========================================
 
   const uploadFilesToProsthesis = async (prosthesisId, files) => {
@@ -1243,7 +1264,7 @@ const initCaseDetail = async () => {
     pendingFilesUpload = files;
     pendingProsthesisId = prosthesisId;
 
-    // Abrir modal de seleção
+    // Abrir modal de seleção de arcada
     if (selectArcadaModal) {
       selectArcadaModal.classList.add('active');
     }
@@ -1254,7 +1275,7 @@ const initCaseDetail = async () => {
     btn.addEventListener('click', async (e) => {
       e.preventDefault();
       
-      const arcada = btn.dataset.arcada;
+      selectedArcada = btn.dataset.arcada;
       
       if (!pendingFilesUpload || !pendingProsthesisId) {
         return;
@@ -1265,24 +1286,29 @@ const initCaseDetail = async () => {
         selectArcadaModal.classList.remove('active');
       }
 
-      // Agora perguntar o estágio
-      const stagePrompt = prompt(
-        'Para qual estágio são esses arquivos?\n\n' +
-        '1 - Escaneamento\n' +
-        '2 - Planejamento\n' +
-        '3 - Impressão\n' +
-        '4 - Teste\n' +
-        '5 - Concluído\n' +
-        '0 - Nenhum (pular)\n\n' +
-        'Digite o número:'
-      );
+      // Abrir modal de etapa
+      if (selectStageModal) {
+        selectStageModal.classList.add('active');
+      }
+    });
+  });
+
+  // Botões de seleção de etapa
+  document.querySelectorAll('.stage-option-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
       
-      let stage = null;
-      if (stagePrompt === '1') stage = 'escaneamento';
-      else if (stagePrompt === '2') stage = 'planejamento';
-      else if (stagePrompt === '3') stage = 'impressao';
-      else if (stagePrompt === '4') stage = 'teste';
-      else if (stagePrompt === '5') stage = 'concluido';
+      let stage = btn.dataset.stage;
+      if (stage === 'null') stage = null;
+      
+      if (!pendingFilesUpload || !pendingProsthesisId || !selectedArcada) {
+        return;
+      }
+
+      // Fechar modal de etapa
+      if (selectStageModal) {
+        selectStageModal.classList.remove('active');
+      }
 
       showNotification('Processando arquivos...', 'info');
 
@@ -1295,18 +1321,24 @@ const initCaseDetail = async () => {
           return;
         }
 
-        const newFiles = pendingFilesUpload.map(file => ({
-          name: `${Date.now()}-${file.name}`,
-          originalName: file.name,
-          size: file.size,
-          type: file.type,
-          url: '#',
-          arcada: arcada,
-          stage: stage,
-          uploadedAt: new Date().toISOString(),
-          uploadedBy: currentUser.name,
-          uploadedById: currentUser.id
-        }));
+        // Criar URLs simuladas para download (você pode integrar com R2 depois)
+        const newFiles = pendingFilesUpload.map(file => {
+          // Criar URL simulada (blob URL temporária)
+          const blobUrl = URL.createObjectURL(file);
+          
+          return {
+            name: `${Date.now()}-${file.name}`,
+            originalName: file.name,
+            size: file.size,
+            type: file.type,
+            url: blobUrl, // URL temporária para download
+            arcada: selectedArcada,
+            stage: stage,
+            uploadedAt: new Date().toISOString(),
+            uploadedBy: currentUser.name,
+            uploadedById: currentUser.id
+          };
+        });
 
         prostheses[prosthesisIndex].files = prostheses[prosthesisIndex].files || [];
         prostheses[prosthesisIndex].files.push(...newFiles);
@@ -1325,7 +1357,7 @@ const initCaseDetail = async () => {
           'concluido': 'Concluído'
         };
 
-        let description = `${newFiles.length} arquivo(s) adicionado(s) - ${arcadaLabels[arcada]}`;
+        let description = `${newFiles.length} arquivo(s) adicionado(s) - ${arcadaLabels[selectedArcada]}`;
         if (stage) {
           description += ` - ${stageLabels[stage]}`;
         }
@@ -1346,10 +1378,11 @@ const initCaseDetail = async () => {
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        showNotification('Arquivo(s) adicionado(s)!', 'success');
+        showNotification('Arquivo(s) adicionado(s)! Clique para baixar.', 'success');
         
         pendingFilesUpload = null;
         pendingProsthesisId = null;
+        selectedArcada = null;
 
       } catch (error) {
         console.error('❌ Erro ao adicionar arquivos:', error);
@@ -1357,7 +1390,7 @@ const initCaseDetail = async () => {
       }
     });
   });
-
+  
   // ========================================
   // DELETAR ARQUIVO
   // ========================================
