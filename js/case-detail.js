@@ -1330,6 +1330,168 @@ const initCaseDetail = async () => {
   };
 
   // ========================================
+  // EDITAR INFORMAÇÕES DO CASO
+  // ========================================
+
+  const editCaseBtn = document.getElementById('editCaseBtn');
+  const editCaseModal = document.getElementById('editCaseModal');
+  const closeEditCaseModal = document.getElementById('closeEditCaseModal');
+  const cancelEditCaseBtn = document.getElementById('cancelEditCaseBtn');
+  const editCaseForm = document.getElementById('editCaseForm');
+  const editPatientName = document.getElementById('editPatientName');
+  const editPatientPhone = document.getElementById('editPatientPhone');
+  const editPatientEmail = document.getElementById('editPatientEmail');
+  const editPatientCPF = document.getElementById('editPatientCPF');
+  const editPatientPhoto = document.getElementById('editPatientPhoto');
+
+  // Abrir modal de edição
+  if (editCaseBtn && editCaseModal) {
+    editCaseBtn.addEventListener('click', () => {
+      // Preencher campos com dados atuais
+      if (editPatientName) editPatientName.value = currentCase.patientName || '';
+      if (editPatientPhone) editPatientPhone.value = currentCase.patientPhone || '';
+      if (editPatientEmail) editPatientEmail.value = currentCase.patientEmail || '';
+      if (editPatientCPF) editPatientCPF.value = currentCase.patientCPF || '';
+
+      // Abrir modal
+      editCaseModal.classList.add('active');
+    });
+  }
+
+  // Fechar modal
+  const closeEditCaseModalFunc = () => {
+    if (editCaseModal) editCaseModal.classList.remove('active');
+  };
+
+  if (closeEditCaseModal) {
+    closeEditCaseModal.addEventListener('click', closeEditCaseModalFunc);
+  }
+
+  if (cancelEditCaseBtn) {
+    cancelEditCaseBtn.addEventListener('click', closeEditCaseModalFunc);
+  }
+
+  if (editCaseModal) {
+    editCaseModal.addEventListener('click', (e) => {
+      if (e.target === editCaseModal) {
+        closeEditCaseModalFunc();
+      }
+    });
+  }
+
+  // Salvar edições
+  if (editCaseForm) {
+    editCaseForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const newName = editPatientName.value.trim();
+
+      if (!newName) {
+        showNotification('Nome do paciente é obrigatório', 'error');
+        return;
+      }
+
+      try {
+        showNotification('Salvando alterações...', 'info');
+
+        const updateData = {
+          patientName: newName,
+          patientPhone: editPatientPhone.value.trim() || null,
+          patientEmail: editPatientEmail.value.trim() || null,
+          patientCPF: editPatientCPF.value.trim() || null,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        // Se houver nova foto, converter para base64
+        if (editPatientPhoto.files && editPatientPhoto.files[0]) {
+          const file = editPatientPhoto.files[0];
+          
+          // Validar tamanho (máx 5MB)
+          if (file.size > 5 * 1024 * 1024) {
+            showNotification('Foto muito grande. Máximo 5MB', 'error');
+            return;
+          }
+
+          // Converter para base64
+          const base64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+
+          updateData.patientPhoto = base64;
+        }
+
+        // Atualizar no Firestore
+        await db.collection('cases').doc(caseId).update(updateData);
+
+        // Adicionar à timeline de TODAS as próteses
+        const prostheses = currentCase.prostheses || [];
+        prostheses.forEach(prosthesis => {
+          prosthesis.timeline = prosthesis.timeline || [];
+          prosthesis.timeline.push({
+            action: 'case_info_update',
+            description: 'Informações do caso atualizadas',
+            date: new Date().toISOString(),
+            user: currentUser.name,
+            userId: currentUser.id
+          });
+        });
+
+        await db.collection('cases').doc(caseId).update({
+          prostheses: prostheses
+        });
+
+        showNotification('Informações atualizadas com sucesso!', 'success');
+        closeEditCaseModalFunc();
+
+        // Limpar input de foto
+        if (editPatientPhoto) editPatientPhoto.value = '';
+
+      } catch (error) {
+        console.error('❌ Erro ao atualizar informações:', error);
+        showNotification('Erro ao atualizar informações', 'error');
+      }
+    });
+  }
+
+  // Máscara de telefone
+  if (editPatientPhone) {
+    editPatientPhone.addEventListener('input', (e) => {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
+      
+      if (value.length > 6) {
+        value = value.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3');
+      } else if (value.length > 2) {
+        value = value.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
+      } else if (value.length > 0) {
+        value = value.replace(/^(\d*)/, '($1');
+      }
+      
+      e.target.value = value;
+    });
+  }
+
+  // Máscara de CPF
+  if (editPatientCPF) {
+    editPatientCPF.addEventListener('input', (e) => {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
+      
+      if (value.length > 9) {
+        value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2}).*/, '$1.$2.$3-$4');
+      } else if (value.length > 6) {
+        value = value.replace(/^(\d{3})(\d{3})(\d{0,3})/, '$1.$2.$3');
+      } else if (value.length > 3) {
+        value = value.replace(/^(\d{3})(\d{0,3})/, '$1.$2');
+      }
+      
+      e.target.value = value;
+    });
+  }
+  // ========================================
   // EXCLUIR CASO COMPLETO
   // ========================================
 
