@@ -468,14 +468,15 @@ const initCaseDetail = async () => {
   };
 
   // ========================================
-  // RENDERIZAR ARQUIVOS COM CATEGORIAS
+  // RENDERIZAR ARQUIVOS COM CATEGORIAS EXPANDIDAS
   // ========================================
 
   const renderFiles = (prosthesis) => {
     const files = prosthesis.files || [];
     
-    // Categorizar arquivos
+    // Categorizar arquivos por TIPO e ARCADA e ESTÁGIO
     const categories = {
+      // Por tipo de arquivo
       fotos: files.filter(f => {
         const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
         return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic'].includes(ext);
@@ -484,13 +485,21 @@ const initCaseDetail = async () => {
         const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
         return ['stl', 'ply', 'obj', '3mf'].includes(ext);
       }),
+      // Por arcada
       maxila: files.filter(f => f.arcada === 'maxila'),
       mandibula: files.filter(f => f.arcada === 'mandibula'),
+      // Por estágio
+      escaneamento: files.filter(f => f.stage === 'escaneamento'),
+      planejamento: files.filter(f => f.stage === 'planejamento'),
+      impressao: files.filter(f => f.stage === 'impressao'),
+      teste: files.filter(f => f.stage === 'teste'),
+      concluido: files.filter(f => f.stage === 'concluido'),
+      // Outros
       outros: files.filter(f => {
         const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
         const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic'].includes(ext);
         const is3D = ['stl', 'ply', 'obj', '3mf'].includes(ext);
-        return !isImage && !is3D && f.arcada !== 'maxila' && f.arcada !== 'mandibula';
+        return !isImage && !is3D && !f.arcada && !f.stage;
       })
     };
 
@@ -500,6 +509,11 @@ const initCaseDetail = async () => {
       stl: categories.stl.length,
       maxila: categories.maxila.length,
       mandibula: categories.mandibula.length,
+      escaneamento: categories.escaneamento.length,
+      planejamento: categories.planejamento.length,
+      impressao: categories.impressao.length,
+      teste: categories.teste.length,
+      concluido: categories.concluido.length,
       outros: categories.outros.length
     };
 
@@ -535,6 +549,31 @@ const initCaseDetail = async () => {
             🦷 Mandíbula (${counts.mandibula})
           </button>
         ` : ''}
+        ${counts.escaneamento > 0 ? `
+          <button class="file-category-tab" data-category="escaneamento" data-prosthesis-id="${prosthesis.id}">
+            🔍 Escaneamento (${counts.escaneamento})
+          </button>
+        ` : ''}
+        ${counts.planejamento > 0 ? `
+          <button class="file-category-tab" data-category="planejamento" data-prosthesis-id="${prosthesis.id}">
+            📐 Planejamento (${counts.planejamento})
+          </button>
+        ` : ''}
+        ${counts.impressao > 0 ? `
+          <button class="file-category-tab" data-category="impressao" data-prosthesis-id="${prosthesis.id}">
+            🖨️ Impressão (${counts.impressao})
+          </button>
+        ` : ''}
+        ${counts.teste > 0 ? `
+          <button class="file-category-tab" data-category="teste" data-prosthesis-id="${prosthesis.id}">
+            🧪 Teste (${counts.teste})
+          </button>
+        ` : ''}
+        ${counts.concluido > 0 ? `
+          <button class="file-category-tab" data-category="concluido" data-prosthesis-id="${prosthesis.id}">
+            ✅ Concluído (${counts.concluido})
+          </button>
+        ` : ''}
         ${counts.outros > 0 ? `
           <button class="file-category-tab" data-category="outros" data-prosthesis-id="${prosthesis.id}">
             📄 Outros (${counts.outros})
@@ -567,12 +606,22 @@ const initCaseDetail = async () => {
       filteredFiles = files.filter(f => f.arcada === 'maxila');
     } else if (category === 'mandibula') {
       filteredFiles = files.filter(f => f.arcada === 'mandibula');
+    } else if (category === 'escaneamento') {
+      filteredFiles = files.filter(f => f.stage === 'escaneamento');
+    } else if (category === 'planejamento') {
+      filteredFiles = files.filter(f => f.stage === 'planejamento');
+    } else if (category === 'impressao') {
+      filteredFiles = files.filter(f => f.stage === 'impressao');
+    } else if (category === 'teste') {
+      filteredFiles = files.filter(f => f.stage === 'teste');
+    } else if (category === 'concluido') {
+      filteredFiles = files.filter(f => f.stage === 'concluido');
     } else if (category === 'outros') {
       filteredFiles = files.filter(f => {
         const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
         const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic'].includes(ext);
         const is3D = ['stl', 'ply', 'obj', '3mf'].includes(ext);
-        return !isImage && !is3D && f.arcada !== 'maxila' && f.arcada !== 'mandibula';
+        return !isImage && !is3D && !f.arcada && !f.stage;
       });
     }
 
@@ -586,12 +635,20 @@ const initCaseDetail = async () => {
       'outros': 'Outros'
     };
 
+    const stageLabels = {
+      'escaneamento': 'Escaneamento',
+      'planejamento': 'Planejamento',
+      'impressao': 'Impressão',
+      'teste': 'Teste',
+      'concluido': 'Concluído'
+    };
+
     return `
       <div class="files-list">
         ${filteredFiles.map((file) => {
-          const fileIndex = files.indexOf(file); // Índice real no array original
+          const fileIndex = files.indexOf(file);
           return `
-            <div class="file-item">
+            <div class="file-item" style="cursor: pointer;" data-file-url="${file.url || '#'}" data-file-name="${file.originalName || file.name}">
               <div class="file-info">
                 <div class="file-icon">${getFileIcon(file.originalName || file.name)}</div>
                 <div class="file-details">
@@ -600,11 +657,14 @@ const initCaseDetail = async () => {
                     ${file.arcada ? 
                       `<span class="file-arcada-badge ${file.arcada}">${arcadaLabels[file.arcada] || file.arcada}</span>` 
                       : ''}
+                    ${file.stage ? 
+                      `<span class="file-stage-badge ${file.stage}">${stageLabels[file.stage] || file.stage}</span>` 
+                      : ''}
                   </div>
                   <div class="file-meta">${formatFileSize(file.size)} • ${formatDateTime(file.uploadedAt)}</div>
                 </div>
               </div>
-              <div class="file-actions">
+              <div class="file-actions" onclick="event.stopPropagation()">
                 <button class="file-action-btn delete delete-file-btn" 
                         data-prosthesis-id="${prosthesisId}" 
                         data-file-index="${fileIndex}">🗑️</button>
@@ -614,6 +674,25 @@ const initCaseDetail = async () => {
         }).join('')}
       </div>
     `;
+  };
+
+  // ========================================
+  // DOWNLOAD DE ARQUIVOS
+  // ========================================
+
+  const downloadFile = (url, filename) => {
+    if (url && url !== '#') {
+      // Criar link temporário para download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename || 'arquivo';
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } else {
+      showNotification('Arquivo não disponível para download', 'error');
+    }
   };
 
   // ========================================
@@ -641,15 +720,31 @@ const initCaseDetail = async () => {
     if (container) {
       container.innerHTML = renderFilesList(files, category, prosthesisId);
       
-      // Re-adicionar event listeners para os botões de deletar
-      container.querySelectorAll('.delete-file-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          const pId = e.target.dataset.prosthesisId;
-          const fileIndex = parseInt(e.target.dataset.fileIndex);
-          await deleteFileFromProsthesis(pId, fileIndex);
-        });
-      });
+      // Re-adicionar event listeners
+      attachFileEventListeners(prosthesisId);
     }
+  };
+
+  // Event listeners para arquivos
+  const attachFileEventListeners = (prosthesisId) => {
+    // Clique para download
+    document.querySelectorAll('.file-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        const url = e.currentTarget.dataset.fileUrl;
+        const filename = e.currentTarget.dataset.fileName;
+        downloadFile(url, filename);
+      });
+    });
+
+    // Botões de deletar
+    document.querySelectorAll('.delete-file-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const pId = e.target.dataset.prosthesisId;
+        const fileIndex = parseInt(e.target.dataset.fileIndex);
+        await deleteFileFromProsthesis(pId, fileIndex);
+      });
+    });
   };
 
   const renderTimeline = (prosthesis) => {
@@ -800,18 +895,15 @@ const initCaseDetail = async () => {
         const files = Array.from(e.target.files);
         if (files.length > 0) {
           await uploadFilesToProsthesis(prosthesisId, files);
-          e.target.value = ''; // Limpar input
+          e.target.value = '';
         }
       });
     });
 
-    // Botões de deletar arquivo
-    document.querySelectorAll('.delete-file-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        const prosthesisId = e.target.dataset.prosthesisId;
-        const fileIndex = parseInt(e.target.dataset.fileIndex);
-        await deleteFileFromProsthesis(prosthesisId, fileIndex);
-      });
+    // Event listeners de arquivos (download e delete)
+    document.querySelectorAll('.prosthesis-section').forEach(section => {
+      const prosthesisId = section.dataset.prosthesisId;
+      attachFileEventListeners(prosthesisId);
     });
 
     // Botões de salvar observações
@@ -901,7 +993,6 @@ const initCaseDetail = async () => {
     
     if (!prosthesis) return;
 
-    // Preencher campos
     if (editProsthesisId) editProsthesisId.value = prosthesisId;
     if (editFirstConsultation) editFirstConsultation.value = prosthesis.firstConsultation || '';
     if (editPhotoDate) editPhotoDate.value = prosthesis.photoDate || '';
@@ -946,7 +1037,6 @@ const initCaseDetail = async () => {
           return;
         }
 
-        // Atualizar datas
         prostheses[prosthesisIndex].firstConsultation = editFirstConsultation.value || null;
         prostheses[prosthesisIndex].photoDate = editPhotoDate.value || null;
         prostheses[prosthesisIndex].moldingDate = editMoldingDate.value || null;
@@ -954,7 +1044,6 @@ const initCaseDetail = async () => {
         prostheses[prosthesisIndex].testDate = editTestDate.value || null;
         prostheses[prosthesisIndex].deliveryDate = editDeliveryDate.value || null;
 
-        // Adicionar à timeline
         const timelineItem = {
           action: 'dates_update',
           description: 'Datas atualizadas',
@@ -1040,14 +1129,12 @@ const initCaseDetail = async () => {
           return;
         }
 
-        // Adicionar data personalizada
         prostheses[prosthesisIndex].customDates = prostheses[prosthesisIndex].customDates || [];
         prostheses[prosthesisIndex].customDates.push({
           label: label,
           date: date
         });
 
-        // Adicionar à timeline
         const timelineItem = {
           action: 'custom_date_add',
           description: `Data adicionada: ${label}`,
@@ -1092,11 +1179,9 @@ const initCaseDetail = async () => {
       const customDates = prostheses[prosthesisIndex].customDates || [];
       const dateLabel = customDates[dateIndex].label;
 
-      // Remover data
       customDates.splice(dateIndex, 1);
       prostheses[prosthesisIndex].customDates = customDates;
 
-      // Adicionar à timeline
       const timelineItem = {
         action: 'custom_date_delete',
         description: `Data removida: ${dateLabel}`,
@@ -1121,27 +1206,12 @@ const initCaseDetail = async () => {
   };
 
   // ========================================
-  // UPLOAD DE ARQUIVOS COM MODAL
+  // MODAL DE SELEÇÃO DE ARCADA E ESTÁGIO
   // ========================================
 
   let pendingFilesUpload = null;
   let pendingProsthesisId = null;
 
-  const uploadFilesToProsthesis = async (prosthesisId, files) => {
-    if (files.length === 0) return;
-
-    // Armazenar arquivos pendentes
-    pendingFilesUpload = files;
-    pendingProsthesisId = prosthesisId;
-
-    // Abrir modal de seleção
-    const selectArcadaModal = document.getElementById('selectArcadaModal');
-    if (selectArcadaModal) {
-      selectArcadaModal.classList.add('active');
-    }
-  };
-
-  // Modal de seleção de arcada
   const selectArcadaModal = document.getElementById('selectArcadaModal');
   const closeSelectArcadaModal = document.getElementById('closeSelectArcadaModal');
 
@@ -1163,6 +1233,22 @@ const initCaseDetail = async () => {
     });
   }
 
+  // ========================================
+  // UPLOAD DE ARQUIVOS COM MODAL
+  // ========================================
+
+  const uploadFilesToProsthesis = async (prosthesisId, files) => {
+    if (files.length === 0) return;
+
+    pendingFilesUpload = files;
+    pendingProsthesisId = prosthesisId;
+
+    // Abrir modal de seleção
+    if (selectArcadaModal) {
+      selectArcadaModal.classList.add('active');
+    }
+  };
+
   // Botões de seleção de arcada
   document.querySelectorAll('.arcada-option-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
@@ -1174,10 +1260,29 @@ const initCaseDetail = async () => {
         return;
       }
 
-      // Fechar modal
+      // Fechar modal de arcada
       if (selectArcadaModal) {
         selectArcadaModal.classList.remove('active');
       }
+
+      // Agora perguntar o estágio
+      const stagePrompt = prompt(
+        'Para qual estágio são esses arquivos?\n\n' +
+        '1 - Escaneamento\n' +
+        '2 - Planejamento\n' +
+        '3 - Impressão\n' +
+        '4 - Teste\n' +
+        '5 - Concluído\n' +
+        '0 - Nenhum (pular)\n\n' +
+        'Digite o número:'
+      );
+      
+      let stage = null;
+      if (stagePrompt === '1') stage = 'escaneamento';
+      else if (stagePrompt === '2') stage = 'planejamento';
+      else if (stagePrompt === '3') stage = 'impressao';
+      else if (stagePrompt === '4') stage = 'teste';
+      else if (stagePrompt === '5') stage = 'concluido';
 
       showNotification('Processando arquivos...', 'info');
 
@@ -1197,25 +1302,37 @@ const initCaseDetail = async () => {
           type: file.type,
           url: '#',
           arcada: arcada,
+          stage: stage,
           uploadedAt: new Date().toISOString(),
           uploadedBy: currentUser.name,
           uploadedById: currentUser.id
         }));
 
-        // Adicionar arquivos
         prostheses[prosthesisIndex].files = prostheses[prosthesisIndex].files || [];
         prostheses[prosthesisIndex].files.push(...newFiles);
 
-        // Adicionar à timeline
         const arcadaLabels = {
           'mandibula': 'Mandíbula',
           'maxila': 'Maxila',
           'outros': 'Outros'
         };
 
+        const stageLabels = {
+          'escaneamento': 'Escaneamento',
+          'planejamento': 'Planejamento',
+          'impressao': 'Impressão',
+          'teste': 'Teste',
+          'concluido': 'Concluído'
+        };
+
+        let description = `${newFiles.length} arquivo(s) adicionado(s) - ${arcadaLabels[arcada]}`;
+        if (stage) {
+          description += ` - ${stageLabels[stage]}`;
+        }
+
         const timelineItem = {
           action: 'files_upload',
-          description: `${newFiles.length} arquivo(s) adicionado(s) - ${arcadaLabels[arcada]}`,
+          description: description,
           date: new Date().toISOString(),
           user: currentUser.name,
           userId: currentUser.id
@@ -1231,7 +1348,6 @@ const initCaseDetail = async () => {
 
         showNotification('Arquivo(s) adicionado(s)!', 'success');
         
-        // Limpar arquivos pendentes
         pendingFilesUpload = null;
         pendingProsthesisId = null;
 
@@ -1261,11 +1377,9 @@ const initCaseDetail = async () => {
       const files = prostheses[prosthesisIndex].files || [];
       const fileName = files[fileIndex].originalName;
 
-      // Remover arquivo
       files.splice(fileIndex, 1);
       prostheses[prosthesisIndex].files = files;
 
-      // Adicionar à timeline
       const timelineItem = {
         action: 'file_delete',
         description: `Arquivo removido: ${fileName}`,
@@ -1305,7 +1419,6 @@ const initCaseDetail = async () => {
 
       prostheses[prosthesisIndex].notes = notes.trim();
 
-      // Adicionar à timeline
       const timelineItem = {
         action: 'notes_update',
         description: 'Observações atualizadas',
@@ -1344,21 +1457,17 @@ const initCaseDetail = async () => {
   const editPatientCPF = document.getElementById('editPatientCPF');
   const editPatientPhoto = document.getElementById('editPatientPhoto');
 
-  // Abrir modal de edição
   if (editCaseBtn && editCaseModal) {
     editCaseBtn.addEventListener('click', () => {
-      // Preencher campos com dados atuais
       if (editPatientName) editPatientName.value = currentCase.patientName || '';
       if (editPatientPhone) editPatientPhone.value = currentCase.patientPhone || '';
       if (editPatientEmail) editPatientEmail.value = currentCase.patientEmail || '';
       if (editPatientCPF) editPatientCPF.value = currentCase.patientCPF || '';
 
-      // Abrir modal
       editCaseModal.classList.add('active');
     });
   }
 
-  // Fechar modal
   const closeEditCaseModalFunc = () => {
     if (editCaseModal) editCaseModal.classList.remove('active');
   };
@@ -1379,7 +1488,6 @@ const initCaseDetail = async () => {
     });
   }
 
-  // Salvar edições
   if (editCaseForm) {
     editCaseForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1402,17 +1510,14 @@ const initCaseDetail = async () => {
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        // Se houver nova foto, converter para base64
         if (editPatientPhoto.files && editPatientPhoto.files[0]) {
           const file = editPatientPhoto.files[0];
           
-          // Validar tamanho (máx 5MB)
           if (file.size > 5 * 1024 * 1024) {
             showNotification('Foto muito grande. Máximo 5MB', 'error');
             return;
           }
 
-          // Converter para base64
           const base64 = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result);
@@ -1423,10 +1528,8 @@ const initCaseDetail = async () => {
           updateData.patientPhoto = base64;
         }
 
-        // Atualizar no Firestore
         await db.collection('cases').doc(caseId).update(updateData);
 
-        // Adicionar à timeline de TODAS as próteses
         const prostheses = currentCase.prostheses || [];
         prostheses.forEach(prosthesis => {
           prosthesis.timeline = prosthesis.timeline || [];
@@ -1446,7 +1549,6 @@ const initCaseDetail = async () => {
         showNotification('Informações atualizadas com sucesso!', 'success');
         closeEditCaseModalFunc();
 
-        // Limpar input de foto
         if (editPatientPhoto) editPatientPhoto.value = '';
 
       } catch (error) {
@@ -1491,6 +1593,7 @@ const initCaseDetail = async () => {
       e.target.value = value;
     });
   }
+
   // ========================================
   // EXCLUIR CASO COMPLETO
   // ========================================
