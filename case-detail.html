@@ -372,7 +372,8 @@
                     </div>
                 </div>
                 <div class="case-header-actions">
-                    <button class="btn btn-error" id="deleteCaseBtn">🗑️ Excluir Caso Completo</button>
+                    <button class="btn btn-secondary" id="editCaseBtn">✏️ Editar Informações</button>
+                    <button class="btn btn-error" id="deleteCaseBtn">🗑️ Excluir Caso</button>
                 </div>
             </div>
 
@@ -487,6 +488,80 @@
         </div>
     </div>
 
+    <!-- Modal de Edição de Informações do Caso -->
+    <div id="editCaseModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>✏️ Editar Informações do Caso</h2>
+                <span class="close-modal" id="closeEditCaseModal">&times;</span>
+            </div>
+            <div style="padding: 1.5rem;">
+                <form id="editCaseForm">
+                    <h3 style="margin-bottom: 1rem; color: var(--gray-700); font-size: 1.125rem; border-bottom: 2px solid var(--gray-200); padding-bottom: 0.5rem;">
+                        📋 Informações do Paciente
+                    </h3>
+
+                    <div class="form-group">
+                        <label for="editPatientName">Nome Completo *</label>
+                        <input 
+                            type="text" 
+                            id="editPatientName" 
+                            class="form-control"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editPatientPhone">Telefone</label>
+                        <input 
+                            type="tel" 
+                            id="editPatientPhone" 
+                            class="form-control"
+                            placeholder="(00) 00000-0000"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editPatientEmail">E-mail</label>
+                        <input 
+                            type="email" 
+                            id="editPatientEmail" 
+                            class="form-control"
+                            placeholder="email@exemplo.com"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editPatientCPF">CPF</label>
+                        <input 
+                            type="text" 
+                            id="editPatientCPF" 
+                            class="form-control"
+                            placeholder="000.000.000-00"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editPatientPhoto">Foto do Paciente</label>
+                        <input 
+                            type="file" 
+                            id="editPatientPhoto" 
+                            class="form-control"
+                            accept="image/*"
+                        >
+                        <small style="color: var(--gray-500); font-size: 0.75rem; display: block; margin-top: 0.5rem;">
+                            Deixe em branco para manter a foto atual
+                        </small>
+                    </div>
+
+                    <div class="form-actions" style="margin-top: 2rem;">
+                        <button type="button" class="btn btn-secondary" id="cancelEditCaseBtn">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">💾 Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <!-- Modal de Seleção de Arcada -->
     <div id="selectArcadaModal" class="modal">
         <div class="modal-content" style="max-width: 400px;">
