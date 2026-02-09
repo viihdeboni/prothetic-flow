@@ -320,6 +320,114 @@
                 font-size: 0.8125rem;
             }
         }
+        /* Modal de Seleção de Etapa */
+        .stage-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .stage-option-btn {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            background-color: var(--white);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-align: left;
+            width: 100%;
+        }
+
+        .stage-option-btn:hover {
+            border-color: var(--primary-blue);
+            background-color: rgba(37, 99, 235, 0.05);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stage-option-icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .stage-option-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            flex: 1;
+        }
+
+        .stage-option-label {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .stage-option-desc {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+        }
+
+        .stage-option-btn[data-stage="escaneamento"]:hover {
+            border-color: var(--primary-blue);
+        }
+
+        .stage-option-btn[data-stage="escaneamento"]:hover .stage-option-icon {
+            color: var(--primary-blue);
+        }
+
+        .stage-option-btn[data-stage="planejamento"]:hover {
+            border-color: #9333ea;
+        }
+
+        .stage-option-btn[data-stage="planejamento"]:hover .stage-option-icon {
+            color: #9333ea;
+        }
+
+        .stage-option-btn[data-stage="impressao"]:hover {
+            border-color: var(--warning);
+        }
+
+        .stage-option-btn[data-stage="impressao"]:hover .stage-option-icon {
+            color: var(--warning);
+        }
+
+        .stage-option-btn[data-stage="teste"]:hover {
+            border-color: #ec4899;
+        }
+
+        .stage-option-btn[data-stage="teste"]:hover .stage-option-icon {
+            color: #ec4899;
+        }
+
+        .stage-option-btn[data-stage="concluido"]:hover {
+            border-color: var(--success);
+        }
+
+        .stage-option-btn[data-stage="concluido"]:hover .stage-option-icon {
+            color: var(--success);
+        }
+
+        @media (max-width: 480px) {
+            .stage-option-btn {
+                padding: 0.875rem 1rem;
+            }
+
+            .stage-option-icon {
+                font-size: 1.5rem;
+            }
+
+            .stage-option-label {
+                font-size: 0.9375rem;
+            }
+
+            .stage-option-desc {
+                font-size: 0.8125rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -591,6 +699,71 @@
                         <span class="arcada-option-icon">📄</span>
                         <span class="arcada-option-label">Outros</span>
                         <span class="arcada-option-desc">Documentos gerais</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Seleção de Etapa -->
+    <div id="selectStageModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>📐 Selecione a Etapa</h2>
+                <span class="close-modal" id="closeSelectStageModal">&times;</span>
+            </div>
+            <div style="padding: 1.5rem;">
+                <p style="margin-bottom: 1.5rem; color: var(--gray-600);">
+                    Em qual etapa do processo estão esses arquivos?
+                </p>
+                
+                <div class="stage-options">
+                    <button class="stage-option-btn" data-stage="escaneamento">
+                        <span class="stage-option-icon">🔍</span>
+                        <div class="stage-option-content">
+                            <span class="stage-option-label">Escaneamento</span>
+                            <span class="stage-option-desc">Digitalização inicial</span>
+                        </div>
+                    </button>
+                    
+                    <button class="stage-option-btn" data-stage="planejamento">
+                        <span class="stage-option-icon">📐</span>
+                        <div class="stage-option-content">
+                            <span class="stage-option-label">Planejamento</span>
+                            <span class="stage-option-desc">Design e modelagem 3D</span>
+                        </div>
+                    </button>
+                    
+                    <button class="stage-option-btn" data-stage="impressao">
+                        <span class="stage-option-icon">🖨️</span>
+                        <div class="stage-option-content">
+                            <span class="stage-option-label">Impressão</span>
+                            <span class="stage-option-desc">Manufatura da prótese</span>
+                        </div>
+                    </button>
+                    
+                    <button class="stage-option-btn" data-stage="teste">
+                        <span class="stage-option-icon">🧪</span>
+                        <div class="stage-option-content">
+                            <span class="stage-option-label">Teste</span>
+                            <span class="stage-option-desc">Prova e ajustes</span>
+                        </div>
+                    </button>
+                    
+                    <button class="stage-option-btn" data-stage="concluido">
+                        <span class="stage-option-icon">✅</span>
+                        <div class="stage-option-content">
+                            <span class="stage-option-label">Concluído</span>
+                            <span class="stage-option-desc">Entrega final</span>
+                        </div>
+                    </button>
+                    
+                    <button class="stage-option-btn" data-stage="null">
+                        <span class="stage-option-icon">⏭️</span>
+                        <div class="stage-option-content">
+                            <span class="stage-option-label">Nenhuma Etapa</span>
+                            <span class="stage-option-desc">Não vincular a uma etapa</span>
+                        </div>
                     </button>
                 </div>
             </div>
