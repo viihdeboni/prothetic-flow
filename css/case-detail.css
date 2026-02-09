@@ -145,6 +145,11 @@
     background-color: var(--gray-50);
     border-radius: var(--radius-md);
     border: 1px solid var(--gray-200);
+    position: relative;
+}
+
+.date-item.custom-date {
+    padding-right: 2.5rem;
 }
 
 .date-icon {
@@ -171,6 +176,24 @@
     color: var(--gray-900);
 }
 
+.delete-custom-date-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    color: var(--error);
+    opacity: 0.6;
+    transition: opacity var(--transition-fast);
+}
+
+.delete-custom-date-btn:hover {
+    opacity: 1;
+}
+
 /* ========================================
    VALOR
    ======================================== */
@@ -179,6 +202,49 @@
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--primary-blue);
+}
+
+/* ========================================
+   CATEGORIAS DE ARQUIVOS
+   ======================================== */
+
+.file-categories-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    border-bottom: 2px solid var(--gray-200);
+    padding-bottom: 0.5rem;
+}
+
+.file-category-tab {
+    padding: 0.5rem 1rem;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    white-space: nowrap;
+}
+
+.file-category-tab:hover {
+    color: var(--primary-blue);
+    background-color: var(--gray-50);
+}
+
+.file-category-tab.active {
+    color: var(--primary-blue);
+    border-bottom-color: var(--primary-blue);
+    font-weight: 600;
+    background-color: rgba(37, 99, 235, 0.05);
+}
+
+.files-list-container {
+    min-height: 100px;
 }
 
 /* ========================================
@@ -205,6 +271,8 @@
 .file-item:hover {
     background-color: var(--gray-100);
     border-color: var(--gray-300);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
 .file-info {
@@ -230,6 +298,10 @@
     font-weight: 600;
     color: var(--gray-900);
     word-break: break-all;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .file-meta {
@@ -262,6 +334,70 @@
 
 .file-action-btn.delete:hover {
     background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* ========================================
+   BADGES DE ARCADA E ESTÁGIO
+   ======================================== */
+
+.file-arcada-badge {
+    display: inline-flex;
+    padding: 0.2rem 0.5rem;
+    background-color: var(--gray-200);
+    border-radius: var(--radius-sm);
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.file-arcada-badge.mandibula {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: var(--primary-blue);
+}
+
+.file-arcada-badge.maxila {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+.file-arcada-badge.outros {
+    background-color: rgba(107, 114, 128, 0.1);
+    color: var(--gray-600);
+}
+
+.file-stage-badge {
+    display: inline-flex;
+    padding: 0.2rem 0.5rem;
+    background-color: var(--gray-200);
+    border-radius: var(--radius-sm);
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.file-stage-badge.escaneamento {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: var(--primary-blue);
+}
+
+.file-stage-badge.planejamento {
+    background-color: rgba(147, 51, 234, 0.1);
+    color: #9333ea;
+}
+
+.file-stage-badge.impressao {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+.file-stage-badge.teste {
+    background-color: rgba(236, 72, 153, 0.1);
+    color: #ec4899;
+}
+
+.file-stage-badge.concluido {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success);
 }
 
 /* ========================================
@@ -428,6 +564,17 @@
     .info-grid {
         grid-template-columns: 1fr;
     }
+
+    .file-categories-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+    }
+    
+    .file-category-tab {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
 }
 
 @media (max-width: 768px) {
@@ -446,5 +593,15 @@
 
     .case-header-actions .btn {
         width: 100%;
+    }
+
+    .file-name {
+        font-size: 0.8125rem;
+    }
+
+    .file-arcada-badge,
+    .file-stage-badge {
+        font-size: 0.625rem;
+        padding: 0.15rem 0.4rem;
     }
 }
