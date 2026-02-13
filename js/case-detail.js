@@ -1299,7 +1299,10 @@ document.querySelectorAll('.stage-option-btn').forEach(btn => {
     try {
       const prostheses = currentCase.prostheses || [];
       const prosthesisIndex = prostheses.findIndex(p => p.id === pendingProsthesisId);
-      if (prosthesisIndex === -1) return showNotification('Prótese não encontrada', 'error');
+      if (prosthesisIndex === -1) {
+        showNotification('Prótese não encontrada', 'error');
+        return;
+      }
 
       // Upload múltiplo para o Cloudflare R2
       const uploadResults = await window.R2Upload.uploadMultiple(
@@ -1368,57 +1371,6 @@ document.querySelectorAll('.stage-option-btn').forEach(btn => {
   });
 });
 
-
-        prostheses[prosthesisIndex].files = prostheses[prosthesisIndex].files || [];
-        prostheses[prosthesisIndex].files.push(...newFiles);
-
-        const arcadaLabels = {
-          'mandibula': 'Mandíbula',
-          'maxila': 'Maxila',
-          'outros': 'Outros'
-        };
-
-        const stageLabels = {
-          'escaneamento': 'Escaneamento',
-          'planejamento': 'Planejamento',
-          'impressao': 'Impressão',
-          'teste': 'Teste',
-          'concluido': 'Concluído'
-        };
-
-        let description = `${newFiles.length} arquivo(s) adicionado(s) - ${arcadaLabels[selectedArcada]}`;
-        if (stage) {
-          description += ` - ${stageLabels[stage]}`;
-        }
-
-        const timelineItem = {
-          action: 'files_upload',
-          description: description,
-          date: new Date().toISOString(),
-          user: currentUser.name,
-          userId: currentUser.id
-        };
-
-        prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
-        prostheses[prosthesisIndex].timeline.push(timelineItem);
-
-        await db.collection('cases').doc(caseId).update({
-          prostheses: prostheses,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        showNotification('Arquivo(s) adicionado(s)! Clique para baixar.', 'success');
-        
-        pendingFilesUpload = null;
-        pendingProsthesisId = null;
-        selectedArcada = null;
-
-      } catch (error) {
-        console.error('❌ Erro ao adicionar arquivos:', error);
-        showNotification('Erro ao adicionar arquivos', 'error');
-      }
-    });
-  });
   
   // ========================================
   // DELETAR ARQUIVO
