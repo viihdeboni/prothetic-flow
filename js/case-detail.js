@@ -1255,109 +1255,119 @@ const initCaseDetail = async () => {
   }
 
   // ========================================
-  // UPLOAD DE ARQUIVOS COM MODAIS
-  // ========================================
+// UPLOAD DE ARQUIVOS COM MODAIS
+// ========================================
 
-  const uploadFilesToProsthesis = async (prosthesisId, files) => {
-    if (files.length === 0) return;
+const uploadFilesToProsthesis = async (prosthesisId, files) => {
+  if (files.length === 0) return;
 
-    pendingFilesUpload = files;
-    pendingProsthesisId = prosthesisId;
+  pendingFilesUpload = files;
+  pendingProsthesisId = prosthesisId;
 
-    // Abrir modal de seleção de arcada
-    if (selectArcadaModal) {
-      selectArcadaModal.classList.add('active');
-    }
-  };
+  // Abrir modal de seleção de arcada
+  if (selectArcadaModal) {
+    selectArcadaModal.classList.add('active');
+  }
+};
 
-  // Botões de seleção de arcada
-  document.querySelectorAll('.arcada-option-btn').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      
-      selectedArcada = btn.dataset.arcada;
-      
-      if (!pendingFilesUpload || !pendingProsthesisId) {
-        return;
-      }
+// Botões de seleção de arcada
+document.querySelectorAll('.arcada-option-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    selectedArcada = btn.dataset.arcada;
 
-      // Fechar modal de arcada
-      if (selectArcadaModal) {
-        selectArcadaModal.classList.remove('active');
-      }
+    if (!pendingFilesUpload || !pendingProsthesisId) return;
 
-      // Abrir modal de etapa
-      if (selectStageModal) {
-        selectStageModal.classList.add('active');
-      }
-    });
+    selectArcadaModal.classList.remove('active');
+    selectStageModal.classList.add('active');
   });
+});
 
-  // Botões de seleção de etapa
-  document.querySelectorAll('.stage-option-btn').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      
-      let stage = btn.dataset.stage;
-      if (stage === 'null') stage = null;
-      
-      if (!pendingFilesUpload || !pendingProsthesisId || !selectedArcada) {
+// Botões de seleção de etapa
+document.querySelectorAll('.stage-option-btn').forEach(btn => {
+  btn.addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    let stage = btn.dataset.stage;
+    if (stage === 'null') stage = null;
+
+    if (!pendingFilesUpload || !pendingProsthesisId || !selectedArcada) return;
+
+    selectStageModal.classList.remove('active');
+    showNotification('Enviando arquivos...', 'info');
+
+    try {
+      const prostheses = currentCase.prostheses || [];
+      const prosthesisIndex = prostheses.findIndex(p => p.id === pendingProsthesisId);
+      if (prosthesisIndex === -1) return showNotification('Prótese não encontrada', 'error');
+
+      // Upload múltiplo para o Cloudflare R2
+      const uploadResults = await window.R2Upload.uploadMultiple(
+        pendingFilesUpload,
+        (current, total, fileName) => {
+          showNotification(`Enviando ${current}/${total}: ${fileName}...`, 'info');
+        }
+      );
+
+      const failedUploads = uploadResults.filter(r => !r.success);
+      if (failedUploads.length > 0) {
+        showNotification(`${failedUploads.length} arquivo(s) falharam.`, 'error');
         return;
       }
 
-      // Fechar modal de etapa
-      if (selectStageModal) {
-        selectStageModal.classList.remove('active');
-      }
+      // Criar registros dos arquivos enviados
+      const newFiles = uploadResults.map(result => ({
+        name: result.fileName,
+        originalName: result.originalFile.name,
+        size: result.originalFile.size,
+        type: result.originalFile.type,
+        url: result.url,
+        arcada: selectedArcada,
+        stage,
+        uploadedAt: new Date().toISOString(),
+        uploadedBy: currentUser.name,
+        uploadedById: currentUser.id
+      }));
 
-      showNotification('Processando arquivos...', 'info');
+      prostheses[prosthesisIndex].files = prostheses[prosthesisIndex].files || [];
+      prostheses[prosthesisIndex].files.push(...newFiles);
 
-      try {
-        const prostheses = currentCase.prostheses || [];
-        const prosthesisIndex = prostheses.findIndex(p => p.id === pendingProsthesisId);
-        
-        if (prosthesisIndex === -1) {
-          showNotification('Prótese não encontrada', 'error');
-          return;
-        }
+      // Timeline
+      const arcadaLabels = { mandibula: 'Mandíbula', maxila: 'Maxila', outros: 'Outros' };
+      const stageLabels = {
+        escaneamento: 'Escaneamento',
+        planejamento: 'Planejamento',
+        impressao: 'Impressão',
+        teste: 'Teste',
+        concluido: 'Concluído'
+      };
 
-        // Converter arquivos para Base64 para armazenamento permanente
-        const newFiles = await Promise.all(
-          pendingFilesUpload.map(async (file) => {
-          
-          // Upload para Cloudflare R2
-        showNotification(`Enviando ${pendingFilesUpload.length} arquivo(s) para a nuvem...`, 'info');
+      let description = `${newFiles.length} arquivo(s) - ${arcadaLabels[selectedArcada]}`;
+      if (stage) description += ` - ${stageLabels[stage]}`;
 
-        const uploadResults = await window.R2Upload.uploadMultiple(
-          pendingFilesUpload,
-          (current, total, fileName) => {
-            showNotification(`Enviando ${current}/${total}: ${fileName}...`, 'info');
-          }
-        );
+      prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
+      prostheses[prosthesisIndex].timeline.push({
+        action: 'files_upload',
+        description,
+        date: new Date().toISOString(),
+        user: currentUser.name,
+        userId: currentUser.id
+      });
 
-        // Verificar se houve erros
-        const failedUploads = uploadResults.filter(r => !r.success);
-        if (failedUploads.length > 0) {
-          showNotification(
-            `${failedUploads.length} arquivo(s) falharam no upload. Tente novamente.`,
-            'error'
-          );
-          return;
-        }
+      await db.collection('cases').doc(caseId).update({
+        prostheses,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
 
-        // Criar registros dos arquivos
-        const newFiles = uploadResults.map(result => ({
-          name: result.fileName,
-          originalName: result.originalFile.name,
-          size: result.originalFile.size,
-          type: result.originalFile.type,
-          url: result.url, // URL permanente do R2
-          arcada: selectedArcada,
-          stage: stage,
-          uploadedAt: new Date().toISOString(),
-          uploadedBy: currentUser.name,
-          uploadedById: currentUser.id
-        }));
+      showNotification('Arquivo(s) adicionados com sucesso!', 'success');
+      pendingFilesUpload = pendingProsthesisId = selectedArcada = null;
+    } catch (error) {
+      console.error('❌ Erro ao enviar arquivos:', error);
+      showNotification('Erro ao enviar arquivos', 'error');
+    }
+  });
+});
+
 
         prostheses[prosthesisIndex].files = prostheses[prosthesisIndex].files || [];
         prostheses[prosthesisIndex].files.push(...newFiles);
