@@ -1,73 +1,88 @@
 // ========================================
-// UPLOAD PARA CLOUDFLARE R2 - ProtheticFlow
+// UPLOAD PARA CLOUDFLARE R2
 // ========================================
 
-const R2Upload = {
-  // Converter arquivo para Base64
-  fileToBase64: (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  },
+console.log('📤 r2-upload.js carregado');
 
-  // Upload de foto (Base64 para Firestore)
-  uploadPhoto: async (file) => {
+window.R2Upload = {
+  /**
+   * Fazer upload de arquivo para R2
+   * @param {File} file - Arquivo para upload
+   * @returns {Promise<{success: boolean, url: string, fileName: string}>}
+   */
+  uploadFile: async (file) => {
     try {
-      console.log('📸 Processando foto:', file.name);
-      const base64 = await R2Upload.fileToBase64(file);
-      return {
-        success: true,
-        data: base64,
-        size: file.size,
-        name: file.name
-      };
+      console.log('📤 Iniciando upload para R2:', file.name);
+
+      // Converter arquivo para base64
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // Chamar API de upload
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileData: base64,
+          fileType: file.type
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Erro no upload');
+      }
+
+      console.log('✅ Upload concluído:', result.url);
+      return result;
+
     } catch (error) {
-      console.error('❌ Erro ao processar foto:', error);
-      return {
-        success: false,
-        error: error.message
-      };
+      console.error('❌ Erro no upload R2:', error);
+      throw error;
     }
   },
 
-  // Simular upload de arquivo grande (STL, PDF)
-  // Em produção, você usaria Cloudflare Workers ou backend
-  uploadFile: async (file, folder = 'files') => {
-    try {
-      const timestamp = Date.now();
-      const randomStr = Math.random().toString(36).substring(2, 9);
-      const extension = file.name.split('.').pop();
-      const fileName = `${folder}/${timestamp}-${randomStr}.${extension}`;
+  /**
+   * Upload de múltiplos arquivos
+   * @param {File[]} files - Array de arquivos
+   * @param {Function} onProgress - Callback de progresso
+   * @returns {Promise<Array>}
+   */
+  uploadMultiple: async (files, onProgress) => {
+    const results = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      try {
+        if (onProgress) {
+          onProgress(i + 1, files.length, files[i].name);
+        }
 
-      console.log('📤 Upload simulado:', fileName);
+        const result = await window.R2Upload.uploadFile(files[i]);
+        results.push({
+          ...result,
+          originalFile: files[i]
+        });
 
-      // Simular delay de upload
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Por enquanto, apenas retorna a referência do arquivo
-      // Em produção, faria upload real para R2
-      return {
-        success: true,
-        fileName: fileName,
-        originalName: file.name,
-        size: file.size,
-        type: file.type,
-        url: `${window.AppConfig.r2.publicUrl}/${fileName}`
-      };
-
-    } catch (error) {
-      console.error('❌ Erro no upload:', error);
-      return {
-        success: false,
-        error: error.message
-      };
+      } catch (error) {
+        console.error(`❌ Erro ao fazer upload de ${files[i].name}:`, error);
+        results.push({
+          success: false,
+          error: error.message,
+          originalFile: files[i]
+        });
+      }
     }
+
+    return results;
   }
 };
 
-// Exportar
-window.R2Upload = R2Upload;
-console.log('✅ R2 Upload configurado');
+console.log('✅ R2Upload pronto!');
