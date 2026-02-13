@@ -1321,24 +1321,43 @@ const initCaseDetail = async () => {
           return;
         }
 
-        // Criar URLs simuladas para download (você pode integrar com R2 depois)
-        const newFiles = pendingFilesUpload.map(file => {
-          // Criar URL simulada (blob URL temporária)
-          const blobUrl = URL.createObjectURL(file);
+        // Converter arquivos para Base64 para armazenamento permanente
+        const newFiles = await Promise.all(
+          pendingFilesUpload.map(async (file) => {
           
-          return {
-            name: `${Date.now()}-${file.name}`,
-            originalName: file.name,
-            size: file.size,
-            type: file.type,
-            url: blobUrl, // URL temporária para download
-            arcada: selectedArcada,
-            stage: stage,
-            uploadedAt: new Date().toISOString(),
-            uploadedBy: currentUser.name,
-            uploadedById: currentUser.id
-          };
-        });
+          // Upload para Cloudflare R2
+        showNotification(`Enviando ${pendingFilesUpload.length} arquivo(s) para a nuvem...`, 'info');
+
+        const uploadResults = await window.R2Upload.uploadMultiple(
+          pendingFilesUpload,
+          (current, total, fileName) => {
+            showNotification(`Enviando ${current}/${total}: ${fileName}...`, 'info');
+          }
+        );
+
+        // Verificar se houve erros
+        const failedUploads = uploadResults.filter(r => !r.success);
+        if (failedUploads.length > 0) {
+          showNotification(
+            `${failedUploads.length} arquivo(s) falharam no upload. Tente novamente.`,
+            'error'
+          );
+          return;
+        }
+
+        // Criar registros dos arquivos
+        const newFiles = uploadResults.map(result => ({
+          name: result.fileName,
+          originalName: result.originalFile.name,
+          size: result.originalFile.size,
+          type: result.originalFile.type,
+          url: result.url, // URL permanente do R2
+          arcada: selectedArcada,
+          stage: stage,
+          uploadedAt: new Date().toISOString(),
+          uploadedBy: currentUser.name,
+          uploadedById: currentUser.id
+        }));
 
         prostheses[prosthesisIndex].files = prostheses[prosthesisIndex].files || [];
         prostheses[prosthesisIndex].files.push(...newFiles);
