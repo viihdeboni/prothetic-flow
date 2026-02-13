@@ -1,88 +1,91 @@
 // ========================================
-// UPLOAD PARA CLOUDFLARE R2
+// UPLOAD PARA CLOUDFLARE R2 (via API Vercel)
 // ========================================
 
 console.log('📤 r2-upload.js carregado');
 
 window.R2Upload = {
   /**
-   * Fazer upload de arquivo para R2
+   * Envia um arquivo único para o endpoint /api/upload
+   * usando FormData (sem base64)
    * @param {File} file - Arquivo para upload
    * @returns {Promise<{success: boolean, url: string, fileName: string}>}
    */
   uploadFile: async (file) => {
     try {
-      console.log('📤 Iniciando upload para R2:', file.name);
+      console.log(`📤 Iniciando upload: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`);
 
-      // Converter arquivo para base64
-      const base64 = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
+      // Cria FormData com o arquivo
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // Chama o endpoint /api/upload (serverless function da Vercel)
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
       });
 
-      // Chamar API de upload
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fileName: file.name,
-          fileData: base64,
-          fileType: file.type
-        })
-      });
-
+      // Lê o resultado
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Erro no upload');
+        throw new Error(result.error || "Erro desconhecido no upload");
       }
 
-      console.log('✅ Upload concluído:', result.url);
-      return result;
-
+      console.log("✅ Upload concluído:", result.url);
+      return {
+        success: true,
+        url: result.url,
+        fileName: result.fileName,
+        originalFile: file,
+      };
     } catch (error) {
-      console.error('❌ Erro no upload R2:', error);
-      throw error;
+      console.error("❌ Erro no upload R2:", error);
+      return {
+        success: false,
+        error: error.message,
+        originalFile: file,
+      };
     }
   },
 
   /**
-   * Upload de múltiplos arquivos
-   * @param {File[]} files - Array de arquivos
-   * @param {Function} onProgress - Callback de progresso
+   * Envia múltiplos arquivos para o R2, um por vez
+   * e exibe progresso no console e UI (opcional)
+   * @param {File[]} files - Lista de arquivos
+   * @param {Function} [onProgress] - Callback (current, total, fileName)
    * @returns {Promise<Array>}
    */
   uploadMultiple: async (files, onProgress) => {
     const results = [];
-    
+
     for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+
       try {
+        // Mostra progresso
         if (onProgress) {
-          onProgress(i + 1, files.length, files[i].name);
+          onProgress(i + 1, files.length, file.name);
+        } else {
+          console.log(`📦 (${i + 1}/${files.length}) Enviando: ${file.name}`);
         }
 
-        const result = await window.R2Upload.uploadFile(files[i]);
-        results.push({
-          ...result,
-          originalFile: files[i]
-        });
-
+        // Faz upload do arquivo
+        const result = await window.R2Upload.uploadFile(file);
+        results.push(result);
       } catch (error) {
-        console.error(`❌ Erro ao fazer upload de ${files[i].name}:`, error);
+        console.error(`❌ Falha ao enviar ${file.name}:`, error);
         results.push({
           success: false,
           error: error.message,
-          originalFile: files[i]
+          originalFile: file,
         });
       }
     }
 
+    console.log("✅ Todos os uploads concluídos:", results);
     return results;
-  }
+  },
 };
 
-console.log('✅ R2Upload pronto!');
+console.log("✅ R2Upload pronto para uso!");
