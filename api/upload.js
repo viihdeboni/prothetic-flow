@@ -16,18 +16,17 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: "Nome do arquivo ausente" });
     }
 
-    const accountId = process.env.R2_ACCOUNT_ID;
-    const bucket = process.env.R2_BUCKET_NAME;
     const accessKey = process.env.R2_ACCESS_KEY_ID;
     const secretKey = process.env.R2_SECRET_ACCESS_KEY;
+    const bucket = process.env.R2_BUCKET_NAME;
+    const publicUrl = process.env.R2_PUBLIC_URL; // ✅ Usa domínio customizado (cdn.protheticflow.win)
 
     const objectKey = `${Date.now()}-${fileName}`;
-    const r2Url = `https://${accountId}.r2.cloudflarestorage.com/${bucket}/${encodeURIComponent(objectKey)}`;
+    const r2Url = `${publicUrl}/${encodeURIComponent(objectKey)}`;
 
     // Header Authorization (Basic)
     const authHeader = `Basic ${Buffer.from(`${accessKey}:${secretKey}`).toString("base64")}`;
 
-    // Retorna URL e cabeçalhos para o front
     return res.status(200).json({
       success: true,
       uploadUrl: r2Url,
