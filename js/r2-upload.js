@@ -1,7 +1,6 @@
 // ========================================
-// UPLOAD DIRETO PARA CLOUDFLARE R2 (USANDO DOMÍNIO PÚBLICO)
+// UPLOAD DIRETO PARA CLOUDFLARE R2 (PRESIGNED URL)
 // ========================================
-
 console.log("📤 r2-upload.js carregado");
 
 window.R2Upload = {
@@ -9,7 +8,7 @@ window.R2Upload = {
     try {
       console.log(`📤 Iniciando upload direto para R2: ${file.name}`);
 
-      // 1️⃣ Solicita URL assinada
+      // 1️⃣ Solicita URL assinada do backend
       const res = await fetch("/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -20,33 +19,34 @@ window.R2Upload = {
       });
 
       const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || "Falha ao obter URL de upload");
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Falha ao obter URL de upload");
+      }
 
-      // 2️⃣ Faz o upload diretamente para o R2
-      const put = await fetch(data.uploadUrl, {
+      console.log("🔗 URL assinada obtida:", data.uploadUrl);
+
+      // 2️⃣ Faz o upload diretamente para o R2 (SEM Authorization header!)
+      const putResponse = await fetch(data.uploadUrl, {
         method: "PUT",
         headers: {
-          "Authorization": data.authHeader,
           "Content-Type": file.type || "application/octet-stream",
         },
         body: file,
       });
 
-      if (!put.ok) {
-        throw new Error(`Upload falhou: ${put.status} ${put.statusText}`);
+      if (!putResponse.ok) {
+        throw new Error(`Upload falhou: ${putResponse.status} ${putResponse.statusText}`);
       }
 
-      // 3️⃣ URL final pública
-      const finalUrl = `https://files.protheticflow.win/${data.fileName}`;
-
-      console.log("✅ Upload concluído:", finalUrl);
+      console.log("✅ Upload concluído:", data.publicUrl);
 
       return {
         success: true,
-        url: finalUrl,
+        url: data.publicUrl,
         fileName: data.fileName,
         originalFile: file,
       };
+
     } catch (error) {
       console.error("❌ Erro no upload R2:", error);
       return { success: false, error: error.message };
@@ -55,7 +55,6 @@ window.R2Upload = {
 
   uploadMultiple: async (files, onProgress) => {
     const results = [];
-
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       try {
@@ -67,7 +66,6 @@ window.R2Upload = {
         results.push({ success: false, error: error.message, originalFile: file });
       }
     }
-
     console.log("📦 Uploads finalizados:", results);
     return results;
   },
