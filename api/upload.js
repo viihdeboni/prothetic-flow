@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     const accessKey = process.env.R2_ACCESS_KEY_ID;
     const secretKey = process.env.R2_SECRET_ACCESS_KEY;
     const bucket = process.env.R2_BUCKET_NAME;
-    const publicUrl = "https://files.protheticflow.win"; // ✅ domínio público correto
+    const publicUrl = "https://direct.protheticflow.win";
 
     // Cria nome único para o arquivo
     const objectKey = `${Date.now()}-${fileName}`;
