@@ -1,20 +1,15 @@
 // ========================================
-// UPLOAD DIRETO PARA CLOUDFLARE R2 (SEM PASSAR PELO VERCEL)
+// UPLOAD DIRETO PARA CLOUDFLARE R2 (USANDO DOMÍNIO PÚBLICO)
 // ========================================
 
 console.log("📤 r2-upload.js carregado");
 
 window.R2Upload = {
-  /**
-   * Faz upload direto pro Cloudflare R2 usando Signed URL
-   * @param {File} file
-   * @returns {Promise<{success: boolean, url: string, fileName: string}>}
-   */
   uploadFile: async (file) => {
     try {
       console.log(`📤 Iniciando upload direto para R2: ${file.name}`);
 
-      // 1️⃣ Solicita uma URL assinada ao backend (sem enviar o arquivo)
+      // 1️⃣ Solicita URL assinada
       const res = await fetch("/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -27,7 +22,7 @@ window.R2Upload = {
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || "Falha ao obter URL de upload");
 
-      // 2️⃣ Envia o arquivo direto ao R2
+      // 2️⃣ Faz o upload diretamente para o R2
       const put = await fetch(data.uploadUrl, {
         method: "PUT",
         headers: {
@@ -41,14 +36,14 @@ window.R2Upload = {
         throw new Error(`Upload falhou: ${put.status} ${put.statusText}`);
       }
 
-      const publicUrl = `https://${data.uploadUrl.split(".cloudflarestorage.com/")[1]}`;
-      const finalUrl = `${process.env?.R2_PUBLIC_URL || data.uploadUrl.split("?")[0]}`;
+      // 3️⃣ URL final pública
+      const finalUrl = `https://files.protheticflow.win/${data.fileName}`;
 
-      console.log("✅ Upload concluído:", data.uploadUrl);
+      console.log("✅ Upload concluído:", finalUrl);
 
       return {
         success: true,
-        url: data.uploadUrl,
+        url: finalUrl,
         fileName: data.fileName,
         originalFile: file,
       };
@@ -58,9 +53,6 @@ window.R2Upload = {
     }
   },
 
-  /**
-   * Faz upload de múltiplos arquivos (sequencial)
-   */
   uploadMultiple: async (files, onProgress) => {
     const results = [];
 
