@@ -1319,18 +1319,26 @@ document.querySelectorAll('.stage-option-btn').forEach(btn => {
       }
 
       // Criar registros dos arquivos enviados
-      const newFiles = uploadResults.map(result => ({
-        name: result.fileName,
-        originalName: result.originalFile.name,
-        size: result.originalFile.size,
-        type: result.originalFile.type,
-        url: result.url,
-        arcada: selectedArcada,
-        stage,
-        uploadedAt: new Date().toISOString(),
-        uploadedBy: currentUser.name,
-        uploadedById: currentUser.id
-      }));
+      const newFiles = uploadResults.map(result => {
+        const fileData = {
+          name: result.fileName,
+          originalName: result.originalFile.name,
+          size: result.originalFile.size,
+          type: result.originalFile.type,
+          url: result.url,
+          arcada: selectedArcada,
+          uploadedAt: new Date().toISOString(),
+          uploadedBy: currentUser.name,
+          uploadedById: currentUser.id
+        };
+        
+        // Só adiciona stage se não for null
+        if (stage) {
+          fileData.stage = stage;
+        }
+        
+        return fileData;
+      });
 
       prostheses[prosthesisIndex].files = prostheses[prosthesisIndex].files || [];
       prostheses[prosthesisIndex].files.push(...newFiles);
@@ -1357,8 +1365,11 @@ document.querySelectorAll('.stage-option-btn').forEach(btn => {
         userId: currentUser.id
       });
 
+      // CRÍTICO: Remover campos undefined antes de salvar
+      const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
+
       await db.collection('cases').doc(caseId).update({
-        prostheses,
+        prostheses: cleanProstheses,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
 
@@ -1370,7 +1381,6 @@ document.querySelectorAll('.stage-option-btn').forEach(btn => {
     }
   });
 });
-
   
   // ========================================
   // DELETAR ARQUIVO
