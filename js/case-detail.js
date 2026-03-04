@@ -681,18 +681,22 @@ const initCaseDetail = async () => {
   // ========================================
 
   const downloadFile = (url, filename) => {
-    if (url && url !== '#') {
-      // Criar link temporário para download
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename || 'arquivo';
-      a.target = '_blank';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    } else {
+    if (!url || url === '#') {
       showNotification('Arquivo não disponível para download', 'error');
+      return;
     }
+
+    // Download direto (método simples e rápido)
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || 'arquivo';
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    
+    showNotification('Download iniciado!', 'success');
   };
 
   // ========================================
@@ -959,8 +963,11 @@ const initCaseDetail = async () => {
       prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
       prostheses[prosthesisIndex].timeline.push(timelineItem);
 
+      // CRÍTICO: Limpar undefined antes de salvar
+      const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
+
       await db.collection('cases').doc(caseId).update({
-        prostheses: prostheses,
+        prostheses: cleanProstheses,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
 
@@ -1055,8 +1062,11 @@ const initCaseDetail = async () => {
         prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
         prostheses[prosthesisIndex].timeline.push(timelineItem);
 
+        // CRÍTICO: Limpar undefined antes de salvar
+        const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
+
         await db.collection('cases').doc(caseId).update({
-          prostheses: prostheses,
+          prostheses: cleanProstheses,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
@@ -1146,8 +1156,11 @@ const initCaseDetail = async () => {
         prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
         prostheses[prosthesisIndex].timeline.push(timelineItem);
 
+        // CRÍTICO: Limpar undefined antes de salvar
+        const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
+
         await db.collection('cases').doc(caseId).update({
-          prostheses: prostheses,
+          prostheses: cleanProstheses,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
@@ -1193,8 +1206,11 @@ const initCaseDetail = async () => {
       prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
       prostheses[prosthesisIndex].timeline.push(timelineItem);
 
+      // CRÍTICO: Limpar undefined antes de salvar
+      const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
+
       await db.collection('cases').doc(caseId).update({
-        prostheses: prostheses,
+        prostheses: cleanProstheses,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
 
@@ -1255,133 +1271,133 @@ const initCaseDetail = async () => {
   }
 
   // ========================================
-// UPLOAD DE ARQUIVOS COM MODAIS
-// ========================================
+  // UPLOAD DE ARQUIVOS COM MODAIS
+  // ========================================
 
-const uploadFilesToProsthesis = async (prosthesisId, files) => {
-  if (files.length === 0) return;
+  const uploadFilesToProsthesis = async (prosthesisId, files) => {
+    if (files.length === 0) return;
 
-  pendingFilesUpload = files;
-  pendingProsthesisId = prosthesisId;
+    pendingFilesUpload = files;
+    pendingProsthesisId = prosthesisId;
 
-  // Abrir modal de seleção de arcada
-  if (selectArcadaModal) {
-    selectArcadaModal.classList.add('active');
-  }
-};
-
-// Botões de seleção de arcada
-document.querySelectorAll('.arcada-option-btn').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    e.preventDefault();
-    selectedArcada = btn.dataset.arcada;
-
-    if (!pendingFilesUpload || !pendingProsthesisId) return;
-
-    selectArcadaModal.classList.remove('active');
-    selectStageModal.classList.add('active');
-  });
-});
-
-// Botões de seleção de etapa
-document.querySelectorAll('.stage-option-btn').forEach(btn => {
-  btn.addEventListener('click', async (e) => {
-    e.preventDefault();
-
-    let stage = btn.dataset.stage;
-    if (stage === 'null') stage = null;
-
-    if (!pendingFilesUpload || !pendingProsthesisId || !selectedArcada) return;
-
-    selectStageModal.classList.remove('active');
-    showNotification('Enviando arquivos...', 'info');
-
-    try {
-      const prostheses = currentCase.prostheses || [];
-      const prosthesisIndex = prostheses.findIndex(p => p.id === pendingProsthesisId);
-      if (prosthesisIndex === -1) {
-        showNotification('Prótese não encontrada', 'error');
-        return;
-      }
-
-      // Upload múltiplo para o Cloudflare R2
-      const uploadResults = await window.R2Upload.uploadMultiple(
-        pendingFilesUpload,
-        (current, total, fileName) => {
-          showNotification(`Enviando ${current}/${total}: ${fileName}...`, 'info');
-        }
-      );
-
-      const failedUploads = uploadResults.filter(r => !r.success);
-      if (failedUploads.length > 0) {
-        showNotification(`${failedUploads.length} arquivo(s) falharam.`, 'error');
-        return;
-      }
-
-      // Criar registros dos arquivos enviados
-      const newFiles = uploadResults.map(result => {
-        const fileData = {
-          name: result.fileName,
-          originalName: result.originalFile.name,
-          size: result.originalFile.size,
-          type: result.originalFile.type,
-          url: result.url,
-          arcada: selectedArcada,
-          uploadedAt: new Date().toISOString(),
-          uploadedBy: currentUser.name,
-          uploadedById: currentUser.id
-        };
-        
-        // Só adiciona stage se não for null
-        if (stage) {
-          fileData.stage = stage;
-        }
-        
-        return fileData;
-      });
-
-      prostheses[prosthesisIndex].files = prostheses[prosthesisIndex].files || [];
-      prostheses[prosthesisIndex].files.push(...newFiles);
-
-      // Timeline
-      const arcadaLabels = { mandibula: 'Mandíbula', maxila: 'Maxila', outros: 'Outros' };
-      const stageLabels = {
-        escaneamento: 'Escaneamento',
-        planejamento: 'Planejamento',
-        impressao: 'Impressão',
-        teste: 'Teste',
-        concluido: 'Concluído'
-      };
-
-      let description = `${newFiles.length} arquivo(s) - ${arcadaLabels[selectedArcada]}`;
-      if (stage) description += ` - ${stageLabels[stage]}`;
-
-      prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
-      prostheses[prosthesisIndex].timeline.push({
-        action: 'files_upload',
-        description,
-        date: new Date().toISOString(),
-        user: currentUser.name,
-        userId: currentUser.id
-      });
-
-      // CRÍTICO: Remover campos undefined antes de salvar
-      const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
-
-      await db.collection('cases').doc(caseId).update({
-        prostheses: cleanProstheses,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-
-      showNotification('Arquivo(s) adicionados com sucesso!', 'success');
-      pendingFilesUpload = pendingProsthesisId = selectedArcada = null;
-    } catch (error) {
-      console.error('❌ Erro ao enviar arquivos:', error);
-      showNotification('Erro ao enviar arquivos', 'error');
+    // Abrir modal de seleção de arcada
+    if (selectArcadaModal) {
+      selectArcadaModal.classList.add('active');
     }
+  };
+
+  // Botões de seleção de arcada
+  document.querySelectorAll('.arcada-option-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      selectedArcada = btn.dataset.arcada;
+
+      if (!pendingFilesUpload || !pendingProsthesisId) return;
+
+      selectArcadaModal.classList.remove('active');
+      selectStageModal.classList.add('active');
+    });
   });
-});
-  
+
+  // Botões de seleção de etapa
+  document.querySelectorAll('.stage-option-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+
+      let stage = btn.dataset.stage;
+      if (stage === 'null') stage = null;
+
+      if (!pendingFilesUpload || !pendingProsthesisId || !selectedArcada) return;
+
+      selectStageModal.classList.remove('active');
+      showNotification('Enviando arquivos...', 'info');
+
+      try {
+        const prostheses = currentCase.prostheses || [];
+        const prosthesisIndex = prostheses.findIndex(p => p.id === pendingProsthesisId);
+        if (prosthesisIndex === -1) {
+          showNotification('Prótese não encontrada', 'error');
+          return;
+        }
+
+        // Upload múltiplo para o Cloudflare R2
+        const uploadResults = await window.R2Upload.uploadMultiple(
+          pendingFilesUpload,
+          (current, total, fileName) => {
+            showNotification(`Enviando ${current}/${total}: ${fileName}...`, 'info');
+          }
+        );
+
+        const failedUploads = uploadResults.filter(r => !r.success);
+        if (failedUploads.length > 0) {
+          showNotification(`${failedUploads.length} arquivo(s) falharam.`, 'error');
+          return;
+        }
+
+        // Criar registros dos arquivos enviados
+        const newFiles = uploadResults.map(result => {
+          const fileData = {
+            name: result.fileName,
+            originalName: result.originalFile.name,
+            size: result.originalFile.size,
+            type: result.originalFile.type,
+            url: result.url,
+            arcada: selectedArcada,
+            uploadedAt: new Date().toISOString(),
+            uploadedBy: currentUser.name,
+            uploadedById: currentUser.id
+          };
+          
+          // Só adiciona stage se não for null
+          if (stage) {
+            fileData.stage = stage;
+          }
+          
+          return fileData;
+        });
+
+        prostheses[prosthesisIndex].files = prostheses[prosthesisIndex].files || [];
+        prostheses[prosthesisIndex].files.push(...newFiles);
+
+        // Timeline
+        const arcadaLabels = { mandibula: 'Mandíbula', maxila: 'Maxila', outros: 'Outros' };
+        const stageLabels = {
+          escaneamento: 'Escaneamento',
+          planejamento: 'Planejamento',
+          impressao: 'Impressão',
+          teste: 'Teste',
+          concluido: 'Concluído'
+        };
+
+        let description = `${newFiles.length} arquivo(s) - ${arcadaLabels[selectedArcada]}`;
+        if (stage) description += ` - ${stageLabels[stage]}`;
+
+        prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
+        prostheses[prosthesisIndex].timeline.push({
+          action: 'files_upload',
+          description,
+          date: new Date().toISOString(),
+          user: currentUser.name,
+          userId: currentUser.id
+        });
+
+        // CRÍTICO: Remover campos undefined antes de salvar
+        const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
+
+        await db.collection('cases').doc(caseId).update({
+          prostheses: cleanProstheses,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        showNotification('Arquivo(s) adicionados com sucesso!', 'success');
+        pendingFilesUpload = pendingProsthesisId = selectedArcada = null;
+      } catch (error) {
+        console.error('❌ Erro ao enviar arquivos:', error);
+        showNotification('Erro ao enviar arquivos', 'error');
+      }
+    });
+  });
+
   // ========================================
   // DELETAR ARQUIVO
   // ========================================
@@ -1415,8 +1431,11 @@ document.querySelectorAll('.stage-option-btn').forEach(btn => {
       prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
       prostheses[prosthesisIndex].timeline.push(timelineItem);
 
+      // CRÍTICO: Limpar undefined antes de salvar
+      const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
+
       await db.collection('cases').doc(caseId).update({
-        prostheses: prostheses,
+        prostheses: cleanProstheses,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
 
@@ -1454,8 +1473,11 @@ document.querySelectorAll('.stage-option-btn').forEach(btn => {
       prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
       prostheses[prosthesisIndex].timeline.push(timelineItem);
 
+      // CRÍTICO: Limpar undefined antes de salvar
+      const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
+
       await db.collection('cases').doc(caseId).update({
-        prostheses: prostheses,
+        prostheses: cleanProstheses,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
 
@@ -1566,8 +1588,11 @@ document.querySelectorAll('.stage-option-btn').forEach(btn => {
           });
         });
 
+        // CRÍTICO: Limpar undefined antes de salvar
+        const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
+
         await db.collection('cases').doc(caseId).update({
-          prostheses: prostheses
+          prostheses: cleanProstheses
         });
 
         showNotification('Informações atualizadas com sucesso!', 'success');
