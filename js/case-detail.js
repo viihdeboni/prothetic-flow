@@ -5,6 +5,31 @@
 console.log('📄 case-detail.js carregado');
 
 // ========================================
+// ESTÁGIOS DISPONÍVEIS (ordem alfabética)
+// ========================================
+
+const STAGES = [
+  { value: 'chamar-paciente',      label: 'Chamar Paciente',      icon: '📞' },
+  { value: 'concluido',            label: 'Concluído',            icon: '✅' },
+  { value: 'escaneamento',         label: 'Escaneamento',         icon: '🔍' },
+  { value: 'imprimindo',           label: 'Imprimindo',           icon: '🖨️' },
+  { value: 'impressao-placa',      label: 'Impressão Placa',      icon: '🖨️' },
+  { value: 'impressao-protese',    label: 'Impressão Prótese',    icon: '🖨️' },
+  { value: 'impressao',            label: 'Impressão',            icon: '🖨️' },
+  { value: 'montagem',             label: 'Montagem',             icon: '🔧' },
+  { value: 'planejamento-placa',   label: 'Planejamento Placa',   icon: '📐' },
+  { value: 'planejamento-protese', label: 'Planejamento Prótese', icon: '📐' },
+  { value: 'planejamento',         label: 'Planejamento',         icon: '📐' },
+  { value: 'polimento',            label: 'Polimento',            icon: '✨' },
+  { value: 'teste',                label: 'Teste',                icon: '🧪' },
+];
+
+const getStageLabel = (value) => {
+  const found = STAGES.find(s => s.value === value);
+  return found ? found.label : value;
+};
+
+// ========================================
 // INICIALIZAR
 // ========================================
 
@@ -283,6 +308,13 @@ const initCaseDetail = async () => {
     attachProsthesisEventListeners();
   };
 
+  // Gera as <option> do select de status com todos os estágios
+  const buildStatusOptions = (currentStatus) => {
+    return STAGES.map(s => `
+      <option value="${s.value}" ${currentStatus === s.value ? 'selected' : ''}>${s.label}</option>
+    `).join('');
+  };
+
   const createProsthesisSection = (prosthesis, index) => {
     const showValue = currentUser.role === 'management';
 
@@ -299,11 +331,7 @@ const initCaseDetail = async () => {
               ${getArcadaLabel(prosthesis.arcada)}
             </span>
             <select class="prosthesis-status-select" data-prosthesis-id="${prosthesis.id}">
-              <option value="escaneamento" ${prosthesis.status === 'escaneamento' ? 'selected' : ''}>Escaneamento</option>
-              <option value="planejamento" ${prosthesis.status === 'planejamento' ? 'selected' : ''}>Planejamento</option>
-              <option value="impressao" ${prosthesis.status === 'impressao' ? 'selected' : ''}>Impressão</option>
-              <option value="teste" ${prosthesis.status === 'teste' ? 'selected' : ''}>Teste</option>
-              <option value="concluido" ${prosthesis.status === 'concluido' ? 'selected' : ''}>Concluído</option>
+              ${buildStatusOptions(prosthesis.status)}
             </select>
           </div>
         </div>
@@ -474,114 +502,56 @@ const initCaseDetail = async () => {
   const renderFiles = (prosthesis) => {
     const files = prosthesis.files || [];
     
-    // Categorizar arquivos por TIPO e ARCADA e ESTÁGIO
-    const categories = {
-      // Por tipo de arquivo
-      fotos: files.filter(f => {
-        const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
-        return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic'].includes(ext);
-      }),
-      stl: files.filter(f => {
-        const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
-        return ['stl', 'ply', 'obj', '3mf'].includes(ext);
-      }),
-      // Por arcada
-      maxila: files.filter(f => f.arcada === 'maxila'),
-      mandibula: files.filter(f => f.arcada === 'mandibula'),
-      // Por estágio
-      escaneamento: files.filter(f => f.stage === 'escaneamento'),
-      planejamento: files.filter(f => f.stage === 'planejamento'),
-      impressao: files.filter(f => f.stage === 'impressao'),
-      teste: files.filter(f => f.stage === 'teste'),
-      concluido: files.filter(f => f.stage === 'concluido'),
-      // Outros
-      outros: files.filter(f => {
-        const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
-        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic'].includes(ext);
-        const is3D = ['stl', 'ply', 'obj', '3mf'].includes(ext);
-        return !isImage && !is3D && !f.arcada && !f.stage;
-      })
-    };
-
-    // Contar arquivos por categoria
-    const counts = {
-      fotos: categories.fotos.length,
-      stl: categories.stl.length,
-      maxila: categories.maxila.length,
-      mandibula: categories.mandibula.length,
-      escaneamento: categories.escaneamento.length,
-      planejamento: categories.planejamento.length,
-      impressao: categories.impressao.length,
-      teste: categories.teste.length,
-      concluido: categories.concluido.length,
-      outros: categories.outros.length
-    };
-
     const totalFiles = files.length;
 
     if (totalFiles === 0) {
       return '<div class="empty-message">Nenhum arquivo anexado</div>';
     }
 
+    // Contar por tipo
+    const countFotos = files.filter(f => {
+      const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
+      return ['jpg','jpeg','png','gif','webp','heic'].includes(ext);
+    }).length;
+
+    const countStl = files.filter(f => {
+      const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
+      return ['stl','ply','obj','3mf'].includes(ext);
+    }).length;
+
+    const countMaxila    = files.filter(f => f.arcada === 'maxila').length;
+    const countMandibula = files.filter(f => f.arcada === 'mandibula').length;
+
+    // Contar por estágio (todos os estágios do array STAGES)
+    const stageCounts = {};
+    STAGES.forEach(s => {
+      stageCounts[s.value] = files.filter(f => f.stage === s.value).length;
+    });
+
+    const countOutros = files.filter(f => {
+      const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
+      const isImage = ['jpg','jpeg','png','gif','webp','heic'].includes(ext);
+      const is3D    = ['stl','ply','obj','3mf'].includes(ext);
+      return !isImage && !is3D && !f.arcada && !f.stage;
+    }).length;
+
     return `
-      <!-- Abas de Categorias -->
       <div class="file-categories-tabs">
         <button class="file-category-tab active" data-category="todos" data-prosthesis-id="${prosthesis.id}">
           📋 Todos (${totalFiles})
         </button>
-        ${counts.fotos > 0 ? `
-          <button class="file-category-tab" data-category="fotos" data-prosthesis-id="${prosthesis.id}">
-            📸 Fotos (${counts.fotos})
+        ${countFotos > 0 ? `<button class="file-category-tab" data-category="fotos" data-prosthesis-id="${prosthesis.id}">📸 Fotos (${countFotos})</button>` : ''}
+        ${countStl > 0 ? `<button class="file-category-tab" data-category="stl" data-prosthesis-id="${prosthesis.id}">🔷 STL/3D (${countStl})</button>` : ''}
+        ${countMaxila > 0 ? `<button class="file-category-tab" data-category="maxila" data-prosthesis-id="${prosthesis.id}">🦷 Maxila (${countMaxila})</button>` : ''}
+        ${countMandibula > 0 ? `<button class="file-category-tab" data-category="mandibula" data-prosthesis-id="${prosthesis.id}">🦷 Mandíbula (${countMandibula})</button>` : ''}
+        ${STAGES.map(s => stageCounts[s.value] > 0 ? `
+          <button class="file-category-tab" data-category="${s.value}" data-prosthesis-id="${prosthesis.id}">
+            ${s.icon} ${s.label} (${stageCounts[s.value]})
           </button>
-        ` : ''}
-        ${counts.stl > 0 ? `
-          <button class="file-category-tab" data-category="stl" data-prosthesis-id="${prosthesis.id}">
-            🔷 STL/3D (${counts.stl})
-          </button>
-        ` : ''}
-        ${counts.maxila > 0 ? `
-          <button class="file-category-tab" data-category="maxila" data-prosthesis-id="${prosthesis.id}">
-            🦷 Maxila (${counts.maxila})
-          </button>
-        ` : ''}
-        ${counts.mandibula > 0 ? `
-          <button class="file-category-tab" data-category="mandibula" data-prosthesis-id="${prosthesis.id}">
-            🦷 Mandíbula (${counts.mandibula})
-          </button>
-        ` : ''}
-        ${counts.escaneamento > 0 ? `
-          <button class="file-category-tab" data-category="escaneamento" data-prosthesis-id="${prosthesis.id}">
-            🔍 Escaneamento (${counts.escaneamento})
-          </button>
-        ` : ''}
-        ${counts.planejamento > 0 ? `
-          <button class="file-category-tab" data-category="planejamento" data-prosthesis-id="${prosthesis.id}">
-            📐 Planejamento (${counts.planejamento})
-          </button>
-        ` : ''}
-        ${counts.impressao > 0 ? `
-          <button class="file-category-tab" data-category="impressao" data-prosthesis-id="${prosthesis.id}">
-            🖨️ Impressão (${counts.impressao})
-          </button>
-        ` : ''}
-        ${counts.teste > 0 ? `
-          <button class="file-category-tab" data-category="teste" data-prosthesis-id="${prosthesis.id}">
-            🧪 Teste (${counts.teste})
-          </button>
-        ` : ''}
-        ${counts.concluido > 0 ? `
-          <button class="file-category-tab" data-category="concluido" data-prosthesis-id="${prosthesis.id}">
-            ✅ Concluído (${counts.concluido})
-          </button>
-        ` : ''}
-        ${counts.outros > 0 ? `
-          <button class="file-category-tab" data-category="outros" data-prosthesis-id="${prosthesis.id}">
-            📄 Outros (${counts.outros})
-          </button>
-        ` : ''}
+        ` : '').join('')}
+        ${countOutros > 0 ? `<button class="file-category-tab" data-category="outros" data-prosthesis-id="${prosthesis.id}">📄 Outros (${countOutros})</button>` : ''}
       </div>
 
-      <!-- Container de Arquivos -->
       <div class="files-list-container" data-prosthesis-id="${prosthesis.id}">
         ${renderFilesList(files, 'todos', prosthesis.id)}
       </div>
@@ -591,38 +561,29 @@ const initCaseDetail = async () => {
   const renderFilesList = (files, category, prosthesisId) => {
     let filteredFiles = files;
 
-    // Filtrar por categoria
     if (category === 'fotos') {
       filteredFiles = files.filter(f => {
         const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
-        return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic'].includes(ext);
+        return ['jpg','jpeg','png','gif','webp','heic'].includes(ext);
       });
     } else if (category === 'stl') {
       filteredFiles = files.filter(f => {
         const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
-        return ['stl', 'ply', 'obj', '3mf'].includes(ext);
+        return ['stl','ply','obj','3mf'].includes(ext);
       });
     } else if (category === 'maxila') {
       filteredFiles = files.filter(f => f.arcada === 'maxila');
     } else if (category === 'mandibula') {
       filteredFiles = files.filter(f => f.arcada === 'mandibula');
-    } else if (category === 'escaneamento') {
-      filteredFiles = files.filter(f => f.stage === 'escaneamento');
-    } else if (category === 'planejamento') {
-      filteredFiles = files.filter(f => f.stage === 'planejamento');
-    } else if (category === 'impressao') {
-      filteredFiles = files.filter(f => f.stage === 'impressao');
-    } else if (category === 'teste') {
-      filteredFiles = files.filter(f => f.stage === 'teste');
-    } else if (category === 'concluido') {
-      filteredFiles = files.filter(f => f.stage === 'concluido');
     } else if (category === 'outros') {
       filteredFiles = files.filter(f => {
         const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
-        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic'].includes(ext);
-        const is3D = ['stl', 'ply', 'obj', '3mf'].includes(ext);
+        const isImage = ['jpg','jpeg','png','gif','webp','heic'].includes(ext);
+        const is3D    = ['stl','ply','obj','3mf'].includes(ext);
         return !isImage && !is3D && !f.arcada && !f.stage;
       });
+    } else if (STAGES.some(s => s.value === category)) {
+      filteredFiles = files.filter(f => f.stage === category);
     }
 
     if (filteredFiles.length === 0) {
@@ -633,14 +594,6 @@ const initCaseDetail = async () => {
       'mandibula': 'Mandíbula',
       'maxila': 'Maxila',
       'outros': 'Outros'
-    };
-
-    const stageLabels = {
-      'escaneamento': 'Escaneamento',
-      'planejamento': 'Planejamento',
-      'impressao': 'Impressão',
-      'teste': 'Teste',
-      'concluido': 'Concluído'
     };
 
     return `
@@ -654,12 +607,8 @@ const initCaseDetail = async () => {
                 <div class="file-details">
                   <div class="file-name">
                     ${file.originalName || file.name}
-                    ${file.arcada ? 
-                      `<span class="file-arcada-badge ${file.arcada}">${arcadaLabels[file.arcada] || file.arcada}</span>` 
-                      : ''}
-                    ${file.stage ? 
-                      `<span class="file-stage-badge ${file.stage}">${stageLabels[file.stage] || file.stage}</span>` 
-                      : ''}
+                    ${file.arcada ? `<span class="file-arcada-badge ${file.arcada}">${arcadaLabels[file.arcada] || file.arcada}</span>` : ''}
+                    ${file.stage ? `<span class="file-stage-badge ${file.stage}">${getStageLabel(file.stage)}</span>` : ''}
                   </div>
                   <div class="file-meta">${formatFileSize(file.size)} • ${formatDateTime(file.uploadedAt)}</div>
                 </div>
@@ -686,7 +635,6 @@ const initCaseDetail = async () => {
       return;
     }
 
-    // Download direto (método simples e rápido)
     const a = document.createElement('a');
     a.href = url;
     a.download = filename || 'arquivo';
@@ -711,7 +659,6 @@ const initCaseDetail = async () => {
 
     const files = prosthesis.files || [];
     
-    // Atualizar abas ativas
     document.querySelectorAll(`.file-category-tab[data-prosthesis-id="${prosthesisId}"]`).forEach(tab => {
       tab.classList.remove('active');
     });
@@ -719,19 +666,14 @@ const initCaseDetail = async () => {
     const activeTab = document.querySelector(`.file-category-tab[data-category="${category}"][data-prosthesis-id="${prosthesisId}"]`);
     if (activeTab) activeTab.classList.add('active');
 
-    // Atualizar lista de arquivos
     const container = document.querySelector(`.files-list-container[data-prosthesis-id="${prosthesisId}"]`);
     if (container) {
       container.innerHTML = renderFilesList(files, category, prosthesisId);
-      
-      // Re-adicionar event listeners
       attachFileEventListeners(prosthesisId);
     }
   };
 
-  // Event listeners para arquivos
   const attachFileEventListeners = (prosthesisId) => {
-    // Clique para download
     document.querySelectorAll('.file-item').forEach(item => {
       item.addEventListener('click', (e) => {
         const url = e.currentTarget.dataset.fileUrl;
@@ -740,7 +682,6 @@ const initCaseDetail = async () => {
       });
     });
 
-    // Botões de deletar
     document.querySelectorAll('.delete-file-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
@@ -849,7 +790,6 @@ const initCaseDetail = async () => {
       });
     });
 
-    // Botões de editar datas
     document.querySelectorAll('.edit-dates-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const prosthesisId = e.target.dataset.prosthesisId;
@@ -857,7 +797,6 @@ const initCaseDetail = async () => {
       });
     });
 
-    // Botões de adicionar data personalizada
     document.querySelectorAll('.add-custom-date-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const prosthesisId = e.target.dataset.prosthesisId;
@@ -865,7 +804,6 @@ const initCaseDetail = async () => {
       });
     });
 
-    // Botões de deletar data personalizada
     document.querySelectorAll('.delete-custom-date-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const prosthesisId = e.target.dataset.prosthesisId;
@@ -874,7 +812,6 @@ const initCaseDetail = async () => {
       });
     });
 
-    // Abas de categorias de arquivos
     document.querySelectorAll('.file-category-tab').forEach(tab => {
       tab.addEventListener('click', (e) => {
         const prosthesisId = e.target.dataset.prosthesisId;
@@ -883,7 +820,6 @@ const initCaseDetail = async () => {
       });
     });
 
-    // Botões de upload
     document.querySelectorAll('.upload-file-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const prosthesisId = e.target.dataset.prosthesisId;
@@ -892,7 +828,6 @@ const initCaseDetail = async () => {
       });
     });
 
-    // Inputs de arquivo
     document.querySelectorAll('.file-input').forEach(input => {
       input.addEventListener('change', async (e) => {
         const prosthesisId = e.target.dataset.prosthesisId;
@@ -904,13 +839,11 @@ const initCaseDetail = async () => {
       });
     });
 
-    // Event listeners de arquivos (download e delete)
     document.querySelectorAll('.prosthesis-section').forEach(section => {
       const prosthesisId = section.dataset.prosthesisId;
       attachFileEventListeners(prosthesisId);
     });
 
-    // Botões de salvar observações
     document.querySelectorAll('.save-notes-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const prosthesisId = e.target.dataset.prosthesisId;
@@ -937,24 +870,13 @@ const initCaseDetail = async () => {
       }
 
       const oldStatus = prostheses[prosthesisIndex].status;
-      
       if (oldStatus === newStatus) return;
 
-      const statusLabels = {
-        'escaneamento': 'Escaneamento',
-        'planejamento': 'Planejamento',
-        'impressao': 'Impressão',
-        'teste': 'Teste',
-        'concluido': 'Concluído'
-      };
-
-      // Atualizar status
       prostheses[prosthesisIndex].status = newStatus;
 
-      // Adicionar à timeline
       const timelineItem = {
         action: 'status_change',
-        description: `Status alterado para: ${statusLabels[newStatus]}`,
+        description: `Status alterado para: ${getStageLabel(newStatus)}`,
         date: new Date().toISOString(),
         user: currentUser.name,
         userId: currentUser.id
@@ -963,7 +885,6 @@ const initCaseDetail = async () => {
       prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
       prostheses[prosthesisIndex].timeline.push(timelineItem);
 
-      // CRÍTICO: Limpar undefined antes de salvar
       const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
 
       await db.collection('cases').doc(caseId).update({
@@ -1015,19 +936,11 @@ const initCaseDetail = async () => {
     if (editDatesModal) editDatesModal.classList.remove('active');
   };
 
-  if (closeEditDatesModal) {
-    closeEditDatesModal.addEventListener('click', closeEditDatesModalFunc);
-  }
-
-  if (cancelEditDatesBtn) {
-    cancelEditDatesBtn.addEventListener('click', closeEditDatesModalFunc);
-  }
-
+  if (closeEditDatesModal) closeEditDatesModal.addEventListener('click', closeEditDatesModalFunc);
+  if (cancelEditDatesBtn) cancelEditDatesBtn.addEventListener('click', closeEditDatesModalFunc);
   if (editDatesModal) {
     editDatesModal.addEventListener('click', (e) => {
-      if (e.target === editDatesModal) {
-        closeEditDatesModalFunc();
-      }
+      if (e.target === editDatesModal) closeEditDatesModalFunc();
     });
   }
 
@@ -1051,18 +964,15 @@ const initCaseDetail = async () => {
         prostheses[prosthesisIndex].testDate = editTestDate.value || null;
         prostheses[prosthesisIndex].deliveryDate = editDeliveryDate.value || null;
 
-        const timelineItem = {
+        prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
+        prostheses[prosthesisIndex].timeline.push({
           action: 'dates_update',
           description: 'Datas atualizadas',
           date: new Date().toISOString(),
           user: currentUser.name,
           userId: currentUser.id
-        };
+        });
 
-        prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
-        prostheses[prosthesisIndex].timeline.push(timelineItem);
-
-        // CRÍTICO: Limpar undefined antes de salvar
         const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
 
         await db.collection('cases').doc(caseId).update({
@@ -1095,7 +1005,6 @@ const initCaseDetail = async () => {
     if (customDateProsthesisId) customDateProsthesisId.value = prosthesisId;
     if (customDateLabel) customDateLabel.value = '';
     if (customDateValue) customDateValue.value = '';
-    
     if (addCustomDateModal) addCustomDateModal.classList.add('active');
   };
 
@@ -1103,19 +1012,11 @@ const initCaseDetail = async () => {
     if (addCustomDateModal) addCustomDateModal.classList.remove('active');
   };
 
-  if (closeAddCustomDateModal) {
-    closeAddCustomDateModal.addEventListener('click', closeAddCustomDateModalFunc);
-  }
-
-  if (cancelAddCustomDateBtn) {
-    cancelAddCustomDateBtn.addEventListener('click', closeAddCustomDateModalFunc);
-  }
-
+  if (closeAddCustomDateModal) closeAddCustomDateModal.addEventListener('click', closeAddCustomDateModalFunc);
+  if (cancelAddCustomDateBtn) cancelAddCustomDateBtn.addEventListener('click', closeAddCustomDateModalFunc);
   if (addCustomDateModal) {
     addCustomDateModal.addEventListener('click', (e) => {
-      if (e.target === addCustomDateModal) {
-        closeAddCustomDateModalFunc();
-      }
+      if (e.target === addCustomDateModal) closeAddCustomDateModalFunc();
     });
   }
 
@@ -1140,23 +1041,17 @@ const initCaseDetail = async () => {
         }
 
         prostheses[prosthesisIndex].customDates = prostheses[prosthesisIndex].customDates || [];
-        prostheses[prosthesisIndex].customDates.push({
-          label: label,
-          date: date
-        });
+        prostheses[prosthesisIndex].customDates.push({ label, date });
 
-        const timelineItem = {
+        prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
+        prostheses[prosthesisIndex].timeline.push({
           action: 'custom_date_add',
           description: `Data adicionada: ${label}`,
           date: new Date().toISOString(),
           user: currentUser.name,
           userId: currentUser.id
-        };
+        });
 
-        prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
-        prostheses[prosthesisIndex].timeline.push(timelineItem);
-
-        // CRÍTICO: Limpar undefined antes de salvar
         const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
 
         await db.collection('cases').doc(caseId).update({
@@ -1195,18 +1090,15 @@ const initCaseDetail = async () => {
       customDates.splice(dateIndex, 1);
       prostheses[prosthesisIndex].customDates = customDates;
 
-      const timelineItem = {
+      prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
+      prostheses[prosthesisIndex].timeline.push({
         action: 'custom_date_delete',
         description: `Data removida: ${dateLabel}`,
         date: new Date().toISOString(),
         user: currentUser.name,
         userId: currentUser.id
-      };
+      });
 
-      prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
-      prostheses[prosthesisIndex].timeline.push(timelineItem);
-
-      // CRÍTICO: Limpar undefined antes de salvar
       const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
 
       await db.collection('cases').doc(caseId).update({
@@ -1234,13 +1126,10 @@ const initCaseDetail = async () => {
   const selectStageModal = document.getElementById('selectStageModal');
   const closeSelectStageModal = document.getElementById('closeSelectStageModal');
 
-  // Fechar modal de arcada
   if (closeSelectArcadaModal && selectArcadaModal) {
     closeSelectArcadaModal.addEventListener('click', () => {
       selectArcadaModal.classList.remove('active');
-      pendingFilesUpload = null;
-      pendingProsthesisId = null;
-      selectedArcada = null;
+      pendingFilesUpload = pendingProsthesisId = selectedArcada = null;
     });
   }
 
@@ -1248,14 +1137,11 @@ const initCaseDetail = async () => {
     selectArcadaModal.addEventListener('click', (e) => {
       if (e.target === selectArcadaModal) {
         selectArcadaModal.classList.remove('active');
-        pendingFilesUpload = null;
-        pendingProsthesisId = null;
-        selectedArcada = null;
+        pendingFilesUpload = pendingProsthesisId = selectedArcada = null;
       }
     });
   }
 
-  // Fechar modal de etapa
   if (closeSelectStageModal && selectStageModal) {
     closeSelectStageModal.addEventListener('click', () => {
       selectStageModal.classList.remove('active');
@@ -1264,9 +1150,7 @@ const initCaseDetail = async () => {
 
   if (selectStageModal) {
     selectStageModal.addEventListener('click', (e) => {
-      if (e.target === selectStageModal) {
-        selectStageModal.classList.remove('active');
-      }
+      if (e.target === selectStageModal) selectStageModal.classList.remove('active');
     });
   }
 
@@ -1276,30 +1160,21 @@ const initCaseDetail = async () => {
 
   const uploadFilesToProsthesis = async (prosthesisId, files) => {
     if (files.length === 0) return;
-
     pendingFilesUpload = files;
     pendingProsthesisId = prosthesisId;
-
-    // Abrir modal de seleção de arcada
-    if (selectArcadaModal) {
-      selectArcadaModal.classList.add('active');
-    }
+    if (selectArcadaModal) selectArcadaModal.classList.add('active');
   };
 
-  // Botões de seleção de arcada
   document.querySelectorAll('.arcada-option-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       selectedArcada = btn.dataset.arcada;
-
       if (!pendingFilesUpload || !pendingProsthesisId) return;
-
       selectArcadaModal.classList.remove('active');
       selectStageModal.classList.add('active');
     });
   });
 
-  // Botões de seleção de etapa
   document.querySelectorAll('.stage-option-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.preventDefault();
@@ -1320,7 +1195,6 @@ const initCaseDetail = async () => {
           return;
         }
 
-        // Upload múltiplo para o Cloudflare R2
         const uploadResults = await window.R2Upload.uploadMultiple(
           pendingFilesUpload,
           (current, total, fileName) => {
@@ -1334,7 +1208,6 @@ const initCaseDetail = async () => {
           return;
         }
 
-        // Criar registros dos arquivos enviados
         const newFiles = uploadResults.map(result => {
           const fileData = {
             name: result.fileName,
@@ -1347,30 +1220,16 @@ const initCaseDetail = async () => {
             uploadedBy: currentUser.name,
             uploadedById: currentUser.id
           };
-          
-          // Só adiciona stage se não for null
-          if (stage) {
-            fileData.stage = stage;
-          }
-          
+          if (stage) fileData.stage = stage;
           return fileData;
         });
 
         prostheses[prosthesisIndex].files = prostheses[prosthesisIndex].files || [];
         prostheses[prosthesisIndex].files.push(...newFiles);
 
-        // Timeline
         const arcadaLabels = { mandibula: 'Mandíbula', maxila: 'Maxila', outros: 'Outros' };
-        const stageLabels = {
-          escaneamento: 'Escaneamento',
-          planejamento: 'Planejamento',
-          impressao: 'Impressão',
-          teste: 'Teste',
-          concluido: 'Concluído'
-        };
-
         let description = `${newFiles.length} arquivo(s) - ${arcadaLabels[selectedArcada]}`;
-        if (stage) description += ` - ${stageLabels[stage]}`;
+        if (stage) description += ` - ${getStageLabel(stage)}`;
 
         prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
         prostheses[prosthesisIndex].timeline.push({
@@ -1381,7 +1240,6 @@ const initCaseDetail = async () => {
           userId: currentUser.id
         });
 
-        // CRÍTICO: Remover campos undefined antes de salvar
         const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
 
         await db.collection('cases').doc(caseId).update({
@@ -1420,18 +1278,15 @@ const initCaseDetail = async () => {
       files.splice(fileIndex, 1);
       prostheses[prosthesisIndex].files = files;
 
-      const timelineItem = {
+      prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
+      prostheses[prosthesisIndex].timeline.push({
         action: 'file_delete',
         description: `Arquivo removido: ${fileName}`,
         date: new Date().toISOString(),
         user: currentUser.name,
         userId: currentUser.id
-      };
+      });
 
-      prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
-      prostheses[prosthesisIndex].timeline.push(timelineItem);
-
-      // CRÍTICO: Limpar undefined antes de salvar
       const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
 
       await db.collection('cases').doc(caseId).update({
@@ -1462,18 +1317,15 @@ const initCaseDetail = async () => {
 
       prostheses[prosthesisIndex].notes = notes.trim();
 
-      const timelineItem = {
+      prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
+      prostheses[prosthesisIndex].timeline.push({
         action: 'notes_update',
         description: 'Observações atualizadas',
         date: new Date().toISOString(),
         user: currentUser.name,
         userId: currentUser.id
-      };
+      });
 
-      prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
-      prostheses[prosthesisIndex].timeline.push(timelineItem);
-
-      // CRÍTICO: Limpar undefined antes de salvar
       const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
 
       await db.collection('cases').doc(caseId).update({
@@ -1509,7 +1361,6 @@ const initCaseDetail = async () => {
       if (editPatientPhone) editPatientPhone.value = currentCase.patientPhone || '';
       if (editPatientEmail) editPatientEmail.value = currentCase.patientEmail || '';
       if (editPatientCPF) editPatientCPF.value = currentCase.patientCPF || '';
-
       editCaseModal.classList.add('active');
     });
   }
@@ -1518,19 +1369,11 @@ const initCaseDetail = async () => {
     if (editCaseModal) editCaseModal.classList.remove('active');
   };
 
-  if (closeEditCaseModal) {
-    closeEditCaseModal.addEventListener('click', closeEditCaseModalFunc);
-  }
-
-  if (cancelEditCaseBtn) {
-    cancelEditCaseBtn.addEventListener('click', closeEditCaseModalFunc);
-  }
-
+  if (closeEditCaseModal) closeEditCaseModal.addEventListener('click', closeEditCaseModalFunc);
+  if (cancelEditCaseBtn) cancelEditCaseBtn.addEventListener('click', closeEditCaseModalFunc);
   if (editCaseModal) {
     editCaseModal.addEventListener('click', (e) => {
-      if (e.target === editCaseModal) {
-        closeEditCaseModalFunc();
-      }
+      if (e.target === editCaseModal) closeEditCaseModalFunc();
     });
   }
 
@@ -1539,7 +1382,6 @@ const initCaseDetail = async () => {
       e.preventDefault();
 
       const newName = editPatientName.value.trim();
-
       if (!newName) {
         showNotification('Nome do paciente é obrigatório', 'error');
         return;
@@ -1558,19 +1400,16 @@ const initCaseDetail = async () => {
 
         if (editPatientPhoto.files && editPatientPhoto.files[0]) {
           const file = editPatientPhoto.files[0];
-          
           if (file.size > 5 * 1024 * 1024) {
             showNotification('Foto muito grande. Máximo 5MB', 'error');
             return;
           }
-
           const base64 = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result);
             reader.onerror = reject;
             reader.readAsDataURL(file);
           });
-
           updateData.patientPhoto = base64;
         }
 
@@ -1588,16 +1427,11 @@ const initCaseDetail = async () => {
           });
         });
 
-        // CRÍTICO: Limpar undefined antes de salvar
         const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
-
-        await db.collection('cases').doc(caseId).update({
-          prostheses: cleanProstheses
-        });
+        await db.collection('cases').doc(caseId).update({ prostheses: cleanProstheses });
 
         showNotification('Informações atualizadas com sucesso!', 'success');
         closeEditCaseModalFunc();
-
         if (editPatientPhoto) editPatientPhoto.value = '';
 
       } catch (error) {
@@ -1607,12 +1441,10 @@ const initCaseDetail = async () => {
     });
   }
 
-  // Máscara de telefone
   if (editPatientPhone) {
     editPatientPhone.addEventListener('input', (e) => {
       let value = e.target.value.replace(/\D/g, '');
       if (value.length > 11) value = value.slice(0, 11);
-      
       if (value.length > 6) {
         value = value.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3');
       } else if (value.length > 2) {
@@ -1620,17 +1452,14 @@ const initCaseDetail = async () => {
       } else if (value.length > 0) {
         value = value.replace(/^(\d*)/, '($1');
       }
-      
       e.target.value = value;
     });
   }
 
-  // Máscara de CPF
   if (editPatientCPF) {
     editPatientCPF.addEventListener('input', (e) => {
       let value = e.target.value.replace(/\D/g, '');
       if (value.length > 11) value = value.slice(0, 11);
-      
       if (value.length > 9) {
         value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2}).*/, '$1.$2.$3-$4');
       } else if (value.length > 6) {
@@ -1638,7 +1467,6 @@ const initCaseDetail = async () => {
       } else if (value.length > 3) {
         value = value.replace(/^(\d{3})(\d{0,3})/, '$1.$2');
       }
-      
       e.target.value = value;
     });
   }
@@ -1648,44 +1476,26 @@ const initCaseDetail = async () => {
   // ========================================
 
   if (deleteCaseBtn && deleteModal) {
-    deleteCaseBtn.addEventListener('click', () => {
-      deleteModal.classList.add('active');
-    });
+    deleteCaseBtn.addEventListener('click', () => deleteModal.classList.add('active'));
   }
-
   if (closeDeleteModal && deleteModal) {
-    closeDeleteModal.addEventListener('click', () => {
-      deleteModal.classList.remove('active');
-    });
+    closeDeleteModal.addEventListener('click', () => deleteModal.classList.remove('active'));
   }
-
   if (cancelDeleteBtn && deleteModal) {
-    cancelDeleteBtn.addEventListener('click', () => {
-      deleteModal.classList.remove('active');
-    });
+    cancelDeleteBtn.addEventListener('click', () => deleteModal.classList.remove('active'));
   }
-
   if (deleteModal) {
     deleteModal.addEventListener('click', (e) => {
-      if (e.target === deleteModal) {
-        deleteModal.classList.remove('active');
-      }
+      if (e.target === deleteModal) deleteModal.classList.remove('active');
     });
   }
 
   if (confirmDeleteBtn) {
     confirmDeleteBtn.addEventListener('click', async () => {
-      console.log('🗑️ Excluindo caso:', caseId);
-
       try {
         await db.collection('cases').doc(caseId).delete();
-        
-        console.log('✅ Caso excluído');
         showNotification('Caso excluído completamente!', 'success');
-        
-        setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 1000);
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
       } catch (error) {
         console.error('❌ Erro:', error);
         showNotification('Erro ao excluir caso', 'error');
@@ -1704,11 +1514,7 @@ const initCaseDetail = async () => {
       return;
     }
 
-    currentCase = {
-      id: doc.id,
-      ...doc.data()
-    };
-
+    currentCase = { id: doc.id, ...doc.data() };
     console.log('✅ Caso carregado:', currentCase);
     renderCaseDetails();
   });
@@ -1716,7 +1522,6 @@ const initCaseDetail = async () => {
   console.log('✅ case-detail.js pronto!');
 };
 
-// Inicializar
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initCaseDetail);
 } else {
