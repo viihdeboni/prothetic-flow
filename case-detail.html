@@ -320,18 +320,21 @@
                 font-size: 0.8125rem;
             }
         }
+
         /* Modal de Seleção de Etapa */
         .stage-options {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 0.5rem;
+            max-height: 60vh;
+            overflow-y: auto;
         }
 
         .stage-option-btn {
             display: flex;
             align-items: center;
             gap: 1rem;
-            padding: 1rem 1.25rem;
+            padding: 0.875rem 1.25rem;
             background-color: var(--white);
             border: 2px solid var(--gray-200);
             border-radius: var(--radius-lg);
@@ -349,7 +352,7 @@
         }
 
         .stage-option-icon {
-            font-size: 2rem;
+            font-size: 1.5rem;
             flex-shrink: 0;
         }
 
@@ -371,53 +374,41 @@
             color: var(--gray-500);
         }
 
-        .stage-option-btn[data-stage="escaneamento"]:hover {
-            border-color: var(--primary-blue);
-        }
-
-        .stage-option-btn[data-stage="escaneamento"]:hover .stage-option-icon {
-            color: var(--primary-blue);
-        }
-
-        .stage-option-btn[data-stage="planejamento"]:hover {
-            border-color: #9333ea;
-        }
-
-        .stage-option-btn[data-stage="planejamento"]:hover .stage-option-icon {
-            color: #9333ea;
-        }
-
-        .stage-option-btn[data-stage="impressao"]:hover {
-            border-color: var(--warning);
-        }
-
-        .stage-option-btn[data-stage="impressao"]:hover .stage-option-icon {
-            color: var(--warning);
-        }
-
-        .stage-option-btn[data-stage="teste"]:hover {
-            border-color: #ec4899;
-        }
-
-        .stage-option-btn[data-stage="teste"]:hover .stage-option-icon {
-            color: #ec4899;
-        }
-
-        .stage-option-btn[data-stage="concluido"]:hover {
-            border-color: var(--success);
-        }
-
-        .stage-option-btn[data-stage="concluido"]:hover .stage-option-icon {
-            color: var(--success);
-        }
+        /* Hover colors por estágio */
+        .stage-option-btn[data-stage="chamar-paciente"]:hover    { border-color: #06b6d4; }
+        .stage-option-btn[data-stage="chamar-paciente"]:hover .stage-option-icon { color: #06b6d4; }
+        .stage-option-btn[data-stage="concluido"]:hover          { border-color: var(--success); }
+        .stage-option-btn[data-stage="concluido"]:hover .stage-option-icon { color: var(--success); }
+        .stage-option-btn[data-stage="escaneamento"]:hover       { border-color: var(--primary-blue); }
+        .stage-option-btn[data-stage="escaneamento"]:hover .stage-option-icon { color: var(--primary-blue); }
+        .stage-option-btn[data-stage="imprimindo"]:hover         { border-color: var(--warning); }
+        .stage-option-btn[data-stage="imprimindo"]:hover .stage-option-icon { color: var(--warning); }
+        .stage-option-btn[data-stage="impressao-placa"]:hover    { border-color: #f97316; }
+        .stage-option-btn[data-stage="impressao-placa"]:hover .stage-option-icon { color: #f97316; }
+        .stage-option-btn[data-stage="impressao-protese"]:hover  { border-color: #f97316; }
+        .stage-option-btn[data-stage="impressao-protese"]:hover .stage-option-icon { color: #f97316; }
+        .stage-option-btn[data-stage="impressao"]:hover          { border-color: var(--warning); }
+        .stage-option-btn[data-stage="impressao"]:hover .stage-option-icon { color: var(--warning); }
+        .stage-option-btn[data-stage="montagem"]:hover           { border-color: #84cc16; }
+        .stage-option-btn[data-stage="montagem"]:hover .stage-option-icon { color: #84cc16; }
+        .stage-option-btn[data-stage="planejamento-placa"]:hover  { border-color: #9333ea; }
+        .stage-option-btn[data-stage="planejamento-placa"]:hover .stage-option-icon { color: #9333ea; }
+        .stage-option-btn[data-stage="planejamento-protese"]:hover { border-color: #9333ea; }
+        .stage-option-btn[data-stage="planejamento-protese"]:hover .stage-option-icon { color: #9333ea; }
+        .stage-option-btn[data-stage="planejamento"]:hover       { border-color: #9333ea; }
+        .stage-option-btn[data-stage="planejamento"]:hover .stage-option-icon { color: #9333ea; }
+        .stage-option-btn[data-stage="polimento"]:hover          { border-color: var(--success); }
+        .stage-option-btn[data-stage="polimento"]:hover .stage-option-icon { color: var(--success); }
+        .stage-option-btn[data-stage="teste"]:hover              { border-color: #ec4899; }
+        .stage-option-btn[data-stage="teste"]:hover .stage-option-icon { color: #ec4899; }
 
         @media (max-width: 480px) {
             .stage-option-btn {
-                padding: 0.875rem 1rem;
+                padding: 0.75rem 1rem;
             }
 
             .stage-option-icon {
-                font-size: 1.5rem;
+                font-size: 1.25rem;
             }
 
             .stage-option-label {
@@ -670,6 +661,7 @@
             </div>
         </div>
     </div>
+
     <!-- Modal de Seleção de Arcada -->
     <div id="selectArcadaModal" class="modal">
         <div class="modal-content" style="max-width: 400px;">
@@ -713,48 +705,99 @@
                 <span class="close-modal" id="closeSelectStageModal">&times;</span>
             </div>
             <div style="padding: 1.5rem;">
-                <p style="margin-bottom: 1.5rem; color: var(--gray-600);">
+                <p style="margin-bottom: 1rem; color: var(--gray-600);">
                     Em qual etapa do processo estão esses arquivos?
                 </p>
                 
                 <div class="stage-options">
-                    <button class="stage-option-btn" data-stage="escaneamento">
-                        <span class="stage-option-icon">🔍</span>
+                    <button class="stage-option-btn" data-stage="chamar-paciente">
+                        <span class="stage-option-icon">📞</span>
                         <div class="stage-option-content">
-                            <span class="stage-option-label">Escaneamento</span>
-                            <span class="stage-option-desc">Digitalização inicial</span>
+                            <span class="stage-option-label">Chamar Paciente</span>
                         </div>
                     </button>
-                    
-                    <button class="stage-option-btn" data-stage="planejamento">
-                        <span class="stage-option-icon">📐</span>
-                        <div class="stage-option-content">
-                            <span class="stage-option-label">Planejamento</span>
-                            <span class="stage-option-desc">Design e modelagem 3D</span>
-                        </div>
-                    </button>
-                    
-                    <button class="stage-option-btn" data-stage="impressao">
-                        <span class="stage-option-icon">🖨️</span>
-                        <div class="stage-option-content">
-                            <span class="stage-option-label">Impressão</span>
-                            <span class="stage-option-desc">Manufatura da prótese</span>
-                        </div>
-                    </button>
-                    
-                    <button class="stage-option-btn" data-stage="teste">
-                        <span class="stage-option-icon">🧪</span>
-                        <div class="stage-option-content">
-                            <span class="stage-option-label">Teste</span>
-                            <span class="stage-option-desc">Prova e ajustes</span>
-                        </div>
-                    </button>
-                    
+
                     <button class="stage-option-btn" data-stage="concluido">
                         <span class="stage-option-icon">✅</span>
                         <div class="stage-option-content">
                             <span class="stage-option-label">Concluído</span>
-                            <span class="stage-option-desc">Entrega final</span>
+                        </div>
+                    </button>
+
+                    <button class="stage-option-btn" data-stage="escaneamento">
+                        <span class="stage-option-icon">🔍</span>
+                        <div class="stage-option-content">
+                            <span class="stage-option-label">Escaneamento</span>
+                        </div>
+                    </button>
+
+                    <button class="stage-option-btn" data-stage="imprimindo">
+                        <span class="stage-option-icon">🖨️</span>
+                        <div class="stage-option-content">
+                            <span class="stage-option-label">Imprimindo</span>
+                        </div>
+                    </button>
+
+                    <button class="stage-option-btn" data-stage="impressao-placa">
+                        <span class="stage-option-icon">🖨️</span>
+                        <div class="stage-option-content">
+                            <span class="stage-option-label">Impressão Placa</span>
+                        </div>
+                    </button>
+
+                    <button class="stage-option-btn" data-stage="impressao-protese">
+                        <span class="stage-option-icon">🖨️</span>
+                        <div class="stage-option-content">
+                            <span class="stage-option-label">Impressão Prótese</span>
+                        </div>
+                    </button>
+
+                    <button class="stage-option-btn" data-stage="impressao">
+                        <span class="stage-option-icon">🖨️</span>
+                        <div class="stage-option-content">
+                            <span class="stage-option-label">Impressão</span>
+                        </div>
+                    </button>
+
+                    <button class="stage-option-btn" data-stage="montagem">
+                        <span class="stage-option-icon">🔧</span>
+                        <div class="stage-option-content">
+                            <span class="stage-option-label">Montagem</span>
+                        </div>
+                    </button>
+
+                    <button class="stage-option-btn" data-stage="planejamento-placa">
+                        <span class="stage-option-icon">📐</span>
+                        <div class="stage-option-content">
+                            <span class="stage-option-label">Planejamento Placa</span>
+                        </div>
+                    </button>
+
+                    <button class="stage-option-btn" data-stage="planejamento-protese">
+                        <span class="stage-option-icon">📐</span>
+                        <div class="stage-option-content">
+                            <span class="stage-option-label">Planejamento Prótese</span>
+                        </div>
+                    </button>
+
+                    <button class="stage-option-btn" data-stage="planejamento">
+                        <span class="stage-option-icon">📐</span>
+                        <div class="stage-option-content">
+                            <span class="stage-option-label">Planejamento</span>
+                        </div>
+                    </button>
+
+                    <button class="stage-option-btn" data-stage="polimento">
+                        <span class="stage-option-icon">✨</span>
+                        <div class="stage-option-content">
+                            <span class="stage-option-label">Polimento</span>
+                        </div>
+                    </button>
+
+                    <button class="stage-option-btn" data-stage="teste">
+                        <span class="stage-option-icon">🧪</span>
+                        <div class="stage-option-content">
+                            <span class="stage-option-label">Teste</span>
                         </div>
                     </button>
                     
@@ -769,6 +812,7 @@
             </div>
         </div>
     </div>
+
     <!-- Modal de Confirmação de Exclusão -->
     <div id="deleteModal" class="modal">
         <div class="modal-content">
