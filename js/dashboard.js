@@ -5,6 +5,31 @@
 console.log('📊 dashboard.js carregado');
 
 // ========================================
+// ESTÁGIOS (mesma lista do case-detail.js)
+// ========================================
+
+const STAGES = [
+  { value: 'chamar-paciente',      label: 'Chamar Paciente' },
+  { value: 'concluido',            label: 'Concluído'       },
+  { value: 'escaneamento',         label: 'Escaneamento'    },
+  { value: 'imprimindo',           label: 'Imprimindo'      },
+  { value: 'impressao-placa',      label: 'Impressão Placa'   },
+  { value: 'impressao-protese',    label: 'Impressão Prótese' },
+  { value: 'impressao',            label: 'Impressão'       },
+  { value: 'montagem',             label: 'Montagem'        },
+  { value: 'planejamento-placa',   label: 'Planejamento Placa'   },
+  { value: 'planejamento-protese', label: 'Planejamento Prótese' },
+  { value: 'planejamento',         label: 'Planejamento'    },
+  { value: 'polimento',            label: 'Polimento'       },
+  { value: 'teste',                label: 'Teste'           },
+];
+
+const getStageLabel = (value) => {
+  const found = STAGES.find(s => s.value === value);
+  return found ? found.label : (value || '');
+};
+
+// ========================================
 // INICIALIZAR
 // ========================================
 
@@ -14,36 +39,23 @@ const initDashboard = async () => {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
 
-  console.log('✅ Firebase pronto');
-
   const auth = window.FirebaseApp.auth;
   const db = window.FirebaseApp.db;
 
-  // Esperar autenticação
   const currentUser = await new Promise((resolve) => {
     const unsubscribe = auth.onAuthStateChanged(async (authUser) => {
       unsubscribe();
       
       if (!authUser) {
-        console.log('❌ Usuário não autenticado, redirecionando...');
         window.location.href = 'index.html';
         resolve(null);
         return;
       }
 
-      console.log('✅ Usuário autenticado:', authUser.uid);
-
       try {
         const userDoc = await db.collection('users').doc(authUser.uid).get();
-        const userData = {
-          id: authUser.uid,
-          email: authUser.email,
-          ...userDoc.data()
-        };
-        console.log('✅ Dados do usuário:', userData);
-        resolve(userData);
+        resolve({ id: authUser.uid, email: authUser.email, ...userDoc.data() });
       } catch (error) {
-        console.error('❌ Erro ao buscar dados:', error);
         window.location.href = 'index.html';
         resolve(null);
       }
@@ -56,30 +68,33 @@ const initDashboard = async () => {
   // ELEMENTOS DO DOM
   // ========================================
 
-  const userName = document.getElementById('userName');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const metricsLink = document.getElementById('metricsLink');
-  const searchInput = document.getElementById('searchInput');
-  const statusFilter = document.getElementById('statusFilter');
-  const typeFilter = document.getElementById('typeFilter');
-  const casesGrid = document.getElementById('casesGrid');
-  const emptyState = document.getElementById('emptyState');
-  const loadingState = document.getElementById('loadingState');
-  const totalCasesEl = document.getElementById('totalCases');
-  const activeCasesEl = document.getElementById('activeCases');
+  const userName        = document.getElementById('userName');
+  const logoutBtn       = document.getElementById('logoutBtn');
+  const metricsLink     = document.getElementById('metricsLink');
+  const searchInput     = document.getElementById('searchInput');
+  const statusFilter    = document.getElementById('statusFilter');
+  const typeFilter      = document.getElementById('typeFilter');
+  const casesGrid       = document.getElementById('casesGrid');
+  const emptyState      = document.getElementById('emptyState');
+  const loadingState    = document.getElementById('loadingState');
+  const totalCasesEl    = document.getElementById('totalCases');
+  const activeCasesEl   = document.getElementById('activeCases');
   const completedCasesEl = document.getElementById('completedCases');
 
-  // Definir nome do usuário
-  if (userName) {
-    userName.textContent = currentUser.name;
+  if (userName) userName.textContent = currentUser.name;
+  if (currentUser.role === 'operational' && metricsLink) metricsLink.style.display = 'none';
+
+  // Preencher o select de status dinamicamente
+  if (statusFilter) {
+    statusFilter.innerHTML = '<option value="">Todos os status</option>';
+    STAGES.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.value;
+      opt.textContent = s.label;
+      statusFilter.appendChild(opt);
+    });
   }
 
-  // Ocultar Métricas para Operacional
-  if (currentUser.role === 'operational' && metricsLink) {
-    metricsLink.style.display = 'none';
-  }
-
-  // Logout
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
       await auth.signOut();
@@ -93,34 +108,12 @@ const initDashboard = async () => {
 
   const formatDate = (dateValue) => {
     if (!dateValue) return 'Não definida';
-    
     let date;
-    if (dateValue.toDate) {
-      date = dateValue.toDate();
-    } else if (dateValue instanceof Date) {
-      date = dateValue;
-    } else if (typeof dateValue === 'string') {
-      date = new Date(dateValue);
-    } else {
-      return 'Não definida';
-    }
-    
-    return date.toLocaleDateString('pt-BR', { 
-      day: '2-digit', 
-      month: '2-digit', 
-      year: 'numeric' 
-    });
-  };
-
-  const getStatusLabel = (status) => {
-    const labels = {
-      'escaneamento': 'Escaneamento',
-      'planejamento': 'Planejamento',
-      'impressao': 'Impressão',
-      'teste': 'Teste',
-      'concluido': 'Concluído'
-    };
-    return labels[status] || status;
+    if (dateValue.toDate) date = dateValue.toDate();
+    else if (dateValue instanceof Date) date = dateValue;
+    else if (typeof dateValue === 'string') date = new Date(dateValue);
+    else return 'Não definida';
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
   const getTypeLabel = (type) => {
@@ -142,39 +135,28 @@ const initDashboard = async () => {
 
   const getProsthesesSummary = (prostheses) => {
     if (!prostheses || prostheses.length === 0) return '';
-    
-    if (prostheses.length === 1) {
-      return getTypeLabel(prostheses[0].type);
-    }
-    
-    // Múltiplas próteses - mostrar resumo
-    const types = prostheses.map(p => getTypeLabel(p.type)).join(' + ');
-    return types;
+    return prostheses.map(p => getTypeLabel(p.type)).join(' + ');
+  };
+
+  // Gera os badges de estágio para cada prótese individualmente
+  const getProsthesisStatusBadges = (prostheses) => {
+    if (!prostheses || prostheses.length === 0) return '';
+
+    return prostheses.map((p, i) => {
+      const status = p.status || 'escaneamento';
+      const label  = getStageLabel(status);
+      return `<span class="case-status-badge ${sanitizeClass(status)}" title="Prótese ${i + 1}">${label}</span>`;
+    }).join('');
+  };
+
+  // Garante que o valor do estágio vira uma classe CSS segura
+  const sanitizeClass = (value) => {
+    return (value || '').replace(/[^a-z0-9-]/gi, '-').toLowerCase();
   };
 
   const getProsthesesBadge = (prostheses) => {
     if (!prostheses || prostheses.length <= 1) return '';
-    
     return `<span class="prostheses-count-badge">${prostheses.length} próteses</span>`;
-  };
-
-  const getMostAdvancedStatus = (prostheses) => {
-    if (!prostheses || prostheses.length === 0) return 'escaneamento';
-    
-    const statusOrder = ['escaneamento', 'planejamento', 'impressao', 'teste', 'concluido'];
-    
-    let mostAdvanced = 'escaneamento';
-    let maxIndex = 0;
-    
-    prostheses.forEach(p => {
-      const index = statusOrder.indexOf(p.status);
-      if (index > maxIndex) {
-        maxIndex = index;
-        mostAdvanced = p.status;
-      }
-    });
-    
-    return mostAdvanced;
   };
 
   const hasAnyProsthesisCompleted = (prostheses) => {
@@ -188,17 +170,12 @@ const initDashboard = async () => {
 
   const renderCase = (caseData) => {
     const prostheses = caseData.prostheses || [];
-    const mainStatus = getMostAdvancedStatus(prostheses);
-    const isCompleted = hasAnyProsthesisCompleted(prostheses);
-    
-    // Pegar a data mais recente das próteses
+
     let earliestDate = null;
     prostheses.forEach(p => {
       if (p.firstConsultation) {
         const date = new Date(p.firstConsultation);
-        if (!earliestDate || date < earliestDate) {
-          earliestDate = p.firstConsultation;
-        }
+        if (!earliestDate || date < earliestDate) earliestDate = p.firstConsultation;
       }
     });
 
@@ -209,9 +186,9 @@ const initDashboard = async () => {
             <div class="case-patient-name">${caseData.patientName}</div>
             <div class="case-id">#${caseData.id.slice(0, 8)}</div>
           </div>
-          <span class="case-status-badge ${isCompleted ? 'concluido' : mainStatus}">
-            ${isCompleted ? 'Concluído' : getStatusLabel(mainStatus)}
-          </span>
+          <div class="case-status-badges">
+            ${getProsthesisStatusBadges(prostheses)}
+          </div>
         </div>
         
         <div class="case-prostheses">
@@ -238,18 +215,13 @@ const initDashboard = async () => {
   };
 
   const renderCases = (cases) => {
-    console.log('🎨 Renderizando casos:', cases.length);
-    
     if (cases.length === 0) {
       if (casesGrid) casesGrid.innerHTML = '';
       if (emptyState) emptyState.classList.remove('hidden');
       return;
     }
-    
     if (emptyState) emptyState.classList.add('hidden');
-    if (casesGrid) {
-      casesGrid.innerHTML = cases.map(renderCase).join('');
-    }
+    if (casesGrid) casesGrid.innerHTML = cases.map(renderCase).join('');
   };
 
   // ========================================
@@ -258,21 +230,12 @@ const initDashboard = async () => {
 
   const updateStats = (cases) => {
     const total = cases.length;
-    
     let completed = 0;
-    cases.forEach(c => {
-      if (hasAnyProsthesisCompleted(c.prostheses)) {
-        completed++;
-      }
-    });
-    
+    cases.forEach(c => { if (hasAnyProsthesisCompleted(c.prostheses)) completed++; });
     const active = total - completed;
-    
     if (totalCasesEl) totalCasesEl.textContent = total;
     if (activeCasesEl) activeCasesEl.textContent = active;
     if (completedCasesEl) completedCasesEl.textContent = completed;
-    
-    console.log('📊 Stats:', { total, active, completed });
   };
 
   // ========================================
@@ -282,34 +245,27 @@ const initDashboard = async () => {
   let allCases = [];
 
   const applyFilters = () => {
-    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    const searchTerm  = searchInput  ? searchInput.value.toLowerCase() : '';
     const statusValue = statusFilter ? statusFilter.value : '';
-    const typeValue = typeFilter ? typeFilter.value : '';
+    const typeValue   = typeFilter   ? typeFilter.value : '';
     
     let filtered = allCases;
     
-    // Busca por nome ou ID
     if (searchTerm) {
-      filtered = filtered.filter(c => 
+      filtered = filtered.filter(c =>
         c.patientName.toLowerCase().includes(searchTerm) ||
         c.id.toLowerCase().includes(searchTerm)
       );
     }
     
-    // Filtro por status - verifica se ALGUMA prótese tem esse status
     if (statusValue) {
       filtered = filtered.filter(c => {
         if (!c.prostheses || c.prostheses.length === 0) return false;
-        
-        if (statusValue === 'concluido') {
-          return hasAnyProsthesisCompleted(c.prostheses);
-        }
-        
+        if (statusValue === 'concluido') return hasAnyProsthesisCompleted(c.prostheses);
         return c.prostheses.some(p => p.status === statusValue);
       });
     }
     
-    // Filtro por tipo - verifica se ALGUMA prótese é desse tipo
     if (typeValue) {
       filtered = filtered.filter(c => {
         if (!c.prostheses || c.prostheses.length === 0) return false;
@@ -317,41 +273,29 @@ const initDashboard = async () => {
       });
     }
     
-    console.log('🔍 Casos filtrados:', filtered.length);
     renderCases(filtered);
   };
 
-  if (searchInput) searchInput.addEventListener('input', applyFilters);
+  if (searchInput)  searchInput.addEventListener('input', applyFilters);
   if (statusFilter) statusFilter.addEventListener('change', applyFilters);
-  if (typeFilter) typeFilter.addEventListener('change', applyFilters);
+  if (typeFilter)   typeFilter.addEventListener('change', applyFilters);
 
   // ========================================
   // CARREGAR CASOS (REAL-TIME)
   // ========================================
 
   const loadCases = () => {
-    console.log('🔄 Carregando casos do Firebase...');
-    
     if (loadingState) loadingState.classList.remove('hidden');
     if (casesGrid) casesGrid.innerHTML = '';
     if (emptyState) emptyState.classList.add('hidden');
     
-    // Escutar mudanças em tempo real
     db.collection('cases')
       .orderBy('createdAt', 'desc')
       .onSnapshot((snapshot) => {
-        console.log('📦 Snapshot recebido:', snapshot.size, 'casos');
-        
         allCases = [];
-        
         snapshot.forEach((doc) => {
-          allCases.push({
-            id: doc.id,
-            ...doc.data()
-          });
+          allCases.push({ id: doc.id, ...doc.data() });
         });
-        
-        console.log('✅ Casos carregados:', allCases);
         
         updateStats(allCases);
         applyFilters();
@@ -363,13 +307,10 @@ const initDashboard = async () => {
       });
   };
 
-  // Carregar casos
   loadCases();
-
   console.log('✅ Dashboard pronto!');
 };
 
-// Inicializar
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initDashboard);
 } else {
