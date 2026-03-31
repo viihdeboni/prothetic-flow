@@ -9,6 +9,7 @@ console.log('📄 case-detail.js carregado');
 // ========================================
 
 const STAGES = [
+  { value: 'aguardando-outra',     label: 'Aguardando Outra',     icon: '⏳' },
   { value: 'chamar-paciente',      label: 'Chamar Paciente',      icon: '📞' },
   { value: 'concluido',            label: 'Concluído',            icon: '✅' },
   { value: 'escaneamento',         label: 'Escaneamento',         icon: '🔍' },
