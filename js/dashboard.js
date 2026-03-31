@@ -9,6 +9,7 @@ console.log('📊 dashboard.js carregado');
 // ========================================
 
 const STAGES = [
+  { value: 'aguardando-outra',     label: 'Aguardando Outra'      },
   { value: 'chamar-paciente',      label: 'Chamar Paciente' },
   { value: 'concluido',            label: 'Concluído'       },
   { value: 'escaneamento',         label: 'Escaneamento'    },
