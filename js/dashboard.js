@@ -23,6 +23,7 @@ const STAGES = [
   { value: 'planejamento',         label: 'Planejamento'    },
   { value: 'polimento',            label: 'Polimento'       },
   { value: 'teste',                label: 'Teste'           },
+  { value: 'teste-ok',             label: 'Teste OK'        },
 ];
 
 const getStageLabel = (value) => {
