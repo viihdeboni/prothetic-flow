@@ -22,7 +22,8 @@ const STAGES = [
   { value: 'planejamento-protese', label: 'Planejamento Prótese', icon: '📐' },
   { value: 'planejamento',         label: 'Planejamento',         icon: '📐' },
   { value: 'polimento',            label: 'Polimento',            icon: '✨' },
-  { value: 'teste',                label: 'Teste',                icon: '🧪' },
+  { value: 'teste',                label: 'Teste',                icon: '🧪' }
+  { value: 'teste-ok',             label: 'Teste OK',             icon: '✅' },,
 ];
 
 const getStageLabel = (value) => {
