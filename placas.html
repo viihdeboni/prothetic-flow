@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casos de Placas - ProtheticFlow</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <!-- Header/Navegação -->
+    <header class="main-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-small">PF</div>
+                <h1 class="header-title">ProtheticFlow</h1>
+            </div>
+
+            <nav class="main-nav">
+                <a href="dashboard.html" class="nav-link">Casos</a>
+                <a href="metrics.html" class="nav-link" id="metricsLink">Métricas</a>
+                <a href="agenda.html" class="nav-link">Agenda</a>
+                <a href="placas.html" class="nav-link active">Placas</a>
+            </nav>
+
+            <div class="header-right">
+                <span class="user-name" id="userName"></span>
+                <button class="btn btn-secondary btn-sm" id="logoutBtn">Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Cabeçalho da Página -->
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">Casos de Placas</h2>
+                    <p class="page-subtitle">Placa Funcional, Miorrelaxante e Clareamento</p>
+                </div>
+                <a href="new-case-placa.html" class="btn btn-primary">
+                    + Novo Caso de Placa
+                </a>
+            </div>
+
+            <!-- Filtros e Busca -->
+            <div class="filters-section">
+                <div class="search-box">
+                    <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Buscar por paciente..."
+                        class="search-input"
+                    >
+                </div>
+
+                <div class="filter-group">
+                    <select id="statusFilter" class="filter-select">
+                        <option value="">Todos os status</option>
+                    </select>
+
+                    <select id="typeFilter" class="filter-select">
+                        <option value="">Todos os tipos de placa</option>
+                        <option value="placa-funcional">Placa Funcional</option>
+                        <option value="placa-miorrelaxante">Placa Miorrelaxante</option>
+                        <option value="placa-clareamento">Placa de Clareamento</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Estatísticas Rápidas -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">🦴</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total de Placas</div>
+                        <div class="stat-value" id="totalCases">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon yellow">⏳</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Em Andamento</div>
+                        <div class="stat-value" id="activeCases">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon green">✓</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Concluídas</div>
+                        <div class="stat-value" id="completedCases">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Casos -->
+            <div class="cases-grid" id="casesGrid"></div>
+
+            <!-- Empty State -->
+            <div class="empty-state hidden" id="emptyState">
+                <div class="empty-icon">🦴</div>
+                <h3>Nenhum caso de placa encontrado</h3>
+                <p>Comece criando seu primeiro caso de placa</p>
+                <a href="new-case-placa.html" class="btn btn-primary">
+                    + Criar Primeiro Caso
+                </a>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading-state hidden" id="loadingState">
+                <div class="spinner"></div>
+                <p>Carregando casos...</p>
+            </div>
+        </div>
+    </main>
+
+    <div id="notification" class="notification"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script src="js/config.js"></script>
+    <script src="js/firebase-init.js"></script>
+    <script src="js/placas.js"></script>
+</body>
+</html>
