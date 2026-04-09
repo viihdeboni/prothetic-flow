@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda - ProtheticFlow</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/agenda.css">
+</head>
+<body>
+    <!-- Header/Navegação -->
+    <header class="main-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-small">PF</div>
+                <h1 class="header-title">ProtheticFlow</h1>
+            </div>
+
+            <nav class="main-nav">
+                <a href="dashboard.html" class="nav-link">Casos</a>
+                <a href="metrics.html" class="nav-link" id="metricsLink">Métricas</a>
+                <a href="agenda.html" class="nav-link active">Agenda</a>
+            </nav>
+
+            <div class="header-right">
+                <span class="user-name" id="userName"></span>
+                <button class="btn btn-secondary btn-sm" id="logoutBtn">Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Cabeçalho da Página -->
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">Agenda</h2>
+                    <p class="page-subtitle">Gerencie os agendamentos de pacientes</p>
+                </div>
+                <button class="btn btn-primary" id="newAppointmentBtn">
+                    + Novo Agendamento
+                </button>
+            </div>
+
+            <!-- Layout Principal: Calendário + Lista -->
+            <div class="agenda-layout">
+
+                <!-- Calendário -->
+                <div class="calendar-panel">
+                    <div class="calendar-header">
+                        <button class="cal-nav-btn" id="prevMonth">&#8249;</button>
+                        <span class="cal-month-label" id="calMonthLabel"></span>
+                        <button class="cal-nav-btn" id="nextMonth">&#8250;</button>
+                    </div>
+                    <div class="calendar-weekdays">
+                        <span>Dom</span><span>Seg</span><span>Ter</span>
+                        <span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid"></div>
+                </div>
+
+                <!-- Painel Direito -->
+                <div class="appointments-panel">
+                    <!-- Título do dia selecionado -->
+                    <div class="appointments-header">
+                        <h3 class="appointments-day-title" id="appointmentsDayTitle">Selecione um dia</h3>
+                        <span class="appointments-count" id="appointmentsCount"></span>
+                    </div>
+
+                    <!-- Lista de agendamentos do dia -->
+                    <div class="appointments-list" id="appointmentsList">
+                        <div class="appointments-empty" id="appointmentsEmpty">
+                            <div class="empty-icon">📅</div>
+                            <p>Nenhum agendamento neste dia</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading-state hidden" id="loadingState">
+                <div class="spinner"></div>
+                <p>Carregando agenda...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal: Novo / Editar Agendamento -->
+    <div class="modal" id="appointmentModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2 id="modalTitle">Novo Agendamento</h2>
+                <span class="close-modal" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="appointmentForm">
+                    <!-- Data e Hora -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="apptDate">Data *</label>
+                            <input type="date" id="apptDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="apptTime">Horário *</label>
+                            <input type="time" id="apptTime" required>
+                        </div>
+                    </div>
+
+                    <!-- Paciente -->
+                    <div class="form-group">
+                        <label for="apptPatient">Nome do Paciente *</label>
+                        <input type="text" id="apptPatient" placeholder="Nome completo do paciente" required>
+                    </div>
+
+                    <!-- Vincular a caso existente -->
+                    <div class="form-group">
+                        <label for="apptCase">Vincular a um Caso (opcional)</label>
+                        <select id="apptCase">
+                            <option value="">— Sem caso vinculado —</option>
+                        </select>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="form-group">
+                        <label for="apptStatus">Status</label>
+                        <select id="apptStatus">
+                            <option value="agendado">Agendado</option>
+                            <option value="confirmado">Confirmado</option>
+                            <option value="realizado">Realizado</option>
+                            <option value="cancelado">Cancelado</option>
+                            <option value="faltou">Faltou</option>
+                        </select>
+                    </div>
+
+                    <!-- Observações -->
+                    <div class="form-group">
+                        <label for="apptNotes">Observações</label>
+                        <textarea id="apptNotes" placeholder="Informações adicionais..."></textarea>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="cancelModal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="saveBtn">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Confirmar exclusão -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Excluir Agendamento</h2>
+                <span class="close-modal" id="closeDeleteModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o agendamento de <strong id="deletePatientName"></strong>?</p>
+                <p style="color: var(--gray-500); font-size: 0.875rem;">Essa ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelDelete">Cancelar</button>
+                <button class="btn btn-error" id="confirmDelete">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificação -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <!-- Configurações -->
+    <script src="js/config.js"></script>
+    <script src="js/firebase-init.js"></script>
+    <script src="js/agenda.js"></script>
+</body>
+</html>
