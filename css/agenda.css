@@ -1,0 +1,396 @@
+/* ========================================
+   AGENDA - ProtheticFlow
+   ======================================== */
+
+/* Layout principal: calendário + lista lado a lado */
+.agenda-layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+/* ========================================
+   PAINEL DO CALENDÁRIO
+   ======================================== */
+
+.calendar-panel {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    position: sticky;
+    top: 89px; /* altura do header */
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.cal-month-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.cal-nav-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    background: var(--white);
+    cursor: pointer;
+    font-size: 1.25rem;
+    color: var(--gray-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    line-height: 1;
+    padding: 0;
+}
+
+.cal-nav-btn:hover {
+    background: var(--gray-100);
+    color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+/* Dias da semana */
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 0.5rem;
+}
+
+.calendar-weekdays span {
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.25rem 0;
+}
+
+/* Grid de dias */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.cal-day {
+    aspect-ratio: 1;
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+    padding: 2px;
+    min-height: 40px;
+}
+
+.cal-day:hover {
+    background: var(--gray-100);
+}
+
+.cal-day-empty {
+    cursor: default;
+}
+
+.cal-day-empty:hover {
+    background: transparent;
+}
+
+.cal-day-num {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--gray-700);
+    line-height: 1;
+}
+
+.cal-day-today .cal-day-num {
+    color: var(--primary-blue);
+    font-weight: 700;
+}
+
+.cal-day-today {
+    background: rgba(37, 99, 235, 0.06);
+}
+
+.cal-day-selected {
+    background: var(--primary-blue) !important;
+    box-shadow: var(--shadow-md);
+}
+
+.cal-day-selected .cal-day-num {
+    color: var(--white) !important;
+    font-weight: 700;
+}
+
+.cal-day-selected .cal-dot {
+    background: rgba(255,255,255,0.8) !important;
+}
+
+/* Bolinhas de agendamentos */
+.cal-dots {
+    display: flex;
+    gap: 2px;
+    margin-top: 2px;
+    height: 6px;
+    align-items: center;
+    justify-content: center;
+}
+
+.cal-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* ========================================
+   PAINEL DE AGENDAMENTOS
+   ======================================== */
+
+.appointments-panel {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.appointments-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--gray-200);
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.appointments-day-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin: 0;
+}
+
+.appointments-count {
+    font-size: 0.8rem;
+    color: var(--gray-500);
+    background: var(--gray-100);
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-weight: 500;
+}
+
+.appointments-list {
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+/* Empty state dentro do painel */
+.appointments-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    flex: 1;
+}
+
+.appointments-empty .empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.4;
+}
+
+.appointments-empty p {
+    font-size: 0.875rem;
+    color: var(--gray-400);
+    margin: 0;
+}
+
+/* ========================================
+   CARD DE AGENDAMENTO
+   ======================================== */
+
+.appt-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+    background: var(--gray-50);
+}
+
+.appt-card:hover {
+    border-color: var(--primary-blue);
+    background: var(--white);
+    box-shadow: var(--shadow-sm);
+}
+
+.appt-time-col {
+    flex-shrink: 0;
+    width: 52px;
+    text-align: center;
+}
+
+.appt-time {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+    font-variant-numeric: tabular-nums;
+}
+
+.appt-info-col {
+    flex: 1;
+    min-width: 0;
+}
+
+.appt-patient {
+    font-size: 0.975rem;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 0.25rem;
+}
+
+.appt-case-link {
+    font-size: 0.8rem;
+    color: var(--primary-blue);
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 0.25rem;
+}
+
+.appt-case-link:hover {
+    text-decoration: underline;
+}
+
+.appt-notes {
+    font-size: 0.8rem;
+    color: var(--gray-500);
+    margin-top: 0.25rem;
+    white-space: pre-wrap;
+}
+
+.appt-actions-col {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.appt-status-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    white-space: nowrap;
+}
+
+.appt-btns {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.appt-btn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    padding: 0;
+}
+
+.appt-btn:hover {
+    background: var(--gray-100);
+    border-color: var(--gray-300);
+}
+
+.appt-btn-delete:hover {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: var(--error);
+}
+
+/* ========================================
+   MODAL AGENDA
+   ======================================== */
+
+.modal-lg {
+    max-width: 560px;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--gray-200);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+/* ========================================
+   RESPONSIVIDADE
+   ======================================== */
+
+@media (max-width: 900px) {
+    .agenda-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .calendar-panel {
+        position: static;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .appt-card {
+        flex-wrap: wrap;
+    }
+
+    .appt-actions-col {
+        width: 100%;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
