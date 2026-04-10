@@ -26,6 +26,8 @@ const STAGES = [
   { value: 'teste-ok',             label: 'Teste OK'        },
 ];
 
+const PLACA_TYPES = ['placa-funcional', 'placa-miorrelaxante', 'placa-clareamento'];
+
 const getStageLabel = (value) => {
   const found = STAGES.find(s => s.value === value);
   return found ? found.label : (value || '');
@@ -140,10 +142,8 @@ const initDashboard = async () => {
     return prostheses.map(p => getTypeLabel(p.type)).join(' + ');
   };
 
-  // Gera os badges de estágio para cada prótese individualmente
   const getProsthesisStatusBadges = (prostheses) => {
     if (!prostheses || prostheses.length === 0) return '';
-
     return prostheses.map((p, i) => {
       const status = p.status || 'escaneamento';
       const label  = getStageLabel(status);
@@ -151,7 +151,6 @@ const initDashboard = async () => {
     }).join('');
   };
 
-  // Garante que o valor do estágio vira uma classe CSS segura
   const sanitizeClass = (value) => {
     return (value || '').replace(/[^a-z0-9-]/gi, '-').toLowerCase();
   };
@@ -296,7 +295,10 @@ const initDashboard = async () => {
       .onSnapshot((snapshot) => {
         allCases = [];
         snapshot.forEach((doc) => {
-          allCases.push({ id: doc.id, ...doc.data() });
+          const data = { id: doc.id, ...doc.data() };
+          // Exclui casos que são APENAS placas (esses vão pro dashboard de Placas)
+          const soPlacas = (data.prostheses || []).every(p => PLACA_TYPES.includes(p.type));
+          if (!soPlacas) allCases.push(data);
         });
         
         updateStats(allCases);
