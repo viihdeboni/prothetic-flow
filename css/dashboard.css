@@ -578,14 +578,22 @@
    ESTRELA DE PAGO
    ======================================== */
 
+.case-type-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+}
+
 .paid-star-btn {
     background: none;
     border: none;
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     cursor: pointer;
     color: var(--gray-300, #d1d5db);
     line-height: 1;
-    padding: 0.125rem;
+    padding: 0;
     transition: color 0.2s, transform 0.15s;
     flex-shrink: 0;
 }
