@@ -2,24 +2,24 @@
 // DASHBOARD - ProtheticFlow
 // ========================================
 
-console.log('📊 dashboard.js carregado');
+console.log('dashboard.js carregado');
 
 // ========================================
-// ESTÁGIOS (mesma lista do case-detail.js)
+// ESTAGIOS (mesma lista do case-detail.js)
 // ========================================
 
 const STAGES = [
   { value: 'aguardando-outra',     label: 'Aguardando Outra'      },
   { value: 'chamar-paciente',      label: 'Chamar Paciente' },
-  { value: 'concluido',            label: 'Concluído'       },
+  { value: 'concluido',            label: 'Concluido'       },
   { value: 'escaneamento',         label: 'Escaneamento'    },
   { value: 'imprimindo',           label: 'Imprimindo'      },
-  { value: 'impressao-placa',      label: 'Impressão Placa'   },
-  { value: 'impressao-protese',    label: 'Impressão Prótese' },
-  { value: 'impressao',            label: 'Impressão'       },
+  { value: 'impressao-placa',      label: 'Impressao Placa'   },
+  { value: 'impressao-protese',    label: 'Impressao Protese' },
+  { value: 'impressao',            label: 'Impressao'       },
   { value: 'montagem',             label: 'Montagem'        },
   { value: 'planejamento-placa',   label: 'Planejamento Placa'   },
-  { value: 'planejamento-protese', label: 'Planejamento Prótese' },
+  { value: 'planejamento-protese', label: 'Planejamento Protese' },
   { value: 'planejamento',         label: 'Planejamento'    },
   { value: 'polimento',            label: 'Polimento'       },
   { value: 'teste',                label: 'Teste'           },
@@ -107,32 +107,44 @@ const initDashboard = async () => {
   }
 
   // ========================================
-  // FUNÇÕES DE FORMATAÇÃO
+  // TOGGLE PAGO
+  // ========================================
+
+  window.togglePaid = async (caseId, currentPaid) => {
+    try {
+      await db.collection('cases').doc(caseId).update({ paid: !currentPaid });
+    } catch (error) {
+      console.error('Erro ao atualizar pagamento:', error);
+    }
+  };
+
+  // ========================================
+  // FUNCOES DE FORMATACAO
   // ========================================
 
   const formatDate = (dateValue) => {
-    if (!dateValue) return 'Não definida';
+    if (!dateValue) return 'Nao definida';
     let date;
     if (dateValue.toDate) date = dateValue.toDate();
     else if (dateValue instanceof Date) date = dateValue;
     else if (typeof dateValue === 'string') date = new Date(dateValue);
-    else return 'Não definida';
+    else return 'Nao definida';
     return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
   const getTypeLabel = (type) => {
     const labels = {
-      'coroa': '🦷 Coroa',
-      'ponte': '🦷 Ponte',
-      'implante': '🦷 Implante',
-      'protese-total': '🦷 Prótese Total',
-      'protese-parcial': '🦷 Prótese Parcial',
-      'placa-funcional': '🦴 Placa Funcional',
-      'placa-miorrelaxante': '🦴 Placa Miorrelaxante',
-      'placa-clareamento': '✨ Placa de Clareamento',
-      'modelo-zocal': '🏛️ Modelo Zocal',
-      'modelo-ferradura': '🏛️ Modelo Ferradura',
-      'contencao-estetica': '😁 Contenção Estética'
+      'coroa': 'Coroa',
+      'ponte': 'Ponte',
+      'implante': 'Implante',
+      'protese-total': 'Protese Total',
+      'protese-parcial': 'Protese Parcial',
+      'placa-funcional': 'Placa Funcional',
+      'placa-miorrelaxante': 'Placa Miorrelaxante',
+      'placa-clareamento': 'Placa de Clareamento',
+      'modelo-zocal': 'Modelo Zocal',
+      'modelo-ferradura': 'Modelo Ferradura',
+      'contencao-estetica': 'Contencao Estetica'
     };
     return labels[type] || type;
   };
@@ -147,7 +159,7 @@ const initDashboard = async () => {
     return prostheses.map((p, i) => {
       const status = p.status || 'escaneamento';
       const label  = getStageLabel(status);
-      return `<span class="case-status-badge ${sanitizeClass(status)}" title="Prótese ${i + 1}">${label}</span>`;
+      return `<span class="case-status-badge ${sanitizeClass(status)}" title="Protese ${i + 1}">${label}</span>`;
     }).join('');
   };
 
@@ -157,7 +169,7 @@ const initDashboard = async () => {
 
   const getProsthesesBadge = (prostheses) => {
     if (!prostheses || prostheses.length <= 1) return '';
-    return `<span class="prostheses-count-badge">${prostheses.length} próteses</span>`;
+    return `<span class="prostheses-count-badge">${prostheses.length} proteses</span>`;
   };
 
   const hasAnyProsthesisCompleted = (prostheses) => {
@@ -166,7 +178,7 @@ const initDashboard = async () => {
   };
 
   // ========================================
-  // RENDERIZAÇÃO
+  // RENDERIZACAO
   // ========================================
 
   const renderCase = (caseData) => {
@@ -180,6 +192,8 @@ const initDashboard = async () => {
       }
     });
 
+    const isPaid = caseData.paid === true;
+
     return `
       <a href="case-detail.html?id=${caseData.id}" class="case-card">
         <div class="case-header">
@@ -187,8 +201,15 @@ const initDashboard = async () => {
             <div class="case-patient-name">${caseData.patientName}</div>
             <div class="case-id">#${caseData.id.slice(0, 8)}</div>
           </div>
-          <div class="case-status-badges">
-            ${getProsthesisStatusBadges(prostheses)}
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <button
+              class="paid-star-btn${isPaid ? ' paid' : ''}"
+              title="${isPaid ? 'Pago - clique para desmarcar' : 'Marcar como pago'}"
+              onclick="event.preventDefault();event.stopPropagation();window.togglePaid('${caseData.id}',${isPaid})"
+            >&#9733;</button>
+            <div class="case-status-badges">
+              ${getProsthesisStatusBadges(prostheses)}
+            </div>
           </div>
         </div>
         
@@ -206,7 +227,7 @@ const initDashboard = async () => {
           </div>
           ${earliestDate ? `
             <div class="case-date-item">
-              <span class="case-date-label">1ª Consulta:</span>
+              <span class="case-date-label">1a Consulta:</span>
               <span class="case-date-value">${formatDate(earliestDate)}</span>
             </div>
           ` : ''}
@@ -226,7 +247,7 @@ const initDashboard = async () => {
   };
 
   // ========================================
-  // ESTATÍSTICAS
+  // ESTATISTICAS
   // ========================================
 
   const updateStats = (cases) => {
@@ -296,7 +317,7 @@ const initDashboard = async () => {
         allCases = [];
         snapshot.forEach((doc) => {
           const data = { id: doc.id, ...doc.data() };
-          // Exclui casos que são APENAS placas (esses vão pro dashboard de Placas)
+          // Exclui casos que sao APENAS placas (esses vao pro dashboard de Placas)
           const soPlacas = (data.prostheses || []).every(p => PLACA_TYPES.includes(p.type));
           if (!soPlacas) allCases.push(data);
         });
@@ -306,13 +327,13 @@ const initDashboard = async () => {
         
         if (loadingState) loadingState.classList.add('hidden');
       }, (error) => {
-        console.error('❌ Erro ao carregar casos:', error);
+        console.error('Erro ao carregar casos:', error);
         if (loadingState) loadingState.classList.add('hidden');
       });
   };
 
   loadCases();
-  console.log('✅ Dashboard pronto!');
+  console.log('Dashboard pronto!');
 };
 
 if (document.readyState === 'loading') {
