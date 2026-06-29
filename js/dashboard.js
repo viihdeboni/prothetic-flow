@@ -201,21 +201,21 @@ const initDashboard = async () => {
             <div class="case-patient-name">${caseData.patientName}</div>
             <div class="case-id">#${caseData.id.slice(0, 8)}</div>
           </div>
-          <div style="display:flex;align-items:center;gap:0.5rem;">
+          <div class="case-status-badges">
+            ${getProsthesisStatusBadges(prostheses)}
+          </div>
+        </div>
+        
+        <div class="case-prostheses">
+          <div class="case-type-row">
             <button
               class="paid-star-btn${isPaid ? ' paid' : ''}"
               title="${isPaid ? 'Pago - clique para desmarcar' : 'Marcar como pago'}"
               onclick="event.preventDefault();event.stopPropagation();window.togglePaid('${caseData.id}',${isPaid})"
             >&#9733;</button>
-            <div class="case-status-badges">
-              ${getProsthesisStatusBadges(prostheses)}
+            <div class="case-type">
+              ${getProsthesesSummary(prostheses)}
             </div>
-          </div>
-        </div>
-        
-        <div class="case-prostheses">
-          <div class="case-type">
-            ${getProsthesesSummary(prostheses)}
           </div>
           ${getProsthesesBadge(prostheses)}
         </div>
