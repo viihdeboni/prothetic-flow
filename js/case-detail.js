@@ -2,24 +2,24 @@
 // DETALHES DO CASO - ProtheticFlow
 // ========================================
 
-console.log('📄 case-detail.js carregado');
+console.log('case-detail.js carregado');
 
 // ========================================
-// ESTÁGIOS DISPONÍVEIS (ordem alfabética)
+// ESTAGIOS DISPONIVEIS (ordem alfabetica)
 // ========================================
 
 const STAGES = [
   { value: 'aguardando-outra',     label: 'Aguardando Outra',     icon: '⏳' },
   { value: 'chamar-paciente',      label: 'Chamar Paciente',      icon: '📞' },
-  { value: 'concluido',            label: 'Concluído',            icon: '✅' },
+  { value: 'concluido',            label: 'Concluido',            icon: '✅' },
   { value: 'escaneamento',         label: 'Escaneamento',         icon: '🔍' },
   { value: 'imprimindo',           label: 'Imprimindo',           icon: '🖨️' },
-  { value: 'impressao-placa',      label: 'Impressão Placa',      icon: '🖨️' },
-  { value: 'impressao-protese',    label: 'Impressão Prótese',    icon: '🖨️' },
-  { value: 'impressao',            label: 'Impressão',            icon: '🖨️' },
+  { value: 'impressao-placa',      label: 'Impressao Placa',      icon: '🖨️' },
+  { value: 'impressao-protese',    label: 'Impressao Protese',    icon: '🖨️' },
+  { value: 'impressao',            label: 'Impressao',            icon: '🖨️' },
   { value: 'montagem',             label: 'Montagem',             icon: '🔧' },
   { value: 'planejamento-placa',   label: 'Planejamento Placa',   icon: '📐' },
-  { value: 'planejamento-protese', label: 'Planejamento Prótese', icon: '📐' },
+  { value: 'planejamento-protese', label: 'Planejamento Protese', icon: '📐' },
   { value: 'planejamento',         label: 'Planejamento',         icon: '📐' },
   { value: 'polimento',            label: 'Polimento',            icon: '✨' },
   { value: 'teste',                label: 'Teste',                icon: '🧪' },
@@ -41,30 +41,30 @@ const initCaseDetail = async () => {
   const caseId = urlParams.get('id');
 
   if (!caseId) {
-    alert('Caso não encontrado');
+    alert('Caso nao encontrado');
     window.location.href = 'dashboard.html';
     return;
   }
 
-  console.log('📋 Caso ID:', caseId);
+  console.log('Caso ID:', caseId);
 
   // Aguardar Firebase
   while (!window.FirebaseApp?.auth || !window.FirebaseApp?.db) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
 
-  console.log('✅ Firebase pronto');
+  console.log('Firebase pronto');
 
   const auth = window.FirebaseApp.auth;
   const db = window.FirebaseApp.db;
 
-  // Esperar autenticação
+  // Esperar autenticacao
   const currentUser = await new Promise((resolve) => {
     const unsubscribe = auth.onAuthStateChanged(async (authUser) => {
       unsubscribe();
       
       if (!authUser) {
-        console.log('❌ Usuário não autenticado');
+        console.log('Usuario nao autenticado');
         window.location.href = 'index.html';
         resolve(null);
         return;
@@ -77,10 +77,10 @@ const initCaseDetail = async () => {
           email: authUser.email,
           ...userDoc.data()
         };
-        console.log('✅ Usuário:', userData);
+        console.log('Usuario:', userData);
         resolve(userData);
       } catch (error) {
-        console.error('❌ Erro:', error);
+        console.error('Erro:', error);
         window.location.href = 'index.html';
         resolve(null);
       }
@@ -104,7 +104,7 @@ const initCaseDetail = async () => {
   const prosthesesContainer = document.getElementById('prosthesesContainer');
   const notification = document.getElementById('notification');
 
-  // Nome do usuário
+  // Nome do usuario
   if (userName) userName.textContent = currentUser.name;
 
   // Ocultar elementos para Operacional
@@ -113,7 +113,7 @@ const initCaseDetail = async () => {
   }
 
   // ========================================
-  // NOTIFICAÇÃO
+  // NOTIFICACAO
   // ========================================
 
   const showNotification = (message, type = 'info') => {
@@ -132,7 +132,7 @@ const initCaseDetail = async () => {
   }
 
   // ========================================
-  // FORMATAÇÃO
+  // FORMATACAO
   // ========================================
 
   const formatDate = (dateValue) => {
@@ -189,27 +189,27 @@ const initCaseDetail = async () => {
 
   const getTypeLabel = (type) => {
     const labels = {
-      'coroa': '🦷 Coroa',
-      'ponte': '🦷 Ponte',
-      'implante': '🦷 Implante',
-      'protese-total': '🦷 Prótese Total',
-      'protese-parcial': '🦷 Prótese Parcial',
-      'placa-funcional': '🦴 Placa Funcional',
-      'placa-miorrelaxante': '🦴 Placa Miorrelaxante',
-      'placa-clareamento': '✨ Placa de Clareamento',
-      'modelo-zocal': '🏛️ Modelo Zocal',
-      'modelo-ferradura': '🏛️ Modelo Ferradura',
-      'contencao-estetica': '😁 Contenção Estética'
+      'coroa': 'Coroa',
+      'ponte': 'Ponte',
+      'implante': 'Implante',
+      'protese-total': 'Protese Total',
+      'protese-parcial': 'Protese Parcial',
+      'placa-funcional': 'Placa Funcional',
+      'placa-miorrelaxante': 'Placa Miorrelaxante',
+      'placa-clareamento': 'Placa de Clareamento',
+      'modelo-zocal': 'Modelo Zocal',
+      'modelo-ferradura': 'Modelo Ferradura',
+      'contencao-estetica': 'Contencao Estetica'
     };
     return labels[type] || type;
   };
 
   const getArcadaLabel = (arcada) => {
     const labels = {
-      'mandibula': '🦷 Mandíbula',
-      'maxila': '🦷 Maxila',
-      'ambas': '🦷 Ambas',
-      'outros': '📄 Outros'
+      'mandibula': 'Mandibula',
+      'maxila': 'Maxila',
+      'ambas': 'Ambas',
+      'outros': 'Outros'
     };
     return labels[arcada] || arcada;
   };
@@ -247,7 +247,7 @@ const initCaseDetail = async () => {
   let currentCase = null;
 
   const renderCaseDetails = () => {
-    console.log('🎨 Renderizando caso:', currentCase);
+    console.log('Renderizando caso:', currentCase);
 
     // Breadcrumb
     const breadcrumb = document.getElementById('breadcrumbPatient');
@@ -280,16 +280,42 @@ const initCaseDetail = async () => {
     const emailEl = document.getElementById('patientEmail');
     const cpfEl = document.getElementById('patientCPF');
 
-    if (phoneEl) phoneEl.textContent = currentCase.patientPhone || 'Não informado';
-    if (emailEl) emailEl.textContent = currentCase.patientEmail || 'Não informado';
-    if (cpfEl) cpfEl.textContent = currentCase.patientCPF || 'Não informado';
+    if (phoneEl) phoneEl.textContent = currentCase.patientPhone || 'Nao informado';
+    if (emailEl) emailEl.textContent = currentCase.patientEmail || 'Nao informado';
+    if (cpfEl) cpfEl.textContent = currentCase.patientCPF || 'Nao informado';
 
-    // Renderizar próteses
+    // ========================================
+    // ESTRELA DE PAGO NO HEADER
+    // ========================================
+
+    let paidStarEl = document.getElementById('paidStarBtn');
+    if (!paidStarEl) {
+      paidStarEl = document.createElement('button');
+      paidStarEl.id = 'paidStarBtn';
+      paidStarEl.className = 'paid-star-btn paid-star-detail';
+      paidStarEl.innerHTML = '&#9733;';
+      const caseHeaderActions = document.querySelector('.case-header-actions');
+      if (caseHeaderActions) caseHeaderActions.prepend(paidStarEl);
+    }
+
+    const isPaid = currentCase.paid === true;
+    paidStarEl.className = 'paid-star-btn paid-star-detail' + (isPaid ? ' paid' : '');
+    paidStarEl.title = isPaid ? 'Pago - clique para desmarcar' : 'Marcar como pago';
+    paidStarEl.onclick = async () => {
+      try {
+        await db.collection('cases').doc(caseId).update({ paid: !currentCase.paid });
+        showNotification(currentCase.paid ? 'Desmarcado como pago' : 'Marcado como pago!', 'success');
+      } catch (e) {
+        showNotification('Erro ao atualizar pagamento', 'error');
+      }
+    };
+
+    // Renderizar proteses
     renderProstheses();
   };
 
   // ========================================
-  // RENDERIZAR PRÓTESES
+  // RENDERIZAR PROTESES
   // ========================================
 
   const renderProstheses = () => {
@@ -298,7 +324,7 @@ const initCaseDetail = async () => {
     const prostheses = currentCase.prostheses || [];
     
     if (prostheses.length === 0) {
-      prosthesesContainer.innerHTML = '<div class="empty-message">Nenhuma prótese cadastrada</div>';
+      prosthesesContainer.innerHTML = '<div class="empty-message">Nenhuma protese cadastrada</div>';
       return;
     }
 
@@ -306,11 +332,11 @@ const initCaseDetail = async () => {
       return createProsthesisSection(prosthesis, index);
     }).join('');
 
-    // Adicionar event listeners após renderizar
+    // Adicionar event listeners apos renderizar
     attachProsthesisEventListeners();
   };
 
-  // Gera as <option> do select de status com todos os estágios
+  // Gera as <option> do select de status com todos os estagios
   const buildStatusOptions = (currentStatus) => {
     return STAGES.map(s => `
       <option value="${s.value}" ${currentStatus === s.value ? 'selected' : ''}>${s.label}</option>
@@ -322,10 +348,10 @@ const initCaseDetail = async () => {
 
     return `
       <div class="prosthesis-section" data-prosthesis-id="${prosthesis.id}">
-        <!-- Header da Prótese -->
+        <!-- Header da Protese -->
         <div class="prosthesis-header">
           <div class="prosthesis-title">
-            <span class="prosthesis-number">Prótese ${index + 1}</span>
+            <span class="prosthesis-number">Protese ${index + 1}</span>
             <span class="prosthesis-type-label">${getTypeLabel(prosthesis.type)}</span>
           </div>
           <div class="prosthesis-badges">
@@ -338,7 +364,7 @@ const initCaseDetail = async () => {
           </div>
         </div>
 
-        <!-- Conteúdo da Prótese -->
+        <!-- Conteudo da Protese -->
         <div class="prosthesis-content">
           <div class="prosthesis-grid">
             <!-- Coluna Principal -->
@@ -346,7 +372,7 @@ const initCaseDetail = async () => {
               <!-- Datas -->
               <div class="prosthesis-card">
                 <div class="prosthesis-card-title">
-                  <span>📅 Datas Importantes</span>
+                  <span>Datas Importantes</span>
                   <button class="btn btn-secondary btn-sm edit-dates-btn" data-prosthesis-id="${prosthesis.id}">✏️ Editar</button>
                 </div>
                 ${renderDates(prosthesis)}
@@ -355,9 +381,9 @@ const initCaseDetail = async () => {
               ${showValue ? `
                 <!-- Valor -->
                 <div class="prosthesis-card">
-                  <div class="prosthesis-card-title">💰 Valor</div>
+                  <div class="prosthesis-card-title">Valor</div>
                   <div class="value-display">
-                    ${prosthesis.value ? formatMoney(prosthesis.value) : 'Não definido'}
+                    ${prosthesis.value ? formatMoney(prosthesis.value) : 'Nao definido'}
                   </div>
                 </div>
               ` : ''}
@@ -365,23 +391,23 @@ const initCaseDetail = async () => {
               <!-- Arquivos -->
               <div class="prosthesis-card">
                 <div class="prosthesis-card-title">
-                  <span>📎 Arquivos</span>
+                  <span>Arquivos</span>
                   <button class="btn btn-secondary btn-sm upload-file-btn" data-prosthesis-id="${prosthesis.id}">+ Adicionar</button>
                 </div>
                 <input type="file" class="hidden file-input" data-prosthesis-id="${prosthesis.id}" multiple>
                 ${renderFiles(prosthesis)}
               </div>
 
-              <!-- Observações -->
+              <!-- Observacoes -->
               <div class="prosthesis-card">
-                <div class="prosthesis-card-title">📝 Observações</div>
+                <div class="prosthesis-card-title">Observacoes</div>
                 <textarea 
                   class="notes-textarea prosthesis-notes" 
                   data-prosthesis-id="${prosthesis.id}"
-                  placeholder="Observações específicas desta prótese..."
+                  placeholder="Observacoes especificas desta protese..."
                 >${prosthesis.notes || ''}</textarea>
                 <button class="btn btn-primary btn-sm save-notes-btn" data-prosthesis-id="${prosthesis.id}" style="margin-top: 0.75rem;">
-                  Salvar Observações
+                  Salvar Observacoes
                 </button>
               </div>
             </div>
@@ -390,13 +416,13 @@ const initCaseDetail = async () => {
             <div class="prosthesis-sidebar">
               <!-- Timeline -->
               <div class="prosthesis-card">
-                <div class="prosthesis-card-title">⏱️ Timeline</div>
+                <div class="prosthesis-card-title">Timeline</div>
                 ${renderTimeline(prosthesis)}
               </div>
 
-              <!-- Mini Calendário -->
+              <!-- Mini Calendario -->
               <div class="prosthesis-card">
-                <div class="prosthesis-card-title">📆 Calendário</div>
+                <div class="prosthesis-card-title">Calendario</div>
                 ${renderCalendar(prosthesis)}
               </div>
             </div>
@@ -492,7 +518,7 @@ const initCaseDetail = async () => {
       <button class="btn btn-secondary btn-sm add-custom-date-btn" 
               data-prosthesis-id="${prosthesis.id}" 
               style="margin-top: 1rem; width: 100%;">
-        ➕ Adicionar Data Personalizada
+        Adicionar Data Personalizada
       </button>
     `;
   };
@@ -510,7 +536,6 @@ const initCaseDetail = async () => {
       return '<div class="empty-message">Nenhum arquivo anexado</div>';
     }
 
-    // Contar por tipo
     const countFotos = files.filter(f => {
       const ext = (f.originalName || f.name).split('.').pop().toLowerCase();
       return ['jpg','jpeg','png','gif','webp','heic'].includes(ext);
@@ -524,7 +549,6 @@ const initCaseDetail = async () => {
     const countMaxila    = files.filter(f => f.arcada === 'maxila').length;
     const countMandibula = files.filter(f => f.arcada === 'mandibula').length;
 
-    // Contar por estágio (todos os estágios do array STAGES)
     const stageCounts = {};
     STAGES.forEach(s => {
       stageCounts[s.value] = files.filter(f => f.stage === s.value).length;
@@ -540,18 +564,18 @@ const initCaseDetail = async () => {
     return `
       <div class="file-categories-tabs">
         <button class="file-category-tab active" data-category="todos" data-prosthesis-id="${prosthesis.id}">
-          📋 Todos (${totalFiles})
+          Todos (${totalFiles})
         </button>
-        ${countFotos > 0 ? `<button class="file-category-tab" data-category="fotos" data-prosthesis-id="${prosthesis.id}">📸 Fotos (${countFotos})</button>` : ''}
-        ${countStl > 0 ? `<button class="file-category-tab" data-category="stl" data-prosthesis-id="${prosthesis.id}">🔷 STL/3D (${countStl})</button>` : ''}
-        ${countMaxila > 0 ? `<button class="file-category-tab" data-category="maxila" data-prosthesis-id="${prosthesis.id}">🦷 Maxila (${countMaxila})</button>` : ''}
-        ${countMandibula > 0 ? `<button class="file-category-tab" data-category="mandibula" data-prosthesis-id="${prosthesis.id}">🦷 Mandíbula (${countMandibula})</button>` : ''}
+        ${countFotos > 0 ? `<button class="file-category-tab" data-category="fotos" data-prosthesis-id="${prosthesis.id}">Fotos (${countFotos})</button>` : ''}
+        ${countStl > 0 ? `<button class="file-category-tab" data-category="stl" data-prosthesis-id="${prosthesis.id}">STL/3D (${countStl})</button>` : ''}
+        ${countMaxila > 0 ? `<button class="file-category-tab" data-category="maxila" data-prosthesis-id="${prosthesis.id}">Maxila (${countMaxila})</button>` : ''}
+        ${countMandibula > 0 ? `<button class="file-category-tab" data-category="mandibula" data-prosthesis-id="${prosthesis.id}">Mandibula (${countMandibula})</button>` : ''}
         ${STAGES.map(s => stageCounts[s.value] > 0 ? `
           <button class="file-category-tab" data-category="${s.value}" data-prosthesis-id="${prosthesis.id}">
             ${s.icon} ${s.label} (${stageCounts[s.value]})
           </button>
         ` : '').join('')}
-        ${countOutros > 0 ? `<button class="file-category-tab" data-category="outros" data-prosthesis-id="${prosthesis.id}">📄 Outros (${countOutros})</button>` : ''}
+        ${countOutros > 0 ? `<button class="file-category-tab" data-category="outros" data-prosthesis-id="${prosthesis.id}">Outros (${countOutros})</button>` : ''}
       </div>
 
       <div class="files-list-container" data-prosthesis-id="${prosthesis.id}">
@@ -593,7 +617,7 @@ const initCaseDetail = async () => {
     }
 
     const arcadaLabels = {
-      'mandibula': 'Mandíbula',
+      'mandibula': 'Mandibula',
       'maxila': 'Maxila',
       'outros': 'Outros'
     };
@@ -612,7 +636,7 @@ const initCaseDetail = async () => {
                     ${file.arcada ? `<span class="file-arcada-badge ${file.arcada}">${arcadaLabels[file.arcada] || file.arcada}</span>` : ''}
                     ${file.stage ? `<span class="file-stage-badge ${file.stage}">${getStageLabel(file.stage)}</span>` : ''}
                   </div>
-                  <div class="file-meta">${formatFileSize(file.size)} • ${formatDateTime(file.uploadedAt)}</div>
+                  <div class="file-meta">${formatFileSize(file.size)} - ${formatDateTime(file.uploadedAt)}</div>
                 </div>
               </div>
               <div class="file-actions" onclick="event.stopPropagation()">
@@ -633,7 +657,7 @@ const initCaseDetail = async () => {
 
   const downloadFile = (url, filename) => {
     if (!url || url === '#') {
-      showNotification('Arquivo não disponível para download', 'error');
+      showNotification('Arquivo nao disponivel para download', 'error');
       return;
     }
 
@@ -772,14 +796,14 @@ const initCaseDetail = async () => {
         ${renderEvent(prosthesis.deliveryDate, 'Entrega', '✅')}
         ${customDates.map(cd => renderEvent(cd.date, cd.label, '📅')).join('')}
         ${!prosthesis.firstConsultation && !prosthesis.photoDate && !prosthesis.moldingDate && !prosthesis.scanDate && !prosthesis.testDate && !prosthesis.deliveryDate && customDates.length === 0 ? `
-          <div class="empty-message">Nenhuma data no calendário</div>
+          <div class="empty-message">Nenhuma data no calendario</div>
         ` : ''}
       </div>
     `;
   };
 
   // ========================================
-  // EVENT LISTENERS DAS PRÓTESES
+  // EVENT LISTENERS DAS PROTESES
   // ========================================
 
   const attachProsthesisEventListeners = () => {
@@ -858,7 +882,7 @@ const initCaseDetail = async () => {
   };
 
   // ========================================
-  // ATUALIZAR STATUS DA PRÓTESE
+  // ATUALIZAR STATUS DA PROTESE
   // ========================================
 
   const updateProsthesisStatus = async (prosthesisId, newStatus) => {
@@ -867,7 +891,7 @@ const initCaseDetail = async () => {
       const prosthesisIndex = prostheses.findIndex(p => p.id === prosthesisId);
       
       if (prosthesisIndex === -1) {
-        showNotification('Prótese não encontrada', 'error');
+        showNotification('Protese nao encontrada', 'error');
         return;
       }
 
@@ -896,7 +920,7 @@ const initCaseDetail = async () => {
 
       showNotification('Status atualizado!', 'success');
     } catch (error) {
-      console.error('❌ Erro ao atualizar status:', error);
+      console.error('Erro ao atualizar status:', error);
       showNotification('Erro ao atualizar status', 'error');
     }
   };
@@ -955,7 +979,7 @@ const initCaseDetail = async () => {
         const prosthesisIndex = prostheses.findIndex(p => p.id === prosthesisId);
         
         if (prosthesisIndex === -1) {
-          showNotification('Prótese não encontrada', 'error');
+          showNotification('Protese nao encontrada', 'error');
           return;
         }
 
@@ -985,7 +1009,7 @@ const initCaseDetail = async () => {
         showNotification('Datas atualizadas!', 'success');
         closeEditDatesModalFunc();
       } catch (error) {
-        console.error('❌ Erro ao atualizar datas:', error);
+        console.error('Erro ao atualizar datas:', error);
         showNotification('Erro ao atualizar datas', 'error');
       }
     });
@@ -1038,7 +1062,7 @@ const initCaseDetail = async () => {
         const prosthesisIndex = prostheses.findIndex(p => p.id === prosthesisId);
         
         if (prosthesisIndex === -1) {
-          showNotification('Prótese não encontrada', 'error');
+          showNotification('Protese nao encontrada', 'error');
           return;
         }
 
@@ -1064,7 +1088,7 @@ const initCaseDetail = async () => {
         showNotification('Data adicionada!', 'success');
         closeAddCustomDateModalFunc();
       } catch (error) {
-        console.error('❌ Erro ao adicionar data:', error);
+        console.error('Erro ao adicionar data:', error);
         showNotification('Erro ao adicionar data', 'error');
       }
     });
@@ -1082,7 +1106,7 @@ const initCaseDetail = async () => {
       const prosthesisIndex = prostheses.findIndex(p => p.id === prosthesisId);
       
       if (prosthesisIndex === -1) {
-        showNotification('Prótese não encontrada', 'error');
+        showNotification('Protese nao encontrada', 'error');
         return;
       }
 
@@ -1108,15 +1132,15 @@ const initCaseDetail = async () => {
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
 
-      showNotification('Data excluída!', 'success');
+      showNotification('Data excluida!', 'success');
     } catch (error) {
-      console.error('❌ Erro ao excluir data:', error);
+      console.error('Erro ao excluir data:', error);
       showNotification('Erro ao excluir data', 'error');
     }
   };
 
   // ========================================
-  // MODAL DE SELEÇÃO DE ARCADA E ETAPA
+  // MODAL DE SELECAO DE ARCADA E ETAPA
   // ========================================
 
   let pendingFilesUpload = null;
@@ -1193,7 +1217,7 @@ const initCaseDetail = async () => {
         const prostheses = currentCase.prostheses || [];
         const prosthesisIndex = prostheses.findIndex(p => p.id === pendingProsthesisId);
         if (prosthesisIndex === -1) {
-          showNotification('Prótese não encontrada', 'error');
+          showNotification('Protese nao encontrada', 'error');
           return;
         }
 
@@ -1229,7 +1253,7 @@ const initCaseDetail = async () => {
         prostheses[prosthesisIndex].files = prostheses[prosthesisIndex].files || [];
         prostheses[prosthesisIndex].files.push(...newFiles);
 
-        const arcadaLabels = { mandibula: 'Mandíbula', maxila: 'Maxila', outros: 'Outros' };
+        const arcadaLabels = { mandibula: 'Mandibula', maxila: 'Maxila', outros: 'Outros' };
         let description = `${newFiles.length} arquivo(s) - ${arcadaLabels[selectedArcada]}`;
         if (stage) description += ` - ${getStageLabel(stage)}`;
 
@@ -1252,7 +1276,7 @@ const initCaseDetail = async () => {
         showNotification('Arquivo(s) adicionados com sucesso!', 'success');
         pendingFilesUpload = pendingProsthesisId = selectedArcada = null;
       } catch (error) {
-        console.error('❌ Erro ao enviar arquivos:', error);
+        console.error('Erro ao enviar arquivos:', error);
         showNotification('Erro ao enviar arquivos', 'error');
       }
     });
@@ -1270,7 +1294,7 @@ const initCaseDetail = async () => {
       const prosthesisIndex = prostheses.findIndex(p => p.id === prosthesisId);
       
       if (prosthesisIndex === -1) {
-        showNotification('Prótese não encontrada', 'error');
+        showNotification('Protese nao encontrada', 'error');
         return;
       }
 
@@ -1296,15 +1320,15 @@ const initCaseDetail = async () => {
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
 
-      showNotification('Arquivo excluído!', 'success');
+      showNotification('Arquivo excluido!', 'success');
     } catch (error) {
-      console.error('❌ Erro ao excluir arquivo:', error);
+      console.error('Erro ao excluir arquivo:', error);
       showNotification('Erro ao excluir arquivo', 'error');
     }
   };
 
   // ========================================
-  // SALVAR OBSERVAÇÕES
+  // SALVAR OBSERVACOES
   // ========================================
 
   const saveProsthesisNotes = async (prosthesisId, notes) => {
@@ -1313,7 +1337,7 @@ const initCaseDetail = async () => {
       const prosthesisIndex = prostheses.findIndex(p => p.id === prosthesisId);
       
       if (prosthesisIndex === -1) {
-        showNotification('Prótese não encontrada', 'error');
+        showNotification('Protese nao encontrada', 'error');
         return;
       }
 
@@ -1322,7 +1346,7 @@ const initCaseDetail = async () => {
       prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
       prostheses[prosthesisIndex].timeline.push({
         action: 'notes_update',
-        description: 'Observações atualizadas',
+        description: 'Observacoes atualizadas',
         date: new Date().toISOString(),
         user: currentUser.name,
         userId: currentUser.id
@@ -1335,15 +1359,15 @@ const initCaseDetail = async () => {
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
 
-      showNotification('Observações salvas!', 'success');
+      showNotification('Observacoes salvas!', 'success');
     } catch (error) {
-      console.error('❌ Erro ao salvar observações:', error);
-      showNotification('Erro ao salvar observações', 'error');
+      console.error('Erro ao salvar observacoes:', error);
+      showNotification('Erro ao salvar observacoes', 'error');
     }
   };
 
   // ========================================
-  // EDITAR INFORMAÇÕES DO CASO
+  // EDITAR INFORMACOES DO CASO
   // ========================================
 
   const editCaseBtn = document.getElementById('editCaseBtn');
@@ -1385,12 +1409,12 @@ const initCaseDetail = async () => {
 
       const newName = editPatientName.value.trim();
       if (!newName) {
-        showNotification('Nome do paciente é obrigatório', 'error');
+        showNotification('Nome do paciente e obrigatorio', 'error');
         return;
       }
 
       try {
-        showNotification('Salvando alterações...', 'info');
+        showNotification('Salvando alteracoes...', 'info');
 
         const updateData = {
           patientName: newName,
@@ -1403,7 +1427,7 @@ const initCaseDetail = async () => {
         if (editPatientPhoto.files && editPatientPhoto.files[0]) {
           const file = editPatientPhoto.files[0];
           if (file.size > 5 * 1024 * 1024) {
-            showNotification('Foto muito grande. Máximo 5MB', 'error');
+            showNotification('Foto muito grande. Maximo 5MB', 'error');
             return;
           }
           const base64 = await new Promise((resolve, reject) => {
@@ -1422,7 +1446,7 @@ const initCaseDetail = async () => {
           prosthesis.timeline = prosthesis.timeline || [];
           prosthesis.timeline.push({
             action: 'case_info_update',
-            description: 'Informações do caso atualizadas',
+            description: 'Informacoes do caso atualizadas',
             date: new Date().toISOString(),
             user: currentUser.name,
             userId: currentUser.id
@@ -1432,13 +1456,13 @@ const initCaseDetail = async () => {
         const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
         await db.collection('cases').doc(caseId).update({ prostheses: cleanProstheses });
 
-        showNotification('Informações atualizadas com sucesso!', 'success');
+        showNotification('Informacoes atualizadas com sucesso!', 'success');
         closeEditCaseModalFunc();
         if (editPatientPhoto) editPatientPhoto.value = '';
 
       } catch (error) {
-        console.error('❌ Erro ao atualizar informações:', error);
-        showNotification('Erro ao atualizar informações', 'error');
+        console.error('Erro ao atualizar informacoes:', error);
+        showNotification('Erro ao atualizar informacoes', 'error');
       }
     });
   }
@@ -1496,10 +1520,10 @@ const initCaseDetail = async () => {
     confirmDeleteBtn.addEventListener('click', async () => {
       try {
         await db.collection('cases').doc(caseId).delete();
-        showNotification('Caso excluído completamente!', 'success');
+        showNotification('Caso excluido completamente!', 'success');
         setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
       } catch (error) {
-        console.error('❌ Erro:', error);
+        console.error('Erro:', error);
         showNotification('Erro ao excluir caso', 'error');
       }
     });
@@ -1511,17 +1535,17 @@ const initCaseDetail = async () => {
 
   db.collection('cases').doc(caseId).onSnapshot((doc) => {
     if (!doc.exists) {
-      showNotification('Caso não encontrado', 'error');
+      showNotification('Caso nao encontrado', 'error');
       setTimeout(() => window.location.href = 'dashboard.html', 1500);
       return;
     }
 
     currentCase = { id: doc.id, ...doc.data() };
-    console.log('✅ Caso carregado:', currentCase);
+    console.log('Caso carregado:', currentCase);
     renderCaseDetails();
   });
 
-  console.log('✅ case-detail.js pronto!');
+  console.log('case-detail.js pronto!');
 };
 
 if (document.readyState === 'loading') {
