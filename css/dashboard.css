@@ -613,41 +613,7 @@
     font-size: 1.75rem;
 }
 
-/* ========================================
-   PILLS DE MATERIAL
-   ======================================== */
-
-.material-pills {
-    display: flex;
-    gap: 0.375rem;
-    align-items: center;
-}
-
-.material-pill {
-    padding: 0.375rem 0.875rem;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    border: 2px solid var(--gray-200);
-    border-radius: 9999px;
-    background-color: var(--white);
-    color: var(--gray-500);
-    cursor: pointer;
-    transition: all 0.18s;
-    white-space: nowrap;
-}
-
-.material-pill:hover {
-    border-color: var(--gray-400);
-    color: var(--gray-700);
-    transform: translateY(-1px);
-}
-
-.material-pill.active {
-    border-color: var(--pill-color, var(--primary-blue));
-    background-color: color-mix(in srgb, var(--pill-color, var(--primary-blue)) 12%, white);
-    color: var(--pill-color, var(--primary-blue));
-    box-shadow: 0 0 0 1px var(--pill-color, var(--primary-blue));
-}
+/* material usa a mesma classe do status select - nada extra necessario */
 
 /* ========================================
    CHECKLIST DE IMPRESSAO
