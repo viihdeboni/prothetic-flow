@@ -63,6 +63,7 @@ const initPlacas = async () => {
   const searchInput      = document.getElementById('searchInput');
   const statusFilter     = document.getElementById('statusFilter');
   const typeFilter       = document.getElementById('typeFilter');
+  const materialFilter   = document.getElementById('materialFilter');
   const casesGrid        = document.getElementById('casesGrid');
   const emptyState       = document.getElementById('emptyState');
   const loadingState     = document.getElementById('loadingState');
@@ -132,6 +133,21 @@ const initPlacas = async () => {
     return placas.map(p => getTypeLabel(p.type)).join(' + ');
   };
 
+  const getMaterialLabel = (material) => {
+    const labels = { flex: 'Flex', base: 'Base' };
+    return labels[material] || '';
+  };
+
+  const getMaterialBadges = (prostheses) => {
+    if (!prostheses || prostheses.length === 0) return '';
+    const materials = prostheses
+      .map(p => p.material)
+      .filter(m => m === 'flex' || m === 'base');
+    if (materials.length === 0) return '';
+    const unique = [...new Set(materials)];
+    return unique.map(m => `<span class="material-badge ${m}">${getMaterialLabel(m)}</span>`).join('');
+  };
+
   const sanitizeClass = (value) =>
     (value || '').replace(/[^a-z0-9-]/gi, '-').toLowerCase();
 
@@ -198,7 +214,10 @@ const initPlacas = async () => {
               ${getProsthesesSummary(prostheses)}
             </div>
           </div>
-          ${getProsthesesBadge(prostheses)}
+          <div class="case-prostheses-badges-row">
+            ${getMaterialBadges(prostheses)}
+            ${getProsthesesBadge(prostheses)}
+          </div>
         </div>
 
         <div class="case-dates">
@@ -250,7 +269,8 @@ const initPlacas = async () => {
   const applyFilters = () => {
     const searchTerm  = searchInput  ? searchInput.value.toLowerCase() : '';
     const statusValue = statusFilter ? statusFilter.value : '';
-    const typeValue   = typeFilter   ? typeFilter.value : '';
+    const typeValue     = typeFilter     ? typeFilter.value : '';
+    const materialValue = materialFilter ? materialFilter.value : '';
 
     let filtered = allCases;
 
@@ -276,12 +296,19 @@ const initPlacas = async () => {
       );
     }
 
+    if (materialValue) {
+      filtered = filtered.filter(c =>
+        (c.prostheses || []).some(p => p.material === materialValue)
+      );
+    }
+
     renderCases(filtered);
   };
 
   if (searchInput)  searchInput.addEventListener('input', applyFilters);
   if (statusFilter) statusFilter.addEventListener('change', applyFilters);
   if (typeFilter)   typeFilter.addEventListener('change', applyFilters);
+  if (materialFilter) materialFilter.addEventListener('change', applyFilters);
 
   // ========================================
   // CARREGAR CASOS (REAL-TIME) - filtrando por tipo de placa
