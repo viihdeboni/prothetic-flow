@@ -614,24 +614,39 @@
 }
 
 /* ========================================
-   SELECT DE MATERIAL
+   PILLS DE MATERIAL
    ======================================== */
 
-.prosthesis-material-select {
-    padding: 0.5rem 0.875rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: 2px solid var(--gray-300);
-    border-radius: var(--radius-md);
-    background-color: var(--white);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    color: var(--gray-700);
+.material-pills {
+    display: flex;
+    gap: 0.375rem;
+    align-items: center;
 }
 
-.prosthesis-material-select:focus {
-    outline: none;
-    border-color: var(--primary-blue);
+.material-pill {
+    padding: 0.375rem 0.875rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    border: 2px solid var(--gray-200);
+    border-radius: 9999px;
+    background-color: var(--white);
+    color: var(--gray-500);
+    cursor: pointer;
+    transition: all 0.18s;
+    white-space: nowrap;
+}
+
+.material-pill:hover {
+    border-color: var(--gray-400);
+    color: var(--gray-700);
+    transform: translateY(-1px);
+}
+
+.material-pill.active {
+    border-color: var(--pill-color, var(--primary-blue));
+    background-color: color-mix(in srgb, var(--pill-color, var(--primary-blue)) 12%, white);
+    color: var(--pill-color, var(--primary-blue));
+    box-shadow: 0 0 0 1px var(--pill-color, var(--primary-blue));
 }
 
 /* ========================================
@@ -641,35 +656,78 @@
 .print-checklist {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.625rem;
     padding: 0.25rem 0;
 }
 
 .checklist-item {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0;
     cursor: pointer;
     user-select: none;
 }
 
+/* esconde o checkbox nativo */
 .checklist-item input[type="checkbox"] {
-    width: 1.25rem;
-    height: 1.25rem;
-    accent-color: var(--primary-blue);
-    cursor: pointer;
-    flex-shrink: 0;
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
 }
 
+/* card do item */
 .checklist-label {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    background-color: var(--white);
     font-size: 0.9375rem;
-    font-weight: 500;
-    color: var(--gray-700);
+    font-weight: 600;
+    color: var(--gray-600);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.checklist-label::before {
+    content: '';
+    display: inline-flex;
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 2px solid var(--gray-300);
+    border-radius: 50%;
+    flex-shrink: 0;
     transition: all 0.2s;
 }
 
-.checklist-label.done {
-    color: var(--success, #10b981);
-    text-decoration: line-through;
-    opacity: 0.75;
+.checklist-item input[type="checkbox"]:checked + .checklist-label {
+    border-color: #10b981;
+    background-color: rgba(16, 185, 129, 0.06);
+    color: #047857;
+}
+
+.checklist-item input[type="checkbox"]:checked + .checklist-label::before {
+    background-color: #10b981;
+    border-color: #10b981;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 65%;
+}
+
+.checklist-label:hover {
+    border-color: var(--primary-blue);
+    background-color: rgba(37, 99, 235, 0.04);
+    color: var(--primary-blue);
+}
+
+.checklist-item input[type="checkbox"]:checked + .checklist-label:hover {
+    border-color: #059669;
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #047857;
 }
