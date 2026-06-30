@@ -344,14 +344,22 @@ const initCaseDetail = async () => {
   };
 
   const MATERIALS = [
-    { value: '',       label: 'Material...' },
-    { value: 'resina', label: '🔵 Resina'   },
-    { value: 'flex',   label: '🟣 Flex'     },
-    { value: 'base',   label: '⚪ Base'     },
+    { value: 'resina', label: 'Resina', color: '#3b82f6' },
+    { value: 'flex',   label: 'Flex',   color: '#8b5cf6' },
+    { value: 'base',   label: 'Base',   color: '#6b7280' },
   ];
 
-  const buildMaterialOptions = (current) =>
-    MATERIALS.map(m => `<option value="${m.value}" ${current === m.value ? 'selected' : ''}>${m.label}</option>`).join('');
+  const buildMaterialPills = (current, prosthesisId) =>
+    `<div class="material-pills">` +
+    MATERIALS.map(m => `
+      <button
+        class="material-pill${current === m.value ? ' active' : ''}"
+        data-prosthesis-id="${prosthesisId}"
+        data-material="${m.value}"
+        style="${current === m.value ? `--pill-color:${m.color}` : ''}"
+      >${m.label}</button>
+    `).join('') +
+    `</div>`;
 
   const createProsthesisSection = (prosthesis, index) => {
     const showValue = currentUser.role === 'management';
@@ -369,9 +377,7 @@ const initCaseDetail = async () => {
             <span class="prosthesis-arcada-badge ${prosthesis.arcada}">
               ${getArcadaLabel(prosthesis.arcada)}
             </span>
-            <select class="prosthesis-material-select" data-prosthesis-id="${prosthesis.id}" title="Material">
-              ${buildMaterialOptions(prosthesis.material || '')}
-            </select>
+            ${buildMaterialPills(prosthesis.material || '', prosthesis.id)}
             <select class="prosthesis-status-select" data-prosthesis-id="${prosthesis.id}">
               ${buildStatusOptions(prosthesis.status)}
             </select>
@@ -438,7 +444,7 @@ const initCaseDetail = async () => {
                       data-prosthesis-id="${prosthesis.id}"
                       data-item="dentes"
                       ${checklist.dentes ? 'checked' : ''}>
-                    <span class="checklist-label ${checklist.dentes ? 'done' : ''}">🦷 Dentes</span>
+                    <span class="checklist-label">🦷 Dentes</span>
                   </label>
                   <label class="checklist-item">
                     <input type="checkbox"
@@ -446,7 +452,7 @@ const initCaseDetail = async () => {
                       data-prosthesis-id="${prosthesis.id}"
                       data-item="base"
                       ${checklist.base ? 'checked' : ''}>
-                    <span class="checklist-label ${checklist.base ? 'done' : ''}">⚪ Base</span>
+                    <span class="checklist-label">⚪ Base</span>
                   </label>
                 </div>
               </div>
@@ -844,12 +850,17 @@ const initCaseDetail = async () => {
   // ========================================
 
   const attachProsthesisEventListeners = () => {
-    // Material Select
-    document.querySelectorAll('.prosthesis-material-select').forEach(select => {
-      select.addEventListener('change', async (e) => {
+    // Material Pills
+    document.querySelectorAll('.material-pill').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
         const prosthesisId = e.target.dataset.prosthesisId;
-        const newMaterial = e.target.value;
-        await updateProsthesisMaterial(prosthesisId, newMaterial);
+        const newMaterial = e.target.dataset.material;
+        const prostheses = currentCase.prostheses || [];
+        const prosthesis = prostheses.find(p => p.id === prosthesisId);
+        // toggle: clicou no mesmo = desmarca
+        const finalMaterial = prosthesis && prosthesis.material === newMaterial ? '' : newMaterial;
+        await updateProsthesisMaterial(prosthesisId, finalMaterial);
       });
     });
 
