@@ -343,8 +343,19 @@ const initCaseDetail = async () => {
     `).join('');
   };
 
+  const MATERIALS = [
+    { value: '',       label: 'Material...' },
+    { value: 'resina', label: '🔵 Resina'   },
+    { value: 'flex',   label: '🟣 Flex'     },
+    { value: 'base',   label: '⚪ Base'     },
+  ];
+
+  const buildMaterialOptions = (current) =>
+    MATERIALS.map(m => `<option value="${m.value}" ${current === m.value ? 'selected' : ''}>${m.label}</option>`).join('');
+
   const createProsthesisSection = (prosthesis, index) => {
     const showValue = currentUser.role === 'management';
+    const checklist = prosthesis.printChecklist || {};
 
     return `
       <div class="prosthesis-section" data-prosthesis-id="${prosthesis.id}">
@@ -358,6 +369,9 @@ const initCaseDetail = async () => {
             <span class="prosthesis-arcada-badge ${prosthesis.arcada}">
               ${getArcadaLabel(prosthesis.arcada)}
             </span>
+            <select class="prosthesis-material-select" data-prosthesis-id="${prosthesis.id}" title="Material">
+              ${buildMaterialOptions(prosthesis.material || '')}
+            </select>
             <select class="prosthesis-status-select" data-prosthesis-id="${prosthesis.id}">
               ${buildStatusOptions(prosthesis.status)}
             </select>
@@ -414,6 +428,29 @@ const initCaseDetail = async () => {
 
             <!-- Sidebar -->
             <div class="prosthesis-sidebar">
+              <!-- Checklist de Impressao -->
+              <div class="prosthesis-card">
+                <div class="prosthesis-card-title">🖨️ Checklist de Impressao</div>
+                <div class="print-checklist">
+                  <label class="checklist-item">
+                    <input type="checkbox"
+                      class="print-checklist-check"
+                      data-prosthesis-id="${prosthesis.id}"
+                      data-item="dentes"
+                      ${checklist.dentes ? 'checked' : ''}>
+                    <span class="checklist-label ${checklist.dentes ? 'done' : ''}">🦷 Dentes</span>
+                  </label>
+                  <label class="checklist-item">
+                    <input type="checkbox"
+                      class="print-checklist-check"
+                      data-prosthesis-id="${prosthesis.id}"
+                      data-item="base"
+                      ${checklist.base ? 'checked' : ''}>
+                    <span class="checklist-label ${checklist.base ? 'done' : ''}">⚪ Base</span>
+                  </label>
+                </div>
+              </div>
+
               <!-- Timeline -->
               <div class="prosthesis-card">
                 <div class="prosthesis-card-title">Timeline</div>
@@ -807,12 +844,31 @@ const initCaseDetail = async () => {
   // ========================================
 
   const attachProsthesisEventListeners = () => {
+    // Material Select
+    document.querySelectorAll('.prosthesis-material-select').forEach(select => {
+      select.addEventListener('change', async (e) => {
+        const prosthesisId = e.target.dataset.prosthesisId;
+        const newMaterial = e.target.value;
+        await updateProsthesisMaterial(prosthesisId, newMaterial);
+      });
+    });
+
     // Status Select
     document.querySelectorAll('.prosthesis-status-select').forEach(select => {
       select.addEventListener('change', async (e) => {
         const prosthesisId = e.target.dataset.prosthesisId;
         const newStatus = e.target.value;
         await updateProsthesisStatus(prosthesisId, newStatus);
+      });
+    });
+
+    // Checklist de impressao
+    document.querySelectorAll('.print-checklist-check').forEach(chk => {
+      chk.addEventListener('change', async (e) => {
+        const prosthesisId = e.target.dataset.prosthesisId;
+        const item = e.target.dataset.item;
+        const checked = e.target.checked;
+        await updatePrintChecklist(prosthesisId, item, checked);
       });
     });
 
@@ -879,6 +935,65 @@ const initCaseDetail = async () => {
         }
       });
     });
+  };
+
+  // ========================================
+  // ATUALIZAR MATERIAL DA PROTESE
+  // ========================================
+
+  const updateProsthesisMaterial = async (prosthesisId, newMaterial) => {
+    try {
+      const prostheses = currentCase.prostheses || [];
+      const prosthesisIndex = prostheses.findIndex(p => p.id === prosthesisId);
+      if (prosthesisIndex === -1) return;
+
+      prostheses[prosthesisIndex].material = newMaterial || null;
+
+      const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
+      await db.collection('cases').doc(caseId).update({
+        prostheses: cleanProstheses,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      showNotification('Material atualizado!', 'success');
+    } catch (error) {
+      console.error('Erro ao atualizar material:', error);
+      showNotification('Erro ao atualizar material', 'error');
+    }
+  };
+
+  // ========================================
+  // ATUALIZAR CHECKLIST DE IMPRESSAO
+  // ========================================
+
+  const updatePrintChecklist = async (prosthesisId, item, checked) => {
+    try {
+      const prostheses = currentCase.prostheses || [];
+      const prosthesisIndex = prostheses.findIndex(p => p.id === prosthesisId);
+      if (prosthesisIndex === -1) return;
+
+      prostheses[prosthesisIndex].printChecklist = prostheses[prosthesisIndex].printChecklist || {};
+      prostheses[prosthesisIndex].printChecklist[item] = checked;
+
+      const labels = { dentes: 'Dentes', base: 'Base' };
+      prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
+      prostheses[prosthesisIndex].timeline.push({
+        action: 'checklist_update',
+        description: `${labels[item] || item}: ${checked ? 'concluido' : 'desmarcado'}`,
+        date: new Date().toISOString(),
+        user: currentUser.name,
+        userId: currentUser.id
+      });
+
+      const cleanProstheses = JSON.parse(JSON.stringify(prostheses));
+      await db.collection('cases').doc(caseId).update({
+        prostheses: cleanProstheses,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } catch (error) {
+      console.error('Erro ao atualizar checklist:', error);
+      showNotification('Erro ao atualizar checklist', 'error');
+    }
   };
 
   // ========================================
