@@ -365,7 +365,7 @@ const initCaseDetail = async () => {
             <span class="prosthesis-arcada-badge ${prosthesis.arcada}">
               ${getArcadaLabel(prosthesis.arcada)}
             </span>
-            <select class="prosthesis-status-select" data-prosthesis-id="${prosthesis.id}" id="material-select-${prosthesis.id}">
+            <select class="prosthesis-material-select" data-prosthesis-id="${prosthesis.id}">
               ${buildMaterialOptions(prosthesis.material || '')}
             </select>
             <select class="prosthesis-status-select" data-prosthesis-id="${prosthesis.id}">
@@ -841,7 +841,7 @@ const initCaseDetail = async () => {
 
   const attachProsthesisEventListeners = () => {
     // Material Select
-    document.querySelectorAll('[id^="material-select-"]').forEach(select => {
+    document.querySelectorAll('.prosthesis-material-select').forEach(select => {
       select.addEventListener('change', async (e) => {
         const prosthesisId = e.target.dataset.prosthesisId;
         const newMaterial = e.target.value;
