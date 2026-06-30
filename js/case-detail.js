@@ -343,23 +343,11 @@ const initCaseDetail = async () => {
     `).join('');
   };
 
-  const MATERIALS = [
-    { value: 'resina', label: 'Resina', color: '#3b82f6' },
-    { value: 'flex',   label: 'Flex',   color: '#8b5cf6' },
-    { value: 'base',   label: 'Base',   color: '#6b7280' },
-  ];
-
-  const buildMaterialPills = (current, prosthesisId) =>
-    `<div class="material-pills">` +
-    MATERIALS.map(m => `
-      <button
-        class="material-pill${current === m.value ? ' active' : ''}"
-        data-prosthesis-id="${prosthesisId}"
-        data-material="${m.value}"
-        style="${current === m.value ? `--pill-color:${m.color}` : ''}"
-      >${m.label}</button>
-    `).join('') +
-    `</div>`;
+  const buildMaterialOptions = (current) => `
+    <option value="" ${!current ? 'selected' : ''}>Selecionar Material</option>
+    <option value="flex"  ${current === 'flex'  ? 'selected' : ''}>Flex</option>
+    <option value="base"  ${current === 'base'  ? 'selected' : ''}>Base</option>
+  `;
 
   const createProsthesisSection = (prosthesis, index) => {
     const showValue = currentUser.role === 'management';
@@ -377,7 +365,9 @@ const initCaseDetail = async () => {
             <span class="prosthesis-arcada-badge ${prosthesis.arcada}">
               ${getArcadaLabel(prosthesis.arcada)}
             </span>
-            ${buildMaterialPills(prosthesis.material || '', prosthesis.id)}
+            <select class="prosthesis-status-select" data-prosthesis-id="${prosthesis.id}" id="material-select-${prosthesis.id}">
+              ${buildMaterialOptions(prosthesis.material || '')}
+            </select>
             <select class="prosthesis-status-select" data-prosthesis-id="${prosthesis.id}">
               ${buildStatusOptions(prosthesis.status)}
             </select>
@@ -850,17 +840,12 @@ const initCaseDetail = async () => {
   // ========================================
 
   const attachProsthesisEventListeners = () => {
-    // Material Pills
-    document.querySelectorAll('.material-pill').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.preventDefault();
+    // Material Select
+    document.querySelectorAll('[id^="material-select-"]').forEach(select => {
+      select.addEventListener('change', async (e) => {
         const prosthesisId = e.target.dataset.prosthesisId;
-        const newMaterial = e.target.dataset.material;
-        const prostheses = currentCase.prostheses || [];
-        const prosthesis = prostheses.find(p => p.id === prosthesisId);
-        // toggle: clicou no mesmo = desmarca
-        const finalMaterial = prosthesis && prosthesis.material === newMaterial ? '' : newMaterial;
-        await updateProsthesisMaterial(prosthesisId, finalMaterial);
+        const newMaterial = e.target.value;
+        await updateProsthesisMaterial(prosthesisId, newMaterial);
       });
     });
 
