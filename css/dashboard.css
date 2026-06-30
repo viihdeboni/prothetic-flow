@@ -613,7 +613,55 @@
     font-size: 1.75rem;
 }
 
-/* material usa a mesma classe do status select - nada extra necessario */
+/* material usa o mesmo visual do status select */
+.prosthesis-material-select {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    background-color: var(--white);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.prosthesis-material-select:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+}
+
+/* ========================================
+   BADGE DE MATERIAL NO DASHBOARD
+   ======================================== */
+
+.case-prostheses-badges-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.material-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid;
+}
+
+.material-badge.flex {
+    background-color: rgba(139, 92, 246, 0.1);
+    color: #6d28d9;
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.material-badge.base {
+    background-color: rgba(107, 114, 128, 0.1);
+    color: #374151;
+    border-color: rgba(107, 114, 128, 0.3);
+}
 
 /* ========================================
    CHECKLIST DE IMPRESSAO
