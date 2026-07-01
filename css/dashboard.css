@@ -664,84 +664,72 @@
 }
 
 /* ========================================
-   CHECKLIST DE IMPRESSAO
+   CHECKLIST DE IMPRESSAO - GRID
    ======================================== */
 
-.print-checklist {
+.print-checklist-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.print-checklist-col {
     display: flex;
     flex-direction: column;
-    gap: 0.625rem;
-    padding: 0.25rem 0;
-}
-
-.checklist-item {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    cursor: pointer;
-    user-select: none;
-}
-
-/* esconde o checkbox nativo */
-.checklist-item input[type="checkbox"] {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-    pointer-events: none;
-}
-
-/* card do item */
-.checklist-label {
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
-    width: 100%;
-    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+    padding: 0.875rem;
     border: 2px solid var(--gray-200);
     border-radius: var(--radius-md);
-    background-color: var(--white);
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: var(--gray-600);
-    transition: all 0.2s;
-    cursor: pointer;
+    background-color: var(--gray-50);
+    transition: all 0.25s;
 }
 
-.checklist-label::before {
-    content: '';
-    display: inline-flex;
-    width: 1.125rem;
-    height: 1.125rem;
-    border: 2px solid var(--gray-300);
-    border-radius: 50%;
-    flex-shrink: 0;
-    transition: all 0.2s;
-}
-
-.checklist-item input[type="checkbox"]:checked + .checklist-label {
+.print-checklist-col.col-done {
     border-color: #10b981;
     background-color: rgba(16, 185, 129, 0.06);
+}
+
+.print-col-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--gray-700);
+    margin-bottom: 0.25rem;
+    text-align: center;
+}
+
+.print-checklist-col.col-done .print-col-title {
     color: #047857;
 }
 
-.checklist-item input[type="checkbox"]:checked + .checklist-label::before {
-    background-color: #10b981;
+.print-option-btn {
+    width: 100%;
+    padding: 0.5rem 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    background-color: var(--white);
+    color: var(--gray-500);
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: center;
+}
+
+.print-option-btn:hover {
+    border-color: var(--gray-400);
+    color: var(--gray-700);
+}
+
+/* Imprimindo ativo - laranja */
+.print-option-btn.active-printing {
+    border-color: #f59e0b;
+    background-color: rgba(245, 158, 11, 0.08);
+    color: #b45309;
+}
+
+/* Impresso ativo - verde */
+.print-option-btn.active-done {
     border-color: #10b981;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 65%;
-}
-
-.checklist-label:hover {
-    border-color: var(--primary-blue);
-    background-color: rgba(37, 99, 235, 0.04);
-    color: var(--primary-blue);
-}
-
-.checklist-item input[type="checkbox"]:checked + .checklist-label:hover {
-    border-color: #059669;
     background-color: rgba(16, 185, 129, 0.1);
     color: #047857;
 }
