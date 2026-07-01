@@ -427,23 +427,29 @@ const initCaseDetail = async () => {
               <!-- Checklist de Impressao -->
               <div class="prosthesis-card">
                 <div class="prosthesis-card-title">🖨️ Checklist de Impressao</div>
-                <div class="print-checklist">
-                  <label class="checklist-item">
-                    <input type="checkbox"
-                      class="print-checklist-check"
-                      data-prosthesis-id="${prosthesis.id}"
-                      data-item="dentes"
-                      ${checklist.dentes ? 'checked' : ''}>
-                    <span class="checklist-label">🦷 Dentes</span>
-                  </label>
-                  <label class="checklist-item">
-                    <input type="checkbox"
-                      class="print-checklist-check"
-                      data-prosthesis-id="${prosthesis.id}"
-                      data-item="base"
-                      ${checklist.base ? 'checked' : ''}>
-                    <span class="checklist-label">⚪ Base</span>
-                  </label>
+                <div class="print-checklist-grid">
+                  <div class="print-checklist-col ${checklist.dentes === 'impresso' ? 'col-done' : ''}">
+                    <div class="print-col-title">🦷 Dentes</div>
+                    <button class="print-option-btn ${checklist.dentes === 'imprimindo' ? 'active-printing' : ''}"
+                      data-prosthesis-id="${prosthesis.id}" data-item="dentes" data-value="imprimindo">
+                      🖨️ Imprimindo
+                    </button>
+                    <button class="print-option-btn ${checklist.dentes === 'impresso' ? 'active-done' : ''}"
+                      data-prosthesis-id="${prosthesis.id}" data-item="dentes" data-value="impresso">
+                      ✅ Impresso
+                    </button>
+                  </div>
+                  <div class="print-checklist-col ${checklist.base === 'impresso' ? 'col-done' : ''}">
+                    <div class="print-col-title">⚪ Base</div>
+                    <button class="print-option-btn ${checklist.base === 'imprimindo' ? 'active-printing' : ''}"
+                      data-prosthesis-id="${prosthesis.id}" data-item="base" data-value="imprimindo">
+                      🖨️ Imprimindo
+                    </button>
+                    <button class="print-option-btn ${checklist.base === 'impresso' ? 'active-done' : ''}"
+                      data-prosthesis-id="${prosthesis.id}" data-item="base" data-value="impresso">
+                      ✅ Impresso
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -859,12 +865,19 @@ const initCaseDetail = async () => {
     });
 
     // Checklist de impressao
-    document.querySelectorAll('.print-checklist-check').forEach(chk => {
-      chk.addEventListener('change', async (e) => {
-        const prosthesisId = e.target.dataset.prosthesisId;
-        const item = e.target.dataset.item;
-        const checked = e.target.checked;
-        await updatePrintChecklist(prosthesisId, item, checked);
+    document.querySelectorAll('.print-option-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const prosthesisId = e.target.dataset.prosthesisId || e.target.closest('[data-prosthesis-id]')?.dataset.prosthesisId;
+        const item = e.target.dataset.item || e.target.closest('[data-item]')?.dataset.item;
+        const value = e.target.dataset.value || e.target.closest('[data-value]')?.dataset.value;
+        if (!prosthesisId || !item || !value) return;
+        // toggle: se já está ativo, limpa
+        const prostheses = currentCase.prostheses || [];
+        const prosthesis = prostheses.find(p => p.id === prosthesisId);
+        const current = prosthesis?.printChecklist?.[item];
+        const newValue = current === value ? null : value;
+        await updatePrintChecklist(prosthesisId, item, newValue);
       });
     });
 
@@ -962,20 +975,25 @@ const initCaseDetail = async () => {
   // ATUALIZAR CHECKLIST DE IMPRESSAO
   // ========================================
 
-  const updatePrintChecklist = async (prosthesisId, item, checked) => {
+  const updatePrintChecklist = async (prosthesisId, item, value) => {
     try {
       const prostheses = currentCase.prostheses || [];
       const prosthesisIndex = prostheses.findIndex(p => p.id === prosthesisId);
       if (prosthesisIndex === -1) return;
 
       prostheses[prosthesisIndex].printChecklist = prostheses[prosthesisIndex].printChecklist || {};
-      prostheses[prosthesisIndex].printChecklist[item] = checked;
+      prostheses[prosthesisIndex].printChecklist[item] = value;
 
-      const labels = { dentes: 'Dentes', base: 'Base' };
+      const itemLabels = { dentes: 'Dentes', base: 'Base' };
+      const valueLabels = { imprimindo: 'Imprimindo', impresso: 'Impresso', null: 'desmarcado' };
+      const desc = value
+        ? `${itemLabels[item] || item}: ${valueLabels[value] || value}`
+        : `${itemLabels[item] || item}: desmarcado`;
+
       prostheses[prosthesisIndex].timeline = prostheses[prosthesisIndex].timeline || [];
       prostheses[prosthesisIndex].timeline.push({
         action: 'checklist_update',
-        description: `${labels[item] || item}: ${checked ? 'concluido' : 'desmarcado'}`,
+        description: desc,
         date: new Date().toISOString(),
         user: currentUser.name,
         userId: currentUser.id
